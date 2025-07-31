@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:vropay_final/Components%20/top_navbar.dart';
-import 'package:vropay_final/app/modules/Screens/knowledge_center_screen/controllers/knowledge_center_screen_controller.dart';
+
+import 'package:vropay_final/app/routes/app_pages.dart';
 
 import '../../../../../Components /bottom_navbar.dart';
+import '../controllers/learn_screen_controller.dart';
 
 
-class KnowledgeCenterScreenView extends GetView<KnowledgeCenterScreenController> {
+class LearnScreenView extends GetView<LearnScreenController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -24,7 +26,8 @@ class KnowledgeCenterScreenView extends GetView<KnowledgeCenterScreenController>
                     clipBehavior: Clip.none,
                     children: [
                       Container(
-                        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 30),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 30),
                         width: 304,
                         height: 325,
                         decoration: BoxDecoration(
@@ -97,14 +100,15 @@ class KnowledgeCenterScreenView extends GetView<KnowledgeCenterScreenController>
                           height: 60,
                           width: 60,
                           child: FloatingActionButton(
-                            onPressed: () {
-                              // Your action
-                            },
-                            backgroundColor: Color(0xFF6A3DBE),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(40),
-                            ),
-                            child: Image.asset('assets/icons/downward_arrow.png', color: Colors.white, height:40)
+                              onPressed: () {
+                              },
+                              backgroundColor: Color(0xFF6A3DBE),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(40),
+                              ),
+                              child: Image.asset(
+                                  'assets/icons/downward_arrow.png',
+                                  color: Colors.white, height: 40)
                           ),
                         ),
                       ),
@@ -116,26 +120,28 @@ class KnowledgeCenterScreenView extends GetView<KnowledgeCenterScreenController>
 
                 // Info Cards
                 _infoCard(
-                  "Knowledge Center",
-                  "Articles, blogs, explainers & visuals on tech, money, mindset & more.",
+                  "Knowledge\n Center",
+                  "Articles, blogs, explainers &\nvisuals on tech, money,\nmindset & more.",
                   Color(0xFFE93A47),
                   "learn",
                   'assets/images/cupboard.png',
                   128,
                   80,
+                      () => Get.toNamed(Routes.KNOWLEDGE_CENTER_SCREEN),
                 ),
-                SizedBox(height: 20),
+                SizedBox(height: 40),
 
                 _infoCard(
-                  "Community Forum",
-                  "Talk with the community for real questions, real opinions, zero fluff.",
+                  "Community\n Forum",
+                  "Talk with the community\nfor real questions, real\nopinions, zero fluff.",
                   Color(0xFF3E9292),
                   "engage",
                   'assets/images/communityForum.png',
                   122,
                   102,
+                      () => Get.toNamed(Routes.COMMUNITY_FORUM),
                 ),
-                SizedBox(height: 20),
+                SizedBox(height: 40),
 
                 _infoCard(
                   "StartUp Tuition",
@@ -145,6 +151,7 @@ class KnowledgeCenterScreenView extends GetView<KnowledgeCenterScreenController>
                   'assets/images/startUp.png',
                   133,
                   107,
+                      () => Get.toNamed(Routes.TRACK_SELECTION),
                 ),
                 SizedBox(height: 40),
 
@@ -159,63 +166,93 @@ class KnowledgeCenterScreenView extends GetView<KnowledgeCenterScreenController>
           ),
         ),
       ),
-      bottomNavigationBar: CustomBottomNavBar(currentIndex: 1,),
+      bottomNavigationBar: CustomBottomNavBar(),
     );
   }
 
-  Widget _infoCard(
-      String title,
+  Widget _infoCard(String title,
       String subtitle,
       Color color,
       String actionText,
       String imagePath,
       double imageHeight,
       double imageWidth,
-      ) {
+      VoidCallback onPressed,) {
     return Container(
-      height: 346,
       width: double.infinity,
       padding: EdgeInsets.all(20),
-      decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(20)),
-      child: Column(
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  title,
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
-                ),
-              ),
-              Image.asset(
-                imagePath,
-                height: imageHeight,
-                width: imageWidth,
-                fit: BoxFit.contain,
-              ),
-            ],
-          ),
-          SizedBox(height: 10),
-          Text(
-            subtitle,
-            style: TextStyle(color: Colors.white70),
-          ),
-          SizedBox(height: 10),
-          ElevatedButton(
-            onPressed: () {},
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: color,
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
+          // Left Text Section
+          Expanded(
+            flex: 3,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(actionText),
-                SizedBox(width: 4),
-                Icon(Icons.arrow_forward),
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 30,
+                    fontWeight: FontWeight.w300,
+                    color: Colors.white,
+                    height: 1.2,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: Colors.white70,
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 22),
+                Align(
+                  alignment: Alignment.center,
+                  child: SizedBox(
+                    width: 250,
+                    child: ElevatedButton(
+                      onPressed: onPressed,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: color,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                        textStyle: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.max,
+                        children: [
+                          Text(actionText, style: TextStyle(
+                            fontSize: 15
+                          ),),
+                          const SizedBox(width: 40),
+                          const Icon(Icons.arrow_forward, size: 18),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
               ],
             ),
+          ),
+
+          SizedBox(width: 20),
+          Image.asset(
+            imagePath,
+            height: imageHeight,
+            width: imageWidth,
+            fit: BoxFit.contain,
           ),
         ],
       ),

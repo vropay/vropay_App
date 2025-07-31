@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:vropay_final/app/modules/Screens/profile/widgets/sign_out.dart';
@@ -22,49 +21,43 @@ class ProfileView extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-                  CustomTopNavBar(selectedIndex: null),
+              CustomTopNavBar(selectedIndex: null),
               const SizedBox(height: 16),
-
               Obx(() =>
-                  _ProfileSection(isEditMode: controller.isEditing.value)),
+                  _ProfileSection(isEditMode: controller.isGeneralEditMode.value)),
               const SizedBox(height: 20),
-
               Obx(() =>
-                  _PreferencesSection(isEditMode: controller.isEditing.value)),
+                  _PreferencesSection(isEditMode: controller.isPreferencesEditMode.value)),
               const SizedBox(height: 20),
-
               _SubscriptionBanner(),
               const SizedBox(height: 10),
-
               Row(
                 children: [
                   Expanded(
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xFF4D84F7)
-              ),
+                          backgroundColor: Color(0xFF4D84F7)),
                       onPressed: () {
                         Get.dialog(SignOutDialog());
                       },
-                      child: Text('SIGN OUT?',
-                      style: TextStyle(
-                        color: Colors.white
-                      ),),
+                      child: Text(
+                        'SIGN OUT?',
+                        style: TextStyle(color: Colors.white),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                          backgroundColor: Color(0xFF4D84F7)
-                      ),
+                          backgroundColor: Color(0xFF4D84F7)),
                       onPressed: () {
                         Get.toNamed(Routes.DEACTIVATE_SCREEN);
                       },
-                      child: Text('DEACTIVATE?', style:
-                        TextStyle(
-                          color: Colors.white
-                        ),),
+                      child: Text(
+                        'DEACTIVATE?',
+                        style: TextStyle(color: Colors.white),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -74,7 +67,8 @@ class ProfileView extends StatelessWidget {
           ),
         ),
       ),
-      bottomNavigationBar: CustomBottomNavBar(currentIndex: 1,),
+      bottomNavigationBar: CustomBottomNavBar(
+      ),
     );
   }
 }
@@ -106,12 +100,13 @@ class _ProfileSection extends StatelessWidget {
               Align(
                 alignment: Alignment.topRight,
                 child: GestureDetector(
-                  onTap: controller.toggleEditing,
+                  onTap: controller.isGeneralEditMode,
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(isEditMode ? 'Done' : 'Edit',
-                          style: const TextStyle(color: Colors.grey, fontSize: 14)),
+                          style: const TextStyle(
+                              color: Colors.grey, fontSize: 14)),
                       const SizedBox(width: 4),
                       Image.asset(
                         'assets/icons/profileEdit.png',
@@ -136,7 +131,7 @@ class _ProfileSection extends StatelessWidget {
                       fit: BoxFit.cover,
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 70),
                   Expanded(
                     child: Column(
                       children: [
@@ -145,19 +140,28 @@ class _ProfileSection extends StatelessWidget {
                             Expanded(
                               child: isEditMode
                                   ? TextFormField(
-                                controller: controller.firstNameController,
-                                decoration: const InputDecoration(labelText: 'First'),
-                              )
-                                  : Text('First', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF172B75))),
+                                      controller:
+                                          controller.firstNameController,
+                                      decoration: const InputDecoration(
+                                          labelText: 'First'),
+                                    )
+                                  : Text('First',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF172B75))),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
                               child: isEditMode
                                   ? TextFormField(
-                                controller: controller.lastNameController,
-                                decoration: const InputDecoration(labelText: 'Last'),
-                              )
-                                  : Text('Last', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF172B75))),
+                                      controller: controller.lastNameController,
+                                      decoration: const InputDecoration(
+                                          labelText: 'Last'),
+                                    )
+                                  : Text('Last',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF172B75))),
                             ),
                           ],
                         ),
@@ -165,13 +169,25 @@ class _ProfileSection extends StatelessWidget {
                         Row(
                           children: [
                             Expanded(
-                              child: Text(
-                                isEditMode
-                                    ? ''
-                                    : '${controller.firstNameController.text.isEmpty ? "Vikas" : controller.firstNameController.text} '
-                                    '${controller.lastNameController.text.isEmpty ? "Raika" : controller.lastNameController.text}',
+                              child: !isEditMode
+                                  ? Text(
+                                controller.firstNameController.text.isEmpty
+                                    ? "Vikas"
+                                    : controller.firstNameController.text,
                                 style: const TextStyle(fontSize: 16),
-                              ),
+                              )
+                                  : const SizedBox(),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: !isEditMode
+                                  ? Text(
+                                controller.lastNameController.text.isEmpty
+                                    ? "Raika"
+                                    : controller.lastNameController.text,
+                                style: const TextStyle(fontSize: 16),
+                              )
+                                  : const SizedBox(),
                             ),
                           ],
                         ),
@@ -183,81 +199,104 @@ class _ProfileSection extends StatelessWidget {
               const SizedBox(height: 16),
               isEditMode
                   ? TextFormField(
-                controller: controller.phoneController,
-                decoration: const InputDecoration(labelText: 'Mob No'),
-              )
+                      controller: controller.phoneController,
+                      decoration: const InputDecoration(labelText: 'Mob No'),
+                    )
                   : Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      const Icon(Icons.phone_android_outlined, color: Color(0xFF83A5FA),), 
-                      const SizedBox(width: 5,),
-                      const Text('Mob No', style: TextStyle(fontWeight: FontWeight.bold)),
-                    ],
-                  ),
-                  Text(controller.phoneController.text.isEmpty
-                      ? ' '
-                      : controller.phoneController.text),
-                ],
-              ),
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.phone_android_outlined,
+                              color: Color(0xFF83A5FA),
+                            ),
+                            const SizedBox(
+                              width: 5,
+                            ),
+                            const Text('Mob No',
+                                style: TextStyle(fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                        Text(controller.phoneController.text.isEmpty
+                            ? ' '
+                            : controller.phoneController.text),
+                      ],
+                    ),
               SizedBox(
                 height: 10,
               ),
               // Email
               isEditMode
                   ? TextFormField(
-                controller: controller.emailController,
-                decoration: const InputDecoration(labelText: 'Email ID'),
-              )
+                      controller: controller.emailController,
+                      decoration: const InputDecoration(labelText: 'Email ID'),
+                    )
                   : Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.email_outlined, color: Color(0xFF83A5FA),),
-                      const SizedBox(width: 5,),
-                      const Text('Email id', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF172B75))),
-                    ],
-                  ),
-                  Text(controller.emailController.text.isEmpty
-                      ? ' '
-                      : controller.emailController.text),
-                ],
-              ),
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.email_outlined,
+                              color: Color(0xFF83A5FA),
+                            ),
+                            const SizedBox(
+                              width: 5,
+                            ),
+                            const Text('Email id',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF172B75))),
+                          ],
+                        ),
+                        Text(controller.emailController.text.isEmpty
+                            ? ' '
+                            : controller.emailController.text),
+                      ],
+                    ),
               SizedBox(
                 height: 10,
               ),
               // Gender
               isEditMode
                   ? Obx(() => DropdownButtonFormField<String>(
-                decoration: const InputDecoration(labelText: 'Gender'),
-                value: controller.selectedGender.value,
-                items: controller.genderOptions
-                    .map((gender) => DropdownMenuItem(
-                  value: gender,
-                  child: Text(gender),
-                ))
-                    .toList(),
-                onChanged: (value) {
-                  if (value != null) controller.selectedGender.value = value;
-                },
-              ))
+                        decoration: const InputDecoration(labelText: 'Gender'),
+                        value: controller.selectedGender.value,
+                        items: controller.genderOptions
+                            .map((gender) => DropdownMenuItem(
+                                  value: gender,
+                                  child: Text(gender),
+                                ))
+                            .toList(),
+                        onChanged: (value) {
+                          if (value != null)
+                            controller.selectedGender.value = value;
+                        },
+                      ))
                   : Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.person_outlined, color: Color(0xFF83A5FA),),
-                      const SizedBox(width: 5,),
-                      const Text('Gender', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF172B75))),
-                    ],
-                  ),
-                  Text(controller.selectedGender.value.isEmpty
-                      ? ' '
-                      : controller.selectedGender.value),
-                ],
-              ),
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.person_outlined,
+                              color: Color(0xFF83A5FA),
+                            ),
+                            const SizedBox(
+                              width: 5,
+                            ),
+                            const Text('Gender',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF172B75))),
+                          ],
+                        ),
+                        Text(controller.selectedGender.value.isEmpty
+                            ? ' '
+                            : controller.selectedGender.value),
+                      ],
+                    ),
             ],
           ),
         ),
@@ -273,14 +312,16 @@ class _ProfileSection extends StatelessWidget {
               height: 40,
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               decoration: BoxDecoration(
-                color: const Color(0xFF172B75),
+                color: const Color(0xFF714FC0),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: const Center(
                 child: Text(
                   'General',
                   style: TextStyle(
-                      fontSize: 20, fontWeight: FontWeight.w400, color: Colors.white),
+                      fontSize: 20,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.white),
                 ),
               ),
             ),
@@ -291,9 +332,6 @@ class _ProfileSection extends StatelessWidget {
   }
 }
 
-
-
-
 class _PreferencesSection extends StatelessWidget {
   final bool isEditMode;
   const _PreferencesSection({required this.isEditMode});
@@ -302,11 +340,11 @@ class _PreferencesSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = Get.find<ProfileController>();
     final items = [
-      ('Category', 'Business owner'),
-      ('Topics', 'Selected'),
-      ('Difficulty', 'Advance'),
-      ('Community', 'In'),
-      ('Notifications', 'Allowed'),
+      ('assets/icons/category.png', 'Category', 'Business owner'),
+      ('assets/icons/topics.png', 'Topics', 'Selected'),
+      ('assets/icons/difficulty.png', 'Difficulty', 'Advance'),
+      ('assets/icons/community.png', 'Community', 'In'),
+      ('assets/icons/notification.png', 'Notifications', 'Allowed'),
     ];
 
     return Stack(
@@ -326,12 +364,13 @@ class _PreferencesSection extends StatelessWidget {
               Align(
                 alignment: Alignment.topRight,
                 child: GestureDetector(
-                  onTap: controller.toggleEditing,
+                  onTap: controller.isPreferencesEditMode,
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(isEditMode ? 'done' : 'edit',
-                          style: const TextStyle(color: Colors.grey, fontSize: 14)),
+                          style: const TextStyle(
+                              color: Colors.grey, fontSize: 14)),
                       const SizedBox(width: 4),
                       Image.asset(
                         'assets/icons/profileEdit.png',
@@ -346,8 +385,9 @@ class _PreferencesSection extends StatelessWidget {
               const SizedBox(height: 16),
               for (var item in items)
                 isEditMode
-                    ? _EditableField(label: item.$1, value: item.$2)
-                    : _InfoRow(icon: Icons.circle, label: item.$1, value: item.$2),
+                    ? _EditableField(label: item.$2, value: item.$3)
+                    : _InfoRow(
+                        iconPath: item.$1, label: item.$2, value: item.$3),
             ],
           ),
         ),
@@ -361,14 +401,16 @@ class _PreferencesSection extends StatelessWidget {
               height: 40,
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: const Color(0xFF172B75),
+                color: const Color(0xFF714FC0),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Center(
                 child: const Text(
                   'Preferences',
                   style: TextStyle(
-                      fontSize: 20, fontWeight: FontWeight.w400, color: Colors.white),
+                      fontSize: 20,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.white),
                 ),
               ),
             ),
@@ -379,26 +421,59 @@ class _PreferencesSection extends StatelessWidget {
   }
 }
 
-
-
-
 class _InfoRow extends StatelessWidget {
-  final IconData icon;
+  final String iconPath;
   final String label;
   final String value;
 
-  const _InfoRow({required this.icon, required this.label, required this.value});
+  const _InfoRow({
+    required this.iconPath,
+    required this.label,
+    required this.value,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 20, color: Color(0xFF172B75)),
+          Image.asset(
+            iconPath,
+            width: 20,
+            height: 20,
+          ),
           const SizedBox(width: 10),
-          Text('$label: ', style: const TextStyle(fontWeight: FontWeight.bold)),
-          Text(value),
+          Expanded(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Flexible(
+                  flex: 2,
+                  child: Text(
+                    label,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Flexible(
+                  flex: 3,
+                  child: Text(
+                    value,
+                    textAlign: TextAlign.right,
+                    style: const TextStyle(color: Colors.black),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 2,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -448,16 +523,13 @@ class _SubscriptionBanner extends StatelessWidget {
           Text(
             'subscription',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1.0,
-              fontSize: 30
-            ),
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.0,
+                fontSize: 30),
             textAlign: TextAlign.center,
           ),
-
           const SizedBox(height: 8),
-
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.end,

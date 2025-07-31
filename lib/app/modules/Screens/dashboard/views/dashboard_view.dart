@@ -28,7 +28,7 @@ class DashboardView extends GetView<DashboardController> {
           ],
         ),
       ),
-      bottomNavigationBar: const CustomBottomNavBar(currentIndex: 0,),
+      bottomNavigationBar: const CustomBottomNavBar(),
     );
   }
 }

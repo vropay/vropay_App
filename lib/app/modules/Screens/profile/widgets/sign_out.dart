@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:vropay_final/Components%20/back_icon.dart';
+import 'package:vropay_final/app/routes/app_pages.dart';
 
 class SignOutDialog extends StatelessWidget {
   const SignOutDialog({super.key});
@@ -49,17 +50,18 @@ class SignOutDialog extends StatelessWidget {
             const SizedBox(height: 20),
 
             Image.asset('assets/images/signout.png',
-            height: 50,),
+              height: 150,
+            ),
+            SizedBox(height: 10,),
+            Image.asset('assets/images/seeya.png',
+              height: 40,
+            ),
 
             const SizedBox(height: 24),
 
             Container(
               decoration: BoxDecoration(
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(40),
-                  topRight: Radius.circular(10),
-                  bottomLeft: Radius.circular(10),
-                  bottomRight: Radius.circular(40),
+                borderRadius: BorderRadius.circular( 20
                 ),
                 boxShadow: [
                   BoxShadow(
@@ -76,18 +78,13 @@ class SignOutDialog extends StatelessWidget {
                   style: OutlinedButton.styleFrom(
                     backgroundColor: Colors.white,
                     side: const BorderSide(color: Colors.redAccent),
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(40),
-                        topRight: Radius.circular(10),
-                        bottomLeft: Radius.circular(10),
-                        bottomRight: Radius.circular(40),
-                      ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
                     ),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
                   onPressed: () {
-                    Get.back(); // or your sign-out logic
+                    Get.toNamed(Routes.SIGNOUT_SCREEN);
                   },
                   child: const Text(
                     'Sign Out',

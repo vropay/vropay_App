@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../widgets /deactivate_confirmation.dart';
+
 class DeactivateController extends GetxController {
   RxBool confirmErase = false.obs;
 
@@ -16,24 +18,8 @@ class DeactivateController extends GetxController {
     }
 
     Get.dialog(
-      AlertDialog(
-        title: const Text("Confirm Deactivation"),
-        content: const Text("This action is permanent. Do you want to proceed?"),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: const Text("Cancel"),
-          ),
-          TextButton(
-            onPressed: () {
-              Get.back(); // Close dialog
-              // Perform deactivation logic here
-              Get.offAllNamed('/login'); // Example navigation
-            },
-            child: const Text("Yes, Deactivate", style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
+      const GoodbyeOverlayWidget(),
+      barrierDismissible: false, // Don't allow closing by tapping outside
     );
   }
 }

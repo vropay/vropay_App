@@ -97,7 +97,7 @@ class TrackSelectionView extends GetView<TrackSelectionController> {
           ),
         ),
       ),
-      bottomNavigationBar: CustomBottomNavBar(currentIndex: 2,),
+      bottomNavigationBar: CustomBottomNavBar(),
     );
   }
 

@@ -11,7 +11,7 @@ abstract class Routes {
   static const SUBSCRIPTION = _Paths.SUBSCRIPTION;
   static const NOTIFICATIONS = _Paths.NOTIFICATIONS;
   static const TRACK_SELECTION = _Paths.TRACK_SELECTION;
-  static const KNOWLEDGE_CENTER_SCREEN = _Paths.KNOWLEDGE_CENTER_SCREEN;
+  static const LEARN_SCREEN = _Paths.LEARN_SCREEN;
   static const COMMUNITY_FORUM = _Paths.COMMUNITY_FORUM;
   static const PAYMENT_SCREEN = _Paths.PAYMENT_SCREEN;
   static const PROFILE = _Paths.PROFILE;
@@ -19,8 +19,8 @@ abstract class Routes {
   static const DEACTIVATE_SCREEN = _Paths.DEACTIVATE_SCREEN;
   static const firstTimeSplash = _Paths.firstTimeSplash;
   static const welcomeSplash = _Paths.welcomeSplash;
-
-
+  static const SIGNOUT_SCREEN = _Paths.SIGNOUT_SCREEN;
+  static const KNOWLEDGE_CENTER_SCREEN = _Paths.KNOWLEDGE_CENTER_SCREEN;
 }
 
 abstract class _Paths {
@@ -33,7 +33,7 @@ abstract class _Paths {
   static const SUBSCRIPTION = '/subscription';
   static const NOTIFICATIONS = '/notifications';
   static const TRACK_SELECTION = '/track-selection';
-  static const KNOWLEDGE_CENTER_SCREEN = '/knowledge-center-screen';
+  static const LEARN_SCREEN = '/learn-screen';
   static const COMMUNITY_FORUM = '/community-forum';
   static const PAYMENT_SCREEN = '/payment-screen';
   static const PROFILE = '/profile';
@@ -41,4 +41,6 @@ abstract class _Paths {
   static const DEACTIVATE_SCREEN = '/deactivate-screen';
   static const firstTimeSplash = '/first-time-splash';
   static const welcomeSplash = '/welcome-splash';
+  static const SIGNOUT_SCREEN = '/signout-screen';
+  static const KNOWLEDGE_CENTER_SCREEN = '/knowledge-center-screen';
 }

@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:vropay_final/app/modules/Screens/community_forum/controllers/community_forum_controller.dart';
+import 'package:vropay_final/app/modules/Screens/knowledge_center_Screen/controllers/knowledge_center_screen_controller.dart';
 
 import '../../../../../Components /bottom_navbar.dart';
 import '../../../../../Components /top_navbar.dart';
 
 
-class CommunityForumView extends GetView<CommunityForumController> {
-  const CommunityForumView({Key? key}) : super(key: key);
+class KnowledgeCenterScreenView extends GetView<KnowledgeCenterScreenController> {
+  const KnowledgeCenterScreenView({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +32,7 @@ class CommunityForumView extends GetView<CommunityForumController> {
                     const SizedBox(height: 8),
                     TextField(
                       decoration: InputDecoration(
-                        hintText: 'Try searching the community like “STOCKS”',
+                        hintText: 'Try searching the topic like “STOCKS”',
                         filled: true,
                         fillColor: const Color(0xFFDBEFFF),
                         prefixIcon: const Icon(Icons.search, color: Colors.grey),
@@ -56,24 +57,24 @@ class CommunityForumView extends GetView<CommunityForumController> {
                                   text: TextSpan(
                                     style: const TextStyle(
                                       fontSize: 70,
-                                      color: Color(0xFF18707C),
+                                      color: Color(0xFFFA7244),
                                     ),
                                     children: [
-                                      TextSpan(text: "find\n", style: TextStyle(
-                                        color: Color(0xFF5A9267),
-                                        fontWeight: FontWeight.w300
+                                      TextSpan(text: "push\n", style: TextStyle(
+                                          color: Color(0xFFFA7244),
+                                          fontWeight: FontWeight.w300
                                       )),
                                       TextSpan(
                                         text: "Your\n",
                                         style: TextStyle(
-                                          color: Color(0xFF4D6348),
+                                          color: Color(0xFFFF4601),
                                           fontWeight: FontWeight.w300,
                                         ),
                                       ),
                                       TextSpan(
-                                        text: "Tribe",
+                                        text: "Limits",
                                         style: TextStyle(
-                                          color: Color(0xFF25525C),
+                                          color: Color(0xFFBD1C19),
                                           fontWeight: FontWeight.w300,
                                         ),
                                       ),
@@ -87,7 +88,7 @@ class CommunityForumView extends GetView<CommunityForumController> {
                             flex: 2,
                             child: Center(
                               child: Image.asset(
-                                'assets/images/findYourTribe.png',
+                                'assets/images/knowledgeCenter.png',
                                 height: 150,
                                 fit: BoxFit.contain,
                               ),
@@ -103,19 +104,18 @@ class CommunityForumView extends GetView<CommunityForumController> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           const Text(
-                            "jump back into",
+                            "continue reading",
                             style: TextStyle(
                               fontWeight: FontWeight.w500,
-                              color: Color(0xFF18707C),
+                              color: Color(0xFFE93A47),
                               fontSize: 20,
                             ),
                           ),
                           const SizedBox(width: 8,),
                           Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
+                            padding: const EdgeInsets.only(left: 10),
                             child: Image.asset(
-                              'assets/images/message.png',
-                              color: Color(0xFF18707C),
+                              'assets/icons/knowledgeicon.png',
                               width: 20,
                               height: 20,
                             ),
@@ -131,24 +131,30 @@ class CommunityForumView extends GetView<CommunityForumController> {
                         color: Color(0xFFDBEFFF),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Text("AI (name of last community connected)"),
+                      child: const Text("INVESTING (title of last topic read)"),
                     ),
                     const SizedBox(height: 16),
-                    _buildCard('world\n&\nculture', Color(0xFF02D7C3)),
+                    _buildCard('world\n&\nculture'),
                     const SizedBox(height: 12),
-                    _buildCard('personal\ngrowth', Color(0xFF7DE7C1)),
+                    _buildCard('personal\ngrowth'),
                     const SizedBox(height: 12),
-                    _buildCard('business\n&\ninnovation', Color(0xFF22C58D)),
+                    _buildCard('business\n&\ninnovation'),
                     const SizedBox(height: 24),
                     Container(
-                      color: const Color(0xFF01B3B2),
+                      color: const Color(0xFFF9E4D7),
                       padding: const EdgeInsets.all(16),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            "most active\ncommunities",
-                            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 25),
+                          Row(
+                            children: [
+                              const Text(
+                                "today's\nreadings",
+                                style: TextStyle(fontWeight: FontWeight.w500, color: Color(0xFFE93A47), fontSize: 25),
+                              ),
+                              SizedBox(width: 90,),
+                              Image.asset('assets/icons/communitybox.png', height: 30,)
+                            ],
                           ),
                           const SizedBox(height: 20),
                           GridView.count(
@@ -158,12 +164,12 @@ class CommunityForumView extends GetView<CommunityForumController> {
                             crossAxisSpacing: 12,
                             mainAxisSpacing: 12,
                             children: const [
-                              _CommunityBox(label: 'STOCKS', color: Color(0xFF02D7C3), colorText: Color(0xFF4B7C24),),
-                              _CommunityBox(label: 'TECH', color: Color(0xFF01451E), colorText: Color(0xFF32CD32),),
-                              _CommunityBox(label: 'QUANTUM LEAP', color: Color(0xFF7DE7C1), colorText: Color(0xFF4B7C24),),
-                              _CommunityBox(label: 'BOOKS', color: Color(0xFF32CD32), colorText: Color(0xFF01451E),),
-                              _CommunityBox(label: 'FINANCE', color: Color(0xFF22C58D), colorText: Color(0xFF01451E),),
-                              _CommunityBox(label: 'MUSIC', color: Color(0xFF109D58), colorText: Color(0xFF32CD32),),
+                              _CommunityBox(label: 'HEALTH', color: Color(0xFFFF4F4E), colorText: Color(0xFF8E2100),),
+                              _CommunityBox(label: 'ASTRO', color: Color(0xFF8E2100), colorText: Color(0xFFFF0017),),
+                              _CommunityBox(label: 'TRAVEL', color: Color(0xFFFF692D), colorText: Color(0xFFD80031),),
+                              _CommunityBox(label: 'BOOKS', color: Color(0xFFFF0017), colorText: Color(0xFF690005),),
+                              _CommunityBox(label: 'FINANCE', color: Color(0xFFFE8081), colorText: Color(0xFF8E2100),),
+                              _CommunityBox(label: 'MUSIC', color: Color(0xFFA65854), colorText: Color(0xFFFF692D),),
                             ],
                           ),
                         ],
@@ -180,22 +186,26 @@ class CommunityForumView extends GetView<CommunityForumController> {
     );
   }
 
-  Widget _buildCard(String text, Color color) {
+  Widget _buildCard(String text) {
     return Center(
       child: Container(
         width: 304,
         height: 355,
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: color,
+          color: Color(0xFFE93A47) ,
           borderRadius: BorderRadius.circular(20),
         ),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Text(
-              text,
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 40, color: Color(0xFF4B7C24)),
+            Padding(
+              padding: const EdgeInsets.only(top: 20),
+              child: Text(
+                text,
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 40, color: Color(0xFFD9D9D9)),
+              ),
             ),
             const SizedBox(height: 8),
             const Spacer(),

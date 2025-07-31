@@ -1,5 +1,5 @@
 import 'package:get/get.dart';
-import 'package:vropay_final/app/modules/Screens/deactivate_screen/views/deactivate_screen_view.dart';
+
 import '../modules/Screens/OtpScreen/bindings/otp_screen_binding.dart';
 import '../modules/Screens/OtpScreen/views/otp_screen_view.dart';
 import '../modules/Screens/TrialTransitionView/trial_transition_view.dart';
@@ -8,10 +8,13 @@ import '../modules/Screens/community_forum/views/community_forum_view.dart';
 import '../modules/Screens/dashboard/bindings/dashboard_binding.dart';
 import '../modules/Screens/dashboard/views/dashboard_view.dart';
 import '../modules/Screens/deactivate_screen/bindings/deactivate_screen_binding.dart';
+import '../modules/Screens/deactivate_screen/views/deactivate_screen_view.dart';
 import '../modules/Screens/home/bindings/home_binding.dart';
 import '../modules/Screens/home/views/home_view.dart';
-import '../modules/Screens/knowledge_center_screen/bindings/knowledge_center_screen_binding.dart';
-import '../modules/Screens/knowledge_center_screen/views/knowledge_center_screen_view.dart';
+import '../modules/Screens/knowledge_center_Screen/bindings/knowledge_center_screen_binding.dart';
+import '../modules/Screens/knowledge_center_Screen/views/knowledge_center_screen_view.dart';
+import '../modules/Screens/learn_screen/bindings/learn_screen_binding.dart';
+import '../modules/Screens/learn_screen/views/learn_screen.dart';
 import '../modules/Screens/notifications/bindings/notifications_binding.dart';
 import '../modules/Screens/notifications/views/notifications_view.dart';
 import '../modules/Screens/onBoarding/bindings/on_boarding_binding.dart';
@@ -24,12 +27,17 @@ import '../modules/Screens/profile/bindings/profile_binding.dart';
 import '../modules/Screens/profile/views/profile_view.dart';
 import '../modules/Screens/signUp/bindings/sign_up_binding.dart';
 import '../modules/Screens/signUp/views/sign_up_view.dart';
+import '../modules/Screens/signoutScreen/bindings/signout_screen_binding.dart';
 import '../modules/Screens/subscription/bindings/subscription_binding.dart';
 import '../modules/Screens/subscription/views/subscription_view.dart';
 import '../modules/Screens/track_selection/bindings/track_selection_binding.dart';
 import '../modules/Screens/track_selection/views/track_selection_view.dart';
 import '../modules/common/firstTimeSplash.dart';
 import '../modules/common/welcomeBackSplash.dart';
+
+
+import '../modules/Screens/signoutScreen/views/signout_screen_view.dart'
+    show SignoutScreenView;
 
 part 'app_routes.dart';
 
@@ -81,9 +89,9 @@ class AppPages {
       binding: TrackSelectionBinding(),
     ),
     GetPage(
-      name: _Paths.KNOWLEDGE_CENTER_SCREEN,
-      page: () => KnowledgeCenterScreenView(),
-      binding: KnowledgeCenterScreenBinding(),
+      name: _Paths.LEARN_SCREEN,
+      page: () => LearnScreenView(),
+      binding: LearnScreenBinding(),
     ),
     GetPage(
       name: _Paths.COMMUNITY_FORUM,
@@ -107,7 +115,7 @@ class AppPages {
     ),
     GetPage(
       name: _Paths.DEACTIVATE_SCREEN,
-      page: () =>  DeactivateScreenView(),
+      page: () => DeactivateScreenView(),
       binding: DeactivateScreenBinding(),
     ),
     GetPage(
@@ -117,6 +125,16 @@ class AppPages {
     GetPage(
       name: _Paths.welcomeSplash,
       page: () => WelcomeBackSplashScreen(),
+    ),
+    GetPage(
+      name: _Paths.SIGNOUT_SCREEN,
+      page: () => const SignoutScreenView(),
+      binding: SignoutScreenBinding(),
+    ),
+    GetPage(
+      name: _Paths.KNOWLEDGE_CENTER_SCREEN,
+      page: () => const KnowledgeCenterScreenView(),
+      binding: KnowledgeCenterScreenBinding(),
     ),
   ];
 }

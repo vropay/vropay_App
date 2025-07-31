@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class ProfileController extends GetxController {
-  var isEditing = false.obs;
+  final RxBool isGeneralEditMode = false.obs;
+  final RxBool isPreferencesEditMode = false.obs;
 
   // Editable fields
   final firstNameController = TextEditingController(text: 'Vikas');
@@ -14,9 +15,6 @@ class ProfileController extends GetxController {
   final genderOptions = ['Male', 'Female', 'Other'];
   final selectedGender = 'Male'.obs;
 
-  void toggleEditing() {
-    isEditing.value = !isEditing.value;
-  }
 
   @override
   void dispose() {
