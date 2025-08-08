@@ -7,7 +7,6 @@ import 'package:vropay_final/app/routes/app_pages.dart';
 import '../../../../../Components/bottom_navbar.dart';
 import '../controllers/learn_screen_controller.dart';
 
-
 class LearnScreenView extends GetView<LearnScreenController> {
   @override
   Widget build(BuildContext context) {
@@ -26,8 +25,8 @@ class LearnScreenView extends GetView<LearnScreenController> {
                     clipBehavior: Clip.none,
                     children: [
                       Container(
-                        padding: EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 30),
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 20, vertical: 30),
                         width: 304,
                         height: 325,
                         decoration: BoxDecoration(
@@ -92,7 +91,6 @@ class LearnScreenView extends GetView<LearnScreenController> {
                           ],
                         ),
                       ),
-
                       Positioned(
                         bottom: -35,
                         right: -10,
@@ -100,16 +98,15 @@ class LearnScreenView extends GetView<LearnScreenController> {
                           height: 60,
                           width: 60,
                           child: FloatingActionButton(
-                              onPressed: () {
-                              },
+                              onPressed: () {},
                               backgroundColor: Color(0xFF6A3DBE),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(40),
                               ),
                               child: Image.asset(
                                   'assets/icons/downward_arrow.png',
-                                  color: Colors.white, height: 40)
-                          ),
+                                  color: Colors.white,
+                                  height: 40)),
                         ),
                       ),
                     ],
@@ -127,7 +124,7 @@ class LearnScreenView extends GetView<LearnScreenController> {
                   'assets/images/cupboard.png',
                   128,
                   80,
-                      () => Get.toNamed(Routes.KNOWLEDGE_CENTER_SCREEN),
+                  () => Get.toNamed(Routes.KNOWLEDGE_CENTER_SCREEN),
                 ),
                 SizedBox(height: 40),
 
@@ -139,7 +136,7 @@ class LearnScreenView extends GetView<LearnScreenController> {
                   'assets/images/communityForum.png',
                   122,
                   102,
-                      () => Get.toNamed(Routes.COMMUNITY_FORUM),
+                  () => Get.toNamed(Routes.COMMUNITY_FORUM),
                 ),
                 SizedBox(height: 40),
 
@@ -151,7 +148,7 @@ class LearnScreenView extends GetView<LearnScreenController> {
                   'assets/images/startUp.png',
                   133,
                   107,
-                      () => Get.toNamed(Routes.TRACK_SELECTION),
+                  () => Get.toNamed(Routes.TRACK_SELECTION),
                 ),
                 SizedBox(height: 40),
 
@@ -170,14 +167,16 @@ class LearnScreenView extends GetView<LearnScreenController> {
     );
   }
 
-  Widget _infoCard(String title,
-      String subtitle,
-      Color color,
-      String actionText,
-      String imagePath,
-      double imageHeight,
-      double imageWidth,
-      VoidCallback onPressed,) {
+  Widget _infoCard(
+    String title,
+    String subtitle,
+    Color color,
+    String actionText,
+    String imagePath,
+    double imageHeight,
+    double imageWidth,
+    VoidCallback onPressed,
+  ) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(20),
@@ -225,16 +224,18 @@ class LearnScreenView extends GetView<LearnScreenController> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30),
                         ),
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 10),
                         textStyle: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         mainAxisSize: MainAxisSize.max,
                         children: [
-                          Text(actionText, style: TextStyle(
-                            fontSize: 15
-                          ),),
+                          Text(
+                            actionText,
+                            style: TextStyle(fontSize: 15),
+                          ),
                           const SizedBox(width: 40),
                           const Icon(Icons.arrow_forward, size: 18),
                         ],
@@ -242,7 +243,6 @@ class LearnScreenView extends GetView<LearnScreenController> {
                     ),
                   ),
                 ),
-
               ],
             ),
           ),

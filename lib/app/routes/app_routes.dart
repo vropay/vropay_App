@@ -21,6 +21,9 @@ abstract class Routes {
   static const welcomeSplash = _Paths.welcomeSplash;
   static const SIGNOUT_SCREEN = _Paths.SIGNOUT_SCREEN;
   static const KNOWLEDGE_CENTER_SCREEN = _Paths.KNOWLEDGE_CENTER_SCREEN;
+  static const WORLD_AND_CULTURE_SCREEN = _Paths.worldAndCultureScreen;
+  static const PERSONAL_GROWTH_SCREEN = _Paths.personalGrowthScreen;
+  static const BUSINESS_INNOVATION_SCREEN = _Paths.businessInnovationScreen;
 }
 
 abstract class _Paths {
@@ -43,4 +46,7 @@ abstract class _Paths {
   static const welcomeSplash = '/welcome-splash';
   static const SIGNOUT_SCREEN = '/signout-screen';
   static const KNOWLEDGE_CENTER_SCREEN = '/knowledge-center-screen';
+  static const worldAndCultureScreen = '/world-and-culture-screen';
+  static const personalGrowthScreen = '/personal-growth-screen';
+  static const businessInnovationScreen = '/business-innovation-screen';
 }

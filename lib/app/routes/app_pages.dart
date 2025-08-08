@@ -1,4 +1,10 @@
 import 'package:get/get.dart';
+import 'package:vropay_final/app/modules/Screens/personal_growth/bindings/personal_growth_bindings.dart';
+import 'package:vropay_final/app/modules/Screens/personal_growth/views/personal_growth_screen.dart';
+import 'package:vropay_final/app/modules/Screens/world_and_culture/bindings/world_and_culture_binding.dart';
+import 'package:vropay_final/app/modules/Screens/world_and_culture/views/world_and_culture_screen.dart';
+import 'package:vropay_final/app/modules/Screens/business_innovation/bindings/business_innovation_binding.dart';
+import 'package:vropay_final/app/modules/Screens/business_innovation/views/business_innovation_screen.dart';
 
 import '../modules/Screens/OtpScreen/bindings/otp_screen_binding.dart';
 import '../modules/Screens/OtpScreen/views/otp_screen_view.dart';
@@ -34,7 +40,6 @@ import '../modules/Screens/track_selection/bindings/track_selection_binding.dart
 import '../modules/Screens/track_selection/views/track_selection_view.dart';
 import '../modules/common/firstTimeSplash.dart';
 import '../modules/common/welcomeBackSplash.dart';
-
 
 import '../modules/Screens/signoutScreen/views/signout_screen_view.dart'
     show SignoutScreenView;
@@ -135,6 +140,21 @@ class AppPages {
       name: _Paths.KNOWLEDGE_CENTER_SCREEN,
       page: () => const KnowledgeCenterScreenView(),
       binding: KnowledgeCenterScreenBinding(),
+    ),
+    GetPage(
+      name: _Paths.worldAndCultureScreen,
+      page: () => const WorldAndCultureScreen(),
+      binding: WorldAndCultureBinding(),
+    ),
+    GetPage(
+      name: _Paths.personalGrowthScreen,
+      page: () => const PersonalGrowthScreen(),
+      binding: PersonalGrowthBindings(),
+    ),
+    GetPage(
+      name: _Paths.businessInnovationScreen,
+      page: () => const BusinessInnovationScreen(),
+      binding: BusinessInnovationBinding(),
     ),
   ];
 }
