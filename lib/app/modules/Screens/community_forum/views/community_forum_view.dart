@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:vropay_final/app/modules/Screens/community_forum/controllers/community_forum_controller.dart';
 
-import '../../../../../Components /bottom_navbar.dart';
-import '../../../../../Components /top_navbar.dart';
-
+import '../../../../../Components/bottom_navbar.dart';
+import '../../../../../Components/top_navbar.dart';
 
 class CommunityForumView extends GetView<CommunityForumController> {
   const CommunityForumView({Key? key}) : super(key: key);
@@ -34,7 +33,8 @@ class CommunityForumView extends GetView<CommunityForumController> {
                         hintText: 'Try searching the community like “STOCKS”',
                         filled: true,
                         fillColor: const Color(0xFFDBEFFF),
-                        prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                        prefixIcon:
+                            const Icon(Icons.search, color: Colors.grey),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide.none,
@@ -59,10 +59,11 @@ class CommunityForumView extends GetView<CommunityForumController> {
                                       color: Color(0xFF18707C),
                                     ),
                                     children: [
-                                      TextSpan(text: "find\n", style: TextStyle(
-                                        color: Color(0xFF5A9267),
-                                        fontWeight: FontWeight.w300
-                                      )),
+                                      TextSpan(
+                                          text: "find\n",
+                                          style: TextStyle(
+                                              color: Color(0xFF5A9267),
+                                              fontWeight: FontWeight.w300)),
                                       TextSpan(
                                         text: "Your\n",
                                         style: TextStyle(
@@ -110,7 +111,9 @@ class CommunityForumView extends GetView<CommunityForumController> {
                               fontSize: 20,
                             ),
                           ),
-                          const SizedBox(width: 8,),
+                          const SizedBox(
+                            width: 8,
+                          ),
                           Padding(
                             padding: const EdgeInsets.only(bottom: 12),
                             child: Image.asset(
@@ -126,12 +129,14 @@ class CommunityForumView extends GetView<CommunityForumController> {
                     const SizedBox(height: 8),
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 16),
                       decoration: BoxDecoration(
                         color: Color(0xFFDBEFFF),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Text("AI (name of last community connected)"),
+                      child:
+                          const Text("AI (name of last community connected)"),
                     ),
                     const SizedBox(height: 16),
                     _buildCard('world\n&\nculture', Color(0xFF02D7C3)),
@@ -148,7 +153,10 @@ class CommunityForumView extends GetView<CommunityForumController> {
                         children: [
                           const Text(
                             "most active\ncommunities",
-                            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 25),
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                fontSize: 25),
                           ),
                           const SizedBox(height: 20),
                           GridView.count(
@@ -158,12 +166,36 @@ class CommunityForumView extends GetView<CommunityForumController> {
                             crossAxisSpacing: 12,
                             mainAxisSpacing: 12,
                             children: const [
-                              _CommunityBox(label: 'STOCKS', color: Color(0xFF02D7C3), colorText: Color(0xFF4B7C24),),
-                              _CommunityBox(label: 'TECH', color: Color(0xFF01451E), colorText: Color(0xFF32CD32),),
-                              _CommunityBox(label: 'QUANTUM LEAP', color: Color(0xFF7DE7C1), colorText: Color(0xFF4B7C24),),
-                              _CommunityBox(label: 'BOOKS', color: Color(0xFF32CD32), colorText: Color(0xFF01451E),),
-                              _CommunityBox(label: 'FINANCE', color: Color(0xFF22C58D), colorText: Color(0xFF01451E),),
-                              _CommunityBox(label: 'MUSIC', color: Color(0xFF109D58), colorText: Color(0xFF32CD32),),
+                              _CommunityBox(
+                                label: 'STOCKS',
+                                color: Color(0xFF02D7C3),
+                                colorText: Color(0xFF4B7C24),
+                              ),
+                              _CommunityBox(
+                                label: 'TECH',
+                                color: Color(0xFF01451E),
+                                colorText: Color(0xFF32CD32),
+                              ),
+                              _CommunityBox(
+                                label: 'QUANTUM LEAP',
+                                color: Color(0xFF7DE7C1),
+                                colorText: Color(0xFF4B7C24),
+                              ),
+                              _CommunityBox(
+                                label: 'BOOKS',
+                                color: Color(0xFF32CD32),
+                                colorText: Color(0xFF01451E),
+                              ),
+                              _CommunityBox(
+                                label: 'FINANCE',
+                                color: Color(0xFF22C58D),
+                                colorText: Color(0xFF01451E),
+                              ),
+                              _CommunityBox(
+                                label: 'MUSIC',
+                                color: Color(0xFF109D58),
+                                colorText: Color(0xFF32CD32),
+                              ),
                             ],
                           ),
                         ],
@@ -204,8 +236,13 @@ class CommunityForumView extends GetView<CommunityForumController> {
               children: [
                 Text("know more",
                     textAlign: TextAlign.end,
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20)),
-                SizedBox(width: 10,),
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20)),
+                SizedBox(
+                  width: 10,
+                ),
                 Icon(Icons.arrow_forward, color: Colors.white),
               ],
             )
@@ -221,7 +258,8 @@ class _CommunityBox extends StatelessWidget {
   final Color color;
   final Color colorText;
 
-  const _CommunityBox({required this.label, required this.color, required this.colorText});
+  const _CommunityBox(
+      {required this.label, required this.color, required this.colorText});
 
   @override
   Widget build(BuildContext context) {
@@ -235,7 +273,8 @@ class _CommunityBox extends StatelessWidget {
         child: Text(
           label,
           textAlign: TextAlign.center,
-          style: TextStyle(fontWeight: FontWeight.normal, color: colorText, fontSize: 25),
+          style: TextStyle(
+              fontWeight: FontWeight.normal, color: colorText, fontSize: 25),
         ),
       ),
     );

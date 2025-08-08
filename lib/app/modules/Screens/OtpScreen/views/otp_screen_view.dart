@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
-import 'package:vropay_final/Utilities%20/constants%20/Colors.dart';
-import '../../../../../Components /constant_buttons.dart';
-import '../../../../../Utilities /constants /KImages.dart';
+import 'package:vropay_final/Utilities/constants/Colors.dart';
+import '../../../../../Components/constant_buttons.dart';
+import '../../../../../Utilities/constants/KImages.dart';
 import '../../onBoarding/widgets/faq_help.dart';
 import '../controllers/otp_screen_controller.dart';
 

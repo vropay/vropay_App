@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../../../Components /back_icon.dart';
-import '../../../../../Components /outlinedConstantButton.dart';
-import '../../../../../Utilities /constants /KImages.dart';
+import '../../../../../Components/back_icon.dart';
+import '../../../../../Components/outlinedConstantButton.dart';
+import '../../../../../Utilities/constants/KImages.dart';
 import '../controllers/home_controller.dart';
 
 class DifficultyLevelScreen extends StatelessWidget {

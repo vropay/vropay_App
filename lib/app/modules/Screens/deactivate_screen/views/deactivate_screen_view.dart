@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../../../Components /back_icon.dart';
+import '../../../../../Components/back_icon.dart';
 import '../controllers/deactivate_screen_controller.dart';
 
 class DeactivateScreenView extends StatelessWidget {

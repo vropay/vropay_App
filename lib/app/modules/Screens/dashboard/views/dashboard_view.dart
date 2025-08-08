@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:vropay_final/Components%20/top_navbar.dart';
-
-
-import '../../../../../Components /bottom_navbar.dart';
+import '../../../../../Components/top_navbar.dart';
+import '../../../../../Components/bottom_navbar.dart';
 import '../controllers/dashboard_controller.dart';
 
 class DashboardView extends GetView<DashboardController> {

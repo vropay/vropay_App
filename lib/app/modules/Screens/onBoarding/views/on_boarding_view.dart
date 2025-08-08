@@ -2,9 +2,9 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
-import '../../../../../Components /constant_buttons.dart';
-import '../../../../../Utilities /constants /Colors.dart';
-import '../../../../../Utilities /constants /KImages.dart';
+import '../../../../../Components/constant_buttons.dart';
+import '../../../../../Utilities/constants/Colors.dart';
+import '../../../../../Utilities/constants/KImages.dart';
 import '../controllers/on_boarding_controller.dart';
 import '../widgets/faq_help.dart';
 

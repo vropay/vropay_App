@@ -3,8 +3,8 @@ import 'package:get/get.dart';
 import 'package:vropay_final/app/modules/Screens/community_forum/controllers/community_forum_controller.dart';
 import 'package:vropay_final/app/modules/Screens/knowledge_center_Screen/controllers/knowledge_center_screen_controller.dart';
 
-import '../../../../../Components /bottom_navbar.dart';
-import '../../../../../Components /top_navbar.dart';
+import '../../../../../Components/bottom_navbar.dart';
+import '../../../../../Components/top_navbar.dart';
 
 
 class KnowledgeCenterScreenView extends GetView<KnowledgeCenterScreenController> {

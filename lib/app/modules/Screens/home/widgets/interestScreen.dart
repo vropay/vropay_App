@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../../../Components /back_icon.dart';
+import '../../../../../Components/back_icon.dart';
 import 'communityAccess.dart';
 import 'difficultyScreen.dart';
 import 'notificationPopUp.dart';

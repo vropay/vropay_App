@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:vropay_final/app/modules/Screens/track_selection/controllers/track_selection_controller.dart';
 
-import '../../../../../Components /bottom_navbar.dart';
-import '../../../../../Components /top_navbar.dart';
+import '../../../../../Components/bottom_navbar.dart';
+import '../../../../../Components/top_navbar.dart';
 
 class TrackSelectionView extends GetView<TrackSelectionController> {
   @override

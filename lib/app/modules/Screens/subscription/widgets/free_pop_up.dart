@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../../Components /back_icon.dart';
+import '../../../../../Components/back_icon.dart';
 
 class FreePopUp extends StatelessWidget {
   final VoidCallback onYesPressed;

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'dart:ui';
 
-import '../../../../../Components /back_icon.dart';
+import '../../../../../Components/back_icon.dart';
 import '../../../../routes/app_pages.dart';
 import '../controllers/payment_screen_controller.dart';
 

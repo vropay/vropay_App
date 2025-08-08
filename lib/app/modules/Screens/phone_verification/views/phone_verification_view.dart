@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:vropay_final/Components%20/constant_buttons.dart';
-import '../../../../../Utilities /constants /Colors.dart';
-import '../../../../../Utilities /constants /KImages.dart';
+import 'package:vropay_final/Components/constant_buttons.dart';
+import '../../../../../Utilities/constants/Colors.dart';
+import '../../../../../Utilities/constants/KImages.dart';
 import '../../OtpScreen/views/otp_screen_view.dart';
 import '../../onBoarding/widgets/faq_help.dart';
 import '../controllers/phone_verification_controller.dart';

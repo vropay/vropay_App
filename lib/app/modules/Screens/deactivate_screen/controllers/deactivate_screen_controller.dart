@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../widgets /deactivate_confirmation.dart';
+import '../widgets/deactivate_confirmation.dart';
 
 class DeactivateController extends GetxController {
   RxBool confirmErase = false.obs;

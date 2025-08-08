@@ -1,8 +1,8 @@
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
-import 'package:vropay_final/Utilities%20/constants%20/Colors.dart';
+import 'package:vropay_final/Utilities/constants/Colors.dart';
 
-import '../../../../../Utilities /snackbar_helper.dart';
+import '../../../../../Utilities/snackbar_helper.dart';
 
 class OTPController extends GetxController {
   var userEmail = ''.obs;
