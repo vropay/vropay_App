@@ -4,6 +4,7 @@ import 'package:vropay_final/Components/bottom_navbar.dart';
 import 'package:vropay_final/Components/top_navbar.dart';
 import 'package:vropay_final/Utilities/screen_utils.dart';
 import 'package:vropay_final/app/modules/Screens/business_innovation/controllers/business_innovation_controller.dart';
+import 'package:vropay_final/app/routes/app_pages.dart';
 
 class BusinessInnovationScreen extends GetView<BusinessInnovationController> {
   const BusinessInnovationScreen({super.key});
@@ -91,14 +92,7 @@ class BusinessInnovationScreen extends GetView<BusinessInnovationController> {
   Widget _buildCategoryCard(String category) {
     return GestureDetector(
       onTap: () {
-        // Handle category tap
-        Get.snackbar(
-          'Category Selected',
-          'You tapped: $category',
-          backgroundColor: _getCategoryColor(category),
-          colorText: Colors.white,
-          duration: Duration(seconds: 2),
-        );
+        Get.toNamed(Routes.NEWS_SCREEN);
       },
       child: Container(
         height: ScreenUtils.height * 0.15,

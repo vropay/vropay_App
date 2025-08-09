@@ -20,4 +20,10 @@ class KImages {
 
   static const difficultyImage = 'assets/images/difficultyScreen.png';
   static const subscriptionImage = 'assets/images/SubscriptionImage.png';
+
+  static const searchIcon = "assets/icons/search.png";
+  static const filterIcon = "assets/icons/timer.png";
+  static const listIcon = "assets/icons/list.png";
+
+  static const thumbnail = "assets/icons/thumbnail.png";
 }

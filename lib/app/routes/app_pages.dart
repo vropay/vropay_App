@@ -1,4 +1,6 @@
 import 'package:get/get.dart';
+import 'package:vropay_final/app/modules/Screens/news/bindings/news_binding.dart';
+import 'package:vropay_final/app/modules/Screens/news/views/news_screen.dart';
 import 'package:vropay_final/app/modules/Screens/personal_growth/bindings/personal_growth_bindings.dart';
 import 'package:vropay_final/app/modules/Screens/personal_growth/views/personal_growth_screen.dart';
 import 'package:vropay_final/app/modules/Screens/world_and_culture/bindings/world_and_culture_binding.dart';
@@ -155,6 +157,11 @@ class AppPages {
       name: _Paths.businessInnovationScreen,
       page: () => const BusinessInnovationScreen(),
       binding: BusinessInnovationBinding(),
+    ),
+    GetPage(
+      name: _Paths.newsScreen,
+      page: () => const NewsScreen(),
+      binding: NewsBinding(),
     ),
   ];
 }

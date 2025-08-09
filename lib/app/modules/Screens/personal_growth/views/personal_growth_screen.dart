@@ -4,6 +4,7 @@ import 'package:vropay_final/Components/bottom_navbar.dart';
 import 'package:vropay_final/Components/top_navbar.dart';
 import 'package:vropay_final/Utilities/screen_utils.dart';
 import 'package:vropay_final/app/modules/Screens/personal_growth/controllers/personal_growth_controller.dart';
+import 'package:vropay_final/app/routes/app_pages.dart';
 
 class PersonalGrowthScreen extends GetView<PersonalGrowthController> {
   const PersonalGrowthScreen({super.key});
@@ -91,14 +92,7 @@ class PersonalGrowthScreen extends GetView<PersonalGrowthController> {
   Widget _buildCategoryCard(String category) {
     return GestureDetector(
       onTap: () {
-        // Handle category tap
-        Get.snackbar(
-          'Category Selected',
-          'You tapped: $category',
-          backgroundColor: _getCategoryColor(category),
-          colorText: Colors.white,
-          duration: Duration(seconds: 2),
-        );
+        Get.toNamed(Routes.NEWS_SCREEN);
       },
       child: Container(
         height: ScreenUtils.height * 0.15,

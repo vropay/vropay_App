@@ -24,6 +24,7 @@ abstract class Routes {
   static const WORLD_AND_CULTURE_SCREEN = _Paths.worldAndCultureScreen;
   static const PERSONAL_GROWTH_SCREEN = _Paths.personalGrowthScreen;
   static const BUSINESS_INNOVATION_SCREEN = _Paths.businessInnovationScreen;
+  static const NEWS_SCREEN = _Paths.newsScreen;
 }
 
 abstract class _Paths {
@@ -49,4 +50,5 @@ abstract class _Paths {
   static const worldAndCultureScreen = '/world-and-culture-screen';
   static const personalGrowthScreen = '/personal-growth-screen';
   static const businessInnovationScreen = '/business-innovation-screen';
+  static const newsScreen = '/news-screen';
 }
