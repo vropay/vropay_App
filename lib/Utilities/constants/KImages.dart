@@ -24,6 +24,11 @@ class KImages {
   static const searchIcon = "assets/icons/search.png";
   static const filterIcon = "assets/icons/timer.png";
   static const listIcon = "assets/icons/list.png";
+  static const nextIcon = "assets/icons/next.png";
+  static const shareIcon = "assets/icons/share.png";
+  static const contentIcon = "assets/icons/standard.png";
+  static const colorVertIcon = "assets/icons/colorVert.png";
+  static const penIcon = "assets/icons/pen.png";
 
   static const thumbnail = "assets/icons/thumbnail.png";
 }

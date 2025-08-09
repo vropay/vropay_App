@@ -1,6 +1,5 @@
 import 'dart:ui';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:vropay_final/Components/bottom_navbar.dart';
@@ -8,12 +7,17 @@ import 'package:vropay_final/Components/top_navbar.dart';
 import 'package:vropay_final/Utilities/constants/KImages.dart';
 import 'package:vropay_final/Utilities/screen_utils.dart';
 import 'package:vropay_final/app/modules/Screens/news/controllers/news_controller.dart';
+import 'package:vropay_final/app/modules/Screens/news/views/news_detail_screen.dart';
 
 class NewsScreen extends GetView<NewsController> {
   const NewsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final GlobalKey _moreButtonKey = GlobalKey();
+    final GlobalKey _moreVertButtonKey = GlobalKey();
+    final GlobalKey _filterButtonKey = GlobalKey();
+
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(150),
@@ -149,68 +153,108 @@ class NewsScreen extends GetView<NewsController> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                SizedBox(width: ScreenUtils.width * 0.02),
+                SizedBox(width: ScreenUtils.width * 0.01),
                 GestureDetector(
+                  key: _filterButtonKey,
                   onTap: () async {
-                    await showDialog(
+                    final RenderBox button = _filterButtonKey.currentContext!
+                        .findRenderObject() as RenderBox;
+                    final RenderBox overlay = Navigator.of(context)
+                        .overlay!
+                        .context
+                        .findRenderObject() as RenderBox;
+                    final RelativeRect position = RelativeRect.fromRect(
+                      Rect.fromPoints(
+                        button.localToGlobal(Offset.zero, ancestor: overlay),
+                        button.localToGlobal(
+                            button.size.bottomRight(Offset.zero),
+                            ancestor: overlay),
+                      ),
+                      Offset.zero & overlay.size,
+                    );
+
+                    await showGeneralDialog(
                       context: context,
-                      barrierColor: Colors.black.withOpacity(0.3),
-                      builder: (context) {
-                        return BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
-                          child: Dialog(
-                            backgroundColor:
-                                Colors.transparent.withOpacity(0.1),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
+                      barrierColor: Colors.transparent,
+                      barrierDismissible: true,
+                      barrierLabel: "Filter",
+                      pageBuilder: (context, anim1, anim2) {
+                        return Stack(
+                          children: [
+                            // Blur background
+                            Positioned.fromRect(
+                              rect: Rect.fromPoints(
+                                Offset(0, 0),
+                                Offset(ScreenUtils.width * 0.05,
+                                    ScreenUtils.height * 0.05),
+                              ),
+                              child: BackdropFilter(
+                                filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+                                child: Container(
+                                  color: Colors.transparent,
+                                ),
+                              ),
                             ),
-                            child: Container(
-                              width: ScreenUtils.width * 0.006,
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 10.0, horizontal: 20),
-                              decoration: BoxDecoration(
+                            // The filter menu
+                            Positioned(
+                              left: 100,
+                              top: position.top,
+                              child: Material(
                                 color: Colors.transparent,
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  _buildFilterChip(context, "All",
-                                      controller.selectedFilter.value == "All",
-                                      () {
-                                    controller.selectedFilter.value = "All";
-                                    Navigator.of(context).pop();
-                                  }),
-                                  _buildFilterChip(
-                                      context,
-                                      "Daily",
-                                      controller.selectedFilter.value ==
-                                          "Daily", () {
-                                    controller.selectedFilter.value = "Daily";
-                                    Navigator.of(context).pop();
-                                  }),
-                                  _buildFilterChip(
-                                      context,
-                                      "Weekly",
-                                      controller.selectedFilter.value ==
-                                          "Weekly", () {
-                                    controller.selectedFilter.value = "Weekly";
-                                    Navigator.of(context).pop();
-                                  }),
-                                  _buildFilterChip(
-                                      context,
-                                      "Monthly",
-                                      controller.selectedFilter.value ==
-                                          "Monthly", () {
-                                    controller.selectedFilter.value = "Monthly";
-                                    Navigator.of(context).pop();
-                                  }),
-                                ],
+                                child: Container(
+                                  height: ScreenUtils.height * 0.16,
+                                  width: ScreenUtils.width * 0.4,
+                                  decoration: BoxDecoration(
+                                    color: Colors.transparent.withOpacity(0.4),
+                                    borderRadius: BorderRadius.circular(30),
+                                  ),
+                                  padding: EdgeInsets.only(left: 30),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      _buildFilterChip(
+                                          context,
+                                          "All",
+                                          controller.selectedFilter.value ==
+                                              "All", () {
+                                        controller.selectedFilter.value = "All";
+                                        Navigator.of(context).pop();
+                                      }),
+                                      _buildFilterChip(
+                                          context,
+                                          "today",
+                                          controller.selectedFilter.value ==
+                                              "today", () {
+                                        controller.selectedFilter.value =
+                                            "today";
+                                        Navigator.of(context).pop();
+                                      }),
+                                      _buildFilterChip(
+                                          context,
+                                          "this week",
+                                          controller.selectedFilter.value ==
+                                              "this week", () {
+                                        controller.selectedFilter.value =
+                                            "this week";
+                                        Navigator.of(context).pop();
+                                      }),
+                                      _buildFilterChip(
+                                          context,
+                                          "this month",
+                                          controller.selectedFilter.value ==
+                                              "this month", () {
+                                        controller.selectedFilter.value =
+                                            "this month";
+                                        Navigator.of(context).pop();
+                                      }),
+                                    ],
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
+                          ],
                         );
                       },
                     );
@@ -218,64 +262,105 @@ class NewsScreen extends GetView<NewsController> {
                   child: Image.asset(KImages.filterIcon),
                 ),
                 IconButton(
+                  key: _moreVertButtonKey,
                   onPressed: () async {
-                    await showDialog(
+                    final RenderBox button = _moreVertButtonKey.currentContext!
+                        .findRenderObject() as RenderBox;
+                    final RenderBox overlay = Navigator.of(context)
+                        .overlay!
+                        .context
+                        .findRenderObject() as RenderBox;
+                    final RelativeRect position = RelativeRect.fromRect(
+                      Rect.fromPoints(
+                        button.localToGlobal(Offset.zero, ancestor: overlay),
+                        button.localToGlobal(
+                            button.size.bottomRight(Offset.zero),
+                            ancestor: overlay),
+                      ),
+                      Offset.zero & overlay.size,
+                    );
+
+                    // Custom menu with transparent and blur background
+                    await showGeneralDialog(
                       context: context,
-                      barrierColor: Colors.black.withOpacity(0.3),
-                      builder: (context) {
-                        return BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
-                          child: Dialog(
-                            insetPadding: EdgeInsets.zero,
-                            backgroundColor:
-                                Colors.transparent.withOpacity(0.1),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
+                      barrierColor: Colors.transparent,
+                      barrierDismissible: true,
+                      barrierLabel: "More Options",
+                      pageBuilder: (context, anim1, anim2) {
+                        return Stack(
+                          children: [
+                            // Blur background
+                            Positioned.fromRect(
+                              rect: Rect.fromPoints(
+                                Offset(0, 0),
+                                Offset(ScreenUtils.width * 0.05,
+                                    ScreenUtils.height * 0.05),
+                              ),
+                              child: BackdropFilter(
+                                filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+                                child: Container(
+                                  color: Colors.transparent,
+                                ),
+                              ),
                             ),
-                            child: Container(
-                              width: ScreenUtils.width * 0.006,
-                              height: ScreenUtils.height * 0.15,
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 10.0, horizontal: 20),
-                              margin: EdgeInsets.only(right: 100),
-                              decoration: BoxDecoration(
+                            // The more options menu
+                            Positioned(
+                              right: 100,
+                              top: position.top,
+                              child: Material(
                                 color: Colors.transparent,
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  _buildFilterChip(context, "All",
-                                      controller.selectedFilter.value == "All",
-                                      () {
-                                    controller.selectedFilter.value = "All";
-                                    Navigator.of(context).pop();
-                                  }),
-                                  _buildFilterChip(context, "read",
-                                      controller.selectedFilter.value == "read",
-                                      () {
-                                    controller.selectedFilter.value = "read";
-                                    Navigator.of(context).pop();
-                                  }),
-                                  _buildFilterChip(
-                                      context,
-                                      "unread",
-                                      controller.selectedFilter.value ==
-                                          "unread", () {
-                                    controller.selectedFilter.value = "unread";
-                                    Navigator.of(context).pop();
-                                  }),
-                                ],
+                                child: Container(
+                                  height: ScreenUtils.height * 0.13,
+                                  width: ScreenUtils.width * 0.3,
+                                  decoration: BoxDecoration(
+                                    color: Colors.transparent.withOpacity(0.4),
+                                    borderRadius: BorderRadius.circular(30),
+                                  ),
+                                  padding: EdgeInsets.only(left: 30),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      _buildFilterChip(
+                                          context,
+                                          "All",
+                                          controller.selectedFilter.value ==
+                                              "All", () {
+                                        controller.selectedFilter.value = "All";
+                                        Navigator.of(context).pop();
+                                      }),
+                                      _buildFilterChip(
+                                          context,
+                                          "read",
+                                          controller.selectedFilter.value ==
+                                              "read", () {
+                                        controller.selectedFilter.value =
+                                            "read";
+                                        Navigator.of(context).pop();
+                                      }),
+                                      _buildFilterChip(
+                                          context,
+                                          "unread",
+                                          controller.selectedFilter.value ==
+                                              "unread", () {
+                                        controller.selectedFilter.value =
+                                            "unread";
+                                        Navigator.of(context).pop();
+                                      }),
+                                    ],
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
+                          ],
                         );
                       },
                     );
                   },
                   icon: Icon(Icons.more_vert),
                 ),
+
                 // View Mode Icon
                 Obx(() => AnimatedContainer(
                       duration: Duration(milliseconds: 250),
@@ -464,13 +549,7 @@ class NewsScreen extends GetView<NewsController> {
     return GestureDetector(
       onTap: () {
         // Handle news tap
-        Get.snackbar(
-          'News Selected',
-          'You tapped: ${news['title']}',
-          backgroundColor: _getNewsColor(index),
-          colorText: Colors.white,
-          duration: Duration(seconds: 2),
-        );
+        Get.to(() => NewsDetailScreen(news: news));
       },
       child: Container(
         height: ScreenUtils.height * 0.15,
@@ -532,14 +611,7 @@ class NewsScreen extends GetView<NewsController> {
   Widget _buildGridNewsCard(Map<String, dynamic> news, int index) {
     return GestureDetector(
       onTap: () {
-        // Handle news tap
-        Get.snackbar(
-          'News Selected',
-          'You tapped: ${news['title']}',
-          backgroundColor: _getNewsColor(index),
-          colorText: Colors.white,
-          duration: Duration(seconds: 2),
-        );
+        Get.to(() => NewsDetailScreen(news: news));
       },
       child: Container(
         padding: const EdgeInsets.all(12),

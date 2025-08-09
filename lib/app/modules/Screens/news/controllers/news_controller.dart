@@ -1,5 +1,4 @@
 import 'package:get/get.dart';
-import 'package:vropay_final/Utilities/constants/KImages.dart';
 
 class NewsController extends GetxController {
   final isLoading = false.obs;
@@ -7,6 +6,7 @@ class NewsController extends GetxController {
   final searchText = ''.obs;
   final isGridView = false.obs;
   final selectedFilter = 'All'.obs;
+  final showBlur = false.obs;
 
   // News articles - only the exact text provided
   final newsArticles = [
