@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:vropay_final/Components/bottom_navbar.dart';
 import 'package:vropay_final/Components/top_navbar.dart';
 import 'package:vropay_final/Utilities/screen_utils.dart';
 import 'package:vropay_final/app/modules/Screens/world_and_culture_community/controllers/world_and_culture_community_controller.dart';
@@ -18,6 +19,7 @@ class WorldAndCultureCommunityScreen
         preferredSize: Size.fromHeight(150),
         child: CustomTopNavBar(selectedIndex: null),
       ),
+      bottomNavigationBar: CustomBottomNavBar(),
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -84,7 +86,7 @@ class WorldAndCultureCommunityScreen
   Widget _buildCategoryCard(String category, int index) {
     return GestureDetector(
       onTap: () {
-       Get.toNamed(Routes.CONSENT_SCREEN);
+        Get.toNamed(Routes.CONSENT_SCREEN);
       },
       child: Container(
         decoration: BoxDecoration(

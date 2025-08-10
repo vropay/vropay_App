@@ -143,7 +143,9 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
                       // Action Buttons (Initial Position)
                       if (!_showFixedActionButtons)
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10.0,
+                          ),
                           child: Container(
                             width: double.infinity,
                             height: ScreenUtils.height * 0.08,
@@ -298,7 +300,7 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
                                                 color: Colors.transparent,
                                                 child: Container(
                                                   height:
-                                                      ScreenUtils.height * 0.13,
+                                                      ScreenUtils.height * 0.14,
                                                   width:
                                                       ScreenUtils.width * 0.3,
                                                   decoration: BoxDecoration(
@@ -395,14 +397,14 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
             // Fixed Action Buttons (appears when scrolling)
             if (_showFixedActionButtons)
               Positioned(
-                top: -55,
+                top: -30,
                 left: 0,
                 right: 0,
                 child: Container(
                   height: ScreenUtils.height * 0.08,
                   margin:
                       EdgeInsets.only(top: MediaQuery.of(context).padding.top),
-                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  padding: EdgeInsets.symmetric(horizontal: 6, vertical: 10),
                   decoration: BoxDecoration(
                     color: Color(0xFFFFFFFF),
                     boxShadow: [

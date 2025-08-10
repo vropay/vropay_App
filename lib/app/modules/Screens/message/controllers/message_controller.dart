@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class MessageController extends GetxController {
-  final selectedCategory = ''.obs;
+  final selectedFilter = ''.obs;
   final totalMessages = 0.obs;
   final messages = <Map<String, dynamic>>[].obs;
   final isLoading = false.obs;
@@ -11,12 +11,27 @@ class MessageController extends GetxController {
   final messageController = TextEditingController();
   final isImportantIconPressed = false.obs; // New variable for blur effect
 
+  // Report options for messages
+  final List<String> reportOptions = [
+    'irrelevant',
+    'advertising',
+    'selling',
+    'suspicious',
+    'offensive',
+    'abusive',
+    'false',
+    'hate',
+  ];
+
+  final selectedReportOption = Rxn<String>();
+  final isReportDialogOpen = false.obs;
+
   @override
   void onReady() {
     super.onReady();
     // Get the selected category from the previous screen
     if (Get.arguments != null && Get.arguments['category'] != null) {
-      selectedCategory.value = Get.arguments['category'];
+      selectedFilter.value = Get.arguments['category'];
     }
     loadMessages();
   }
@@ -566,5 +581,40 @@ class MessageController extends GetxController {
       colorText: Colors.white,
       duration: Duration(seconds: 2),
     );
+  }
+
+  // Report message functionality
+  void openReportDialog() {
+    isReportDialogOpen.value = true;
+  }
+
+  void closeReportDialog() {
+    isReportDialogOpen.value = false;
+    selectedReportOption.value = null;
+  }
+
+  void selectReportOption(String option) {
+    selectedReportOption.value = option;
+  }
+
+  void submitReport(int messageId, String reason) {
+    // TODO: Implement actual report submission to backend
+    Get.snackbar(
+      'Report Submitted',
+      'Message reported for: $reason',
+      backgroundColor: const Color(0xFFCC415D),
+      colorText: Colors.white,
+      duration: const Duration(seconds: 2),
+    );
+
+    // Close the report dialog
+    closeReportDialog();
+
+    // Log the report for debugging
+    print('Message $messageId reported for: $reason');
+  }
+
+  void cancelReport() {
+    closeReportDialog();
   }
 }

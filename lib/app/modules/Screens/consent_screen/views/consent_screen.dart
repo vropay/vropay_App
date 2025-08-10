@@ -126,7 +126,7 @@ class ConsentScreen extends GetView<ConsentController> {
                 ),
                 Center(
                   child: Container(
-                    height: ScreenUtils.height * 0.165,
+                    height: ScreenUtils.height * 0.2,
                     width: ScreenUtils.width * 0.7,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(10),

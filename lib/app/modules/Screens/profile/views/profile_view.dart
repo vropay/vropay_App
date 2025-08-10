@@ -15,19 +15,21 @@ class ProfileView extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: PreferredSize(
+          preferredSize: Size.fromHeight(150),
+          child: CustomTopNavBar(selectedIndex: null)),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              CustomTopNavBar(selectedIndex: null),
               const SizedBox(height: 16),
-              Obx(() =>
-                  _ProfileSection(isEditMode: controller.isGeneralEditMode.value)),
+              Obx(() => _ProfileSection(
+                  isEditMode: controller.isGeneralEditMode.value)),
               const SizedBox(height: 20),
-              Obx(() =>
-                  _PreferencesSection(isEditMode: controller.isPreferencesEditMode.value)),
+              Obx(() => _PreferencesSection(
+                  isEditMode: controller.isPreferencesEditMode.value)),
               const SizedBox(height: 20),
               _SubscriptionBanner(),
               const SizedBox(height: 10),
@@ -67,8 +69,7 @@ class ProfileView extends StatelessWidget {
           ),
         ),
       ),
-      bottomNavigationBar: CustomBottomNavBar(
-      ),
+      bottomNavigationBar: CustomBottomNavBar(),
     );
   }
 }
@@ -171,22 +172,23 @@ class _ProfileSection extends StatelessWidget {
                             Expanded(
                               child: !isEditMode
                                   ? Text(
-                                controller.firstNameController.text.isEmpty
-                                    ? "Vikas"
-                                    : controller.firstNameController.text,
-                                style: const TextStyle(fontSize: 16),
-                              )
+                                      controller
+                                              .firstNameController.text.isEmpty
+                                          ? "Vikas"
+                                          : controller.firstNameController.text,
+                                      style: const TextStyle(fontSize: 16),
+                                    )
                                   : const SizedBox(),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
                               child: !isEditMode
                                   ? Text(
-                                controller.lastNameController.text.isEmpty
-                                    ? "Raika"
-                                    : controller.lastNameController.text,
-                                style: const TextStyle(fontSize: 16),
-                              )
+                                      controller.lastNameController.text.isEmpty
+                                          ? "Raika"
+                                          : controller.lastNameController.text,
+                                      style: const TextStyle(fontSize: 16),
+                                    )
                                   : const SizedBox(),
                             ),
                           ],

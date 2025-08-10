@@ -17,6 +17,7 @@ class MessageScreen extends StatefulWidget {
 
 class _MessageScreenState extends State<MessageScreen> {
   final MessageController controller = Get.put(MessageController());
+
   final TextEditingController _importantMessageController =
       TextEditingController();
   final TextEditingController _searchController =
@@ -96,6 +97,7 @@ class _MessageScreenState extends State<MessageScreen> {
                           Get.back();
                         },
                         icon: const BackIcon()),
+                    actionsPadding: EdgeInsets.zero,
                     title: Row(
                       children: [
                         Text(
@@ -107,7 +109,7 @@ class _MessageScreenState extends State<MessageScreen> {
                           ),
                         ),
                         SizedBox(
-                            width: MediaQuery.of(context).size.width * 0.08),
+                            width: MediaQuery.of(context).size.width * 0.01),
                         Text(
                           "400 members",
                           style: TextStyle(
@@ -120,7 +122,7 @@ class _MessageScreenState extends State<MessageScreen> {
                     ),
                     actions: [
                       Padding(
-                        padding: const EdgeInsets.only(right: 16.0),
+                        padding: const EdgeInsets.only(right: 10.0),
                         child: GestureDetector(
                           onTap: () {
                             setState(() {
@@ -147,7 +149,7 @@ class _MessageScreenState extends State<MessageScreen> {
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.only(right: 28.0),
+                        padding: const EdgeInsets.only(right: 18.0),
                         child: GestureDetector(
                           onTap: () {
                             controller.toggleBlurEffect();
@@ -780,6 +782,7 @@ class _MessageScreenState extends State<MessageScreen> {
   }
 
   Widget _buildMessageItem(Map<String, dynamic> message, int index) {
+    final uniqueKey = GlobalKey();
     final messages = controller.messages;
     final isFirstMessage = index == 0;
     final isPreviousFromSameUser =
@@ -818,12 +821,167 @@ class _MessageScreenState extends State<MessageScreen> {
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        message['sender'] ?? 'Unknown',
-                        style: TextStyle(
-                          color: Color(0xFF172B75),
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
+                      GestureDetector(
+                        key: uniqueKey,
+                        onLongPress: () async {
+                          final RenderBox button = uniqueKey.currentContext!
+                              .findRenderObject() as RenderBox;
+                          final RenderBox overlay = Navigator.of(context)
+                              .overlay!
+                              .context
+                              .findRenderObject() as RenderBox;
+                          final RelativeRect position = RelativeRect.fromRect(
+                            Rect.fromPoints(
+                              button.localToGlobal(Offset.zero,
+                                  ancestor: overlay),
+                              button.localToGlobal(
+                                  button.size.bottomRight(Offset.zero),
+                                  ancestor: overlay),
+                            ),
+                            Offset.zero & overlay.size,
+                          );
+
+                          await showGeneralDialog(
+                            context: context,
+                            barrierColor: Colors.transparent,
+                            barrierDismissible: true,
+                            barrierLabel: "Filter",
+                            pageBuilder: (context, anim1, anim2) {
+                              return Stack(
+                                children: [
+                                  // Blur background
+                                  Positioned.fromRect(
+                                    rect: Rect.fromPoints(
+                                      Offset(0, 0),
+                                      Offset(ScreenUtils.width * 0.05,
+                                          ScreenUtils.height * 0.05),
+                                    ),
+                                    child: BackdropFilter(
+                                      filter: ImageFilter.blur(
+                                          sigmaX: 6, sigmaY: 6),
+                                      child: Container(
+                                        color: Colors.transparent,
+                                      ),
+                                    ),
+                                  ),
+                                  // The filter menu
+                                  Positioned(
+                                    left: 100,
+                                    top: position.top,
+                                    child: Material(
+                                      color: Colors.transparent,
+                                      child: Container(
+                                        height: ScreenUtils.height * 0.38,
+                                        width: ScreenUtils.width * 0.4,
+                                        decoration: BoxDecoration(
+                                          color: Colors.transparent
+                                              .withOpacity(0.4),
+                                          borderRadius:
+                                              BorderRadius.circular(30),
+                                        ),
+                                        padding: EdgeInsets.only(left: 30),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            _buildFilterChip(
+                                                context,
+                                                "irrelevant",
+                                                controller
+                                                        .selectedFilter.value ==
+                                                    "irrelevant", () {
+                                              controller.selectedFilter.value =
+                                                  "irrelevant";
+                                              Navigator.of(context).pop();
+                                            }),
+                                            _buildFilterChip(
+                                                context,
+                                                "advertising",
+                                                controller
+                                                        .selectedFilter.value ==
+                                                    "advertising", () {
+                                              controller.selectedFilter.value =
+                                                  "advertising";
+                                              Navigator.of(context).pop();
+                                            }),
+                                            _buildFilterChip(
+                                                context,
+                                                "selling",
+                                                controller
+                                                        .selectedFilter.value ==
+                                                    "selling", () {
+                                              controller.selectedFilter.value =
+                                                  "selling";
+                                              Navigator.of(context).pop();
+                                            }),
+                                            _buildFilterChip(
+                                                context,
+                                                "suspicious",
+                                                controller
+                                                        .selectedFilter.value ==
+                                                    "suspicious", () {
+                                              controller.selectedFilter.value =
+                                                  "suspicious";
+                                              Navigator.of(context).pop();
+                                            }),
+                                            _buildFilterChip(
+                                                context,
+                                                "offensive",
+                                                controller
+                                                        .selectedFilter.value ==
+                                                    "offensive", () {
+                                              controller.selectedFilter.value =
+                                                  "offensive";
+                                              Navigator.of(context).pop();
+                                            }),
+                                            _buildFilterChip(
+                                                context,
+                                                "abusive",
+                                                controller
+                                                        .selectedFilter.value ==
+                                                    "abusive", () {
+                                              controller.selectedFilter.value =
+                                                  "abusive";
+                                              Navigator.of(context).pop();
+                                            }),
+                                            _buildFilterChip(
+                                                context,
+                                                "false",
+                                                controller
+                                                        .selectedFilter.value ==
+                                                    "false", () {
+                                              controller.selectedFilter.value =
+                                                  "false";
+                                              Navigator.of(context).pop();
+                                            }),
+                                            _buildFilterChip(
+                                                context,
+                                                "hate",
+                                                controller
+                                                        .selectedFilter.value ==
+                                                    "hate", () {
+                                              controller.selectedFilter.value =
+                                                  "hate";
+                                              Navigator.of(context).pop();
+                                            }),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        },
+                        child: Text(
+                          message['sender'] ?? 'Unknown',
+                          style: TextStyle(
+                            color: Color(0xFF172B75),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
                       SizedBox(
@@ -1020,6 +1178,24 @@ class _MessageScreenState extends State<MessageScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildFilterChip(
+      BuildContext context, String label, bool isSelected, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 0, vertical: 8),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w300,
+            fontSize: ScreenUtils.x(3.5),
+          ),
+        ),
+      ),
     );
   }
 

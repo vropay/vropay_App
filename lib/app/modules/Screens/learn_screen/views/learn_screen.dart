@@ -8,6 +8,8 @@ import '../../../../../Components/bottom_navbar.dart';
 import '../controllers/learn_screen_controller.dart';
 
 class LearnScreenView extends GetView<LearnScreenController> {
+  const LearnScreenView({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

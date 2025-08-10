@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:vropay_final/Components/bottom_navbar.dart';
 import 'package:vropay_final/Components/top_navbar.dart';
 import 'package:vropay_final/Utilities/screen_utils.dart';
 import 'package:vropay_final/app/modules/Screens/personal_growth_community/controllers/personal_growth_community_controllers.dart';
@@ -18,6 +19,8 @@ class PersonalGrowthCommunityScreen
         preferredSize: Size.fromHeight(150),
         child: CustomTopNavBar(selectedIndex: null),
       ),
+      
+      bottomNavigationBar: CustomBottomNavBar(),
       body: SingleChildScrollView(
         child: Column(
           children: [

@@ -364,8 +364,8 @@ class NewsScreen extends GetView<NewsController> {
                 // View Mode Icon
                 Obx(() => AnimatedContainer(
                       duration: Duration(milliseconds: 250),
-                      height: ScreenUtils.height * 0.06,
-                      width: ScreenUtils.width * 0.29,
+                      height: ScreenUtils.height * 0.07,
+                      width: ScreenUtils.width * 0.33,
                       decoration: BoxDecoration(
                         color: Color(0xFFB5E3FF),
                         borderRadius: BorderRadius.circular(20),

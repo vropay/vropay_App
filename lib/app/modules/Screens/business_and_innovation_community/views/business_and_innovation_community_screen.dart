@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:vropay_final/Components/bottom_navbar.dart';
 import 'package:vropay_final/Components/top_navbar.dart';
 import 'package:vropay_final/Utilities/screen_utils.dart';
 import 'package:vropay_final/app/modules/Screens/business_and_innovation_community/controllers/business_and_innovation_community_controller.dart';
@@ -18,6 +19,7 @@ class BusinessAndInnovationCommunityScreen
         preferredSize: Size.fromHeight(150),
         child: CustomTopNavBar(selectedIndex: null),
       ),
+      bottomNavigationBar: CustomBottomNavBar(),
       body: SingleChildScrollView(
         child: Column(
           children: [
