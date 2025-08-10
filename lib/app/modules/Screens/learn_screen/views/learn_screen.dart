@@ -11,14 +11,16 @@ class LearnScreenView extends GetView<LearnScreenController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(150),
+        child: CustomTopNavBar(selectedIndex: null),
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Column(
               children: [
-                const CustomTopNavBar(selectedIndex: 2),
-                SizedBox(height: 20),
                 Padding(
                   padding: const EdgeInsets.only(bottom: 40),
                   child: Stack(
