@@ -9,6 +9,7 @@ class KImages {
   static const googleIcon = "assets/icons/google.png";
 
   static const interestScreen = 'assets/images/Interest.png';
+  static const catImage = 'assets/images/catFace.png';
 
   static const nameVector = 'assets/vectors/name.png';
   static const surnameVector = 'assets/vectors/surname.png';

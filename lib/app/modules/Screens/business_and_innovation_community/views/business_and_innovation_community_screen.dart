@@ -83,15 +83,7 @@ class BusinessAndInnovationCommunityScreen
   Widget _buildCategoryCard(String category, int index) {
     return GestureDetector(
       onTap: () {
-        // Handle category tap
-        controller.selectedCategory.value = category;
-        Get.snackbar(
-          'Category Selected',
-          'You selected: $category',
-          backgroundColor: _getCategoryColor(index),
-          colorText: Colors.white,
-          duration: Duration(seconds: 2),
-        );
+        Get.toNamed(Routes.CONSENT_SCREEN);
       },
       child: Container(
         decoration: BoxDecoration(

@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:vropay_final/Components/top_navbar.dart';
 import 'package:vropay_final/Utilities/screen_utils.dart';
 import 'package:vropay_final/app/modules/Screens/personal_growth_community/controllers/personal_growth_community_controllers.dart';
+import 'package:vropay_final/app/routes/app_pages.dart';
 
 class PersonalGrowthCommunityScreen
     extends GetView<PersonalGrowthCommunityController> {
@@ -82,15 +83,7 @@ class PersonalGrowthCommunityScreen
   Widget _buildCategoryCard(String category, int index) {
     return GestureDetector(
       onTap: () {
-        // Handle category tap
-        controller.selectedCategory.value = category;
-        Get.snackbar(
-          'Category Selected',
-          'You selected: $category',
-          backgroundColor: _getCategoryColor(index),
-          colorText: Colors.white,
-          duration: Duration(seconds: 2),
-        );
+        Get.toNamed(Routes.CONSENT_SCREEN);
       },
       child: Container(
         decoration: BoxDecoration(
