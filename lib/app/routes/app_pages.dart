@@ -1,12 +1,18 @@
 import 'package:get/get.dart';
+import 'package:vropay_final/app/modules/Screens/business_and_innovation_community/bindings/business_and_innovation_community_bindings.dart';
+import 'package:vropay_final/app/modules/Screens/business_and_innovation_community/views/business_and_innovation_community_screen.dart';
 import 'package:vropay_final/app/modules/Screens/news/bindings/news_binding.dart';
 import 'package:vropay_final/app/modules/Screens/news/views/news_screen.dart';
 import 'package:vropay_final/app/modules/Screens/personal_growth/bindings/personal_growth_bindings.dart';
 import 'package:vropay_final/app/modules/Screens/personal_growth/views/personal_growth_screen.dart';
+import 'package:vropay_final/app/modules/Screens/personal_growth_community/bindings/personal_growth_community_binding.dart';
+import 'package:vropay_final/app/modules/Screens/personal_growth_community/views/personal_growth_community_screen.dart';
 import 'package:vropay_final/app/modules/Screens/world_and_culture/bindings/world_and_culture_binding.dart';
 import 'package:vropay_final/app/modules/Screens/world_and_culture/views/world_and_culture_screen.dart';
 import 'package:vropay_final/app/modules/Screens/business_innovation/bindings/business_innovation_binding.dart';
 import 'package:vropay_final/app/modules/Screens/business_innovation/views/business_innovation_screen.dart';
+import 'package:vropay_final/app/modules/Screens/world_and_culture_community/bindings/world_and_culture_community_bindings.dart';
+import 'package:vropay_final/app/modules/Screens/world_and_culture_community/views/world_and_culture_community_screen.dart';
 
 import '../modules/Screens/OtpScreen/bindings/otp_screen_binding.dart';
 import '../modules/Screens/OtpScreen/views/otp_screen_view.dart';
@@ -163,5 +169,22 @@ class AppPages {
       page: () => const NewsScreen(),
       binding: NewsBinding(),
     ),
+    GetPage(
+      name: _Paths.worldAndCultureCommunityScreen,
+      page: () => const WorldAndCultureCommunityScreen(),
+      binding: WorldAndCultureCommunityBinding(),
+    ),
+    GetPage(
+      name: _Paths.personalGrowthCommunityScreen,
+      page: () => const PersonalGrowthCommunityScreen(),
+      binding: PersonalGrowthCommunityBinding(),
+    ),
+    GetPage(
+      name: _Paths.businessInnovationCommunityScreen,
+      page: () => const BusinessAndInnovationCommunityScreen(),
+      binding: BusinessInnovationCommunityBinding(),
+    ),
   ];
 }
+
+

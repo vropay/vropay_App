@@ -26,6 +26,12 @@ abstract class Routes {
   static const BUSINESS_INNOVATION_SCREEN = _Paths.businessInnovationScreen;
   static const NEWS_SCREEN = _Paths.newsScreen;
   static const NEWS_DETAILS_SCREEN = _Paths.newsDetailsScreen;
+  static const WORLD_AND_CULTURE_COMMUNITY_SCREEN =
+      _Paths.worldAndCultureCommunityScreen;
+  static const PERSONAL_GROWTH_COMMUNITY_SCREEN =
+      _Paths.personalGrowthCommunityScreen;
+  static const BUSINESS_INNOVATION_COMMUNITY_SCREEN =
+      _Paths.businessInnovationCommunityScreen;
 }
 
 abstract class _Paths {
@@ -53,4 +59,10 @@ abstract class _Paths {
   static const businessInnovationScreen = '/business-innovation-screen';
   static const newsScreen = '/news-screen';
   static const newsDetailsScreen = '/news-details-screen';
+  static const worldAndCultureCommunityScreen =
+      '/world-and-culture-community-screen';
+  static const personalGrowthCommunityScreen =
+      '/personal-growth-community-screen';
+  static const businessInnovationCommunityScreen =
+      '/business-innovation-community-screen';
 }

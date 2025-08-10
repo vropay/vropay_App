@@ -15,10 +15,10 @@ class BusinessInnovationScreen extends GetView<BusinessInnovationController> {
     ScreenUtils.setContext(context);
 
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(150),
-        child: CustomTopNavBar(selectedIndex: null),
-      ),
+        appBar: PreferredSize(
+          preferredSize: Size.fromHeight(150),
+          child: CustomTopNavBar(selectedIndex: null),
+        ),
       body: SingleChildScrollView(
         child: Column(
           children: [

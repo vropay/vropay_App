@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:vropay_final/Utilities/constants/KImages.dart';
 import 'package:vropay_final/app/modules/Screens/community_forum/controllers/community_forum_controller.dart';
+import 'package:vropay_final/app/routes/app_pages.dart';
 
 import '../../../../../Components/bottom_navbar.dart';
 import '../../../../../Components/top_navbar.dart';
@@ -139,11 +141,17 @@ class CommunityForumView extends GetView<CommunityForumController> {
                           const Text("AI (name of last community connected)"),
                     ),
                     const SizedBox(height: 16),
-                    _buildCard('world\n&\nculture', Color(0xFF02D7C3)),
+                    _buildCard('world\n&\nculture', () {
+                      Get.toNamed(Routes.WORLD_AND_CULTURE_COMMUNITY_SCREEN);
+                    }),
                     const SizedBox(height: 12),
-                    _buildCard('personal\ngrowth', Color(0xFF7DE7C1)),
+                    _buildCard('personal\ngrowth', () {
+                      Get.toNamed(Routes.PERSONAL_GROWTH_COMMUNITY_SCREEN);
+                    }),
                     const SizedBox(height: 12),
-                    _buildCard('business\n&\ninnovation', Color(0xFF22C58D)),
+                    _buildCard('business\n&\ninnovation', () {
+                      Get.toNamed(Routes.BUSINESS_INNOVATION_COMMUNITY_SCREEN);
+                    }),
                     const SizedBox(height: 24),
                     Container(
                       color: const Color(0xFF01B3B2),
@@ -151,12 +159,44 @@ class CommunityForumView extends GetView<CommunityForumController> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            "most active\ncommunities",
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                                fontSize: 25),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    "most active",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.white,
+                                      fontSize: 25,
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: 200, // Adjust as needed
+                                    child: Divider(),
+                                  ),
+                                  const Text(
+                                    "communities",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.white,
+                                      fontSize: 25,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Image.asset(
+                                KImages.profile1Icon,
+                                height: 50,
+                                width: 50,
+                              ),
+                              SizedBox(
+                                width: 10,
+                              )
+                            ],
                           ),
                           const SizedBox(height: 20),
                           GridView.count(
@@ -212,41 +252,44 @@ class CommunityForumView extends GetView<CommunityForumController> {
     );
   }
 
-  Widget _buildCard(String text, Color color) {
-    return Center(
-      child: Container(
-        width: 304,
-        height: 355,
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Column(
-          children: [
-            Text(
-              text,
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 40, color: Color(0xFF4B7C24)),
-            ),
-            const SizedBox(height: 8),
-            const Spacer(),
-            const Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Text("know more",
-                    textAlign: TextAlign.end,
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20)),
-                SizedBox(
-                  width: 10,
-                ),
-                Icon(Icons.arrow_forward, color: Colors.white),
-              ],
-            )
-          ],
+  Widget _buildCard(String text, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Center(
+        child: Container(
+          width: 304,
+          height: 355,
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Color(0xFF3E9292),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Column(
+            children: [
+              Text(
+                text,
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 40, color: Color(0xFFD9D9D9)),
+              ),
+              const SizedBox(height: 8),
+              const Spacer(),
+              const Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text("know more",
+                      textAlign: TextAlign.end,
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20)),
+                  SizedBox(
+                    width: 10,
+                  ),
+                  Icon(Icons.arrow_forward, color: Colors.white),
+                ],
+              )
+            ],
+          ),
         ),
       ),
     );
