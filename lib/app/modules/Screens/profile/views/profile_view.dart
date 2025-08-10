@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:vropay_final/Utilities/screen_utils.dart';
 import 'package:vropay_final/app/modules/Screens/profile/widgets/sign_out.dart';
 import '../../../../../Components/bottom_navbar.dart';
 import '../../../../../Components/top_navbar.dart';
@@ -166,7 +167,7 @@ class _ProfileSection extends StatelessWidget {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 6),
+                        SizedBox(height: ScreenUtils.height * 0.01),
                         Row(
                           children: [
                             Expanded(
