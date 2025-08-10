@@ -4,12 +4,16 @@ import 'package:vropay_final/Components/back_icon.dart';
 import 'package:vropay_final/Utilities/constants/KImages.dart';
 import 'package:vropay_final/Utilities/screen_utils.dart';
 import 'package:vropay_final/app/modules/Screens/consent_screen/controllers/consent_controller.dart';
+import 'package:vropay_final/app/routes/app_pages.dart';
 
 class ConsentScreen extends GetView<ConsentController> {
   const ConsentScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -166,7 +170,9 @@ class ConsentScreen extends GetView<ConsentController> {
                 ),
                 Center(
                   child: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Get.toNamed(Routes.MESSAGE_SCREEN);
+                      },
                       style: ElevatedButton.styleFrom(
                           fixedSize: Size(ScreenUtils.width * 0.4,
                               ScreenUtils.height * 0.03),

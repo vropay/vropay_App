@@ -3,6 +3,8 @@ import 'package:vropay_final/app/modules/Screens/business_and_innovation_communi
 import 'package:vropay_final/app/modules/Screens/business_and_innovation_community/views/business_and_innovation_community_screen.dart';
 import 'package:vropay_final/app/modules/Screens/consent_screen/bindings/consent_binding.dart';
 import 'package:vropay_final/app/modules/Screens/consent_screen/views/consent_screen.dart';
+import 'package:vropay_final/app/modules/Screens/message/bindings/message_bindings.dart';
+import 'package:vropay_final/app/modules/Screens/message/views/message_screen.dart';
 import 'package:vropay_final/app/modules/Screens/news/bindings/news_binding.dart';
 import 'package:vropay_final/app/modules/Screens/news/views/news_screen.dart';
 import 'package:vropay_final/app/modules/Screens/personal_growth/bindings/personal_growth_bindings.dart';
@@ -191,7 +193,10 @@ class AppPages {
       page: () => const ConsentScreen(),
       binding: ConsentBinding(),
     ),
+    GetPage(
+      name: _Paths.messageScreen,
+      page: () => const MessageScreen(),
+      binding: MessageBindings(),
+    ),
   ];
 }
-
-

@@ -33,6 +33,7 @@ abstract class Routes {
   static const BUSINESS_INNOVATION_COMMUNITY_SCREEN =
       _Paths.businessInnovationCommunityScreen;
   static const CONSENT_SCREEN = _Paths.consentScreen;
+  static const MESSAGE_SCREEN = _Paths.messageScreen;
 }
 
 abstract class _Paths {
@@ -67,4 +68,5 @@ abstract class _Paths {
   static const businessInnovationCommunityScreen =
       '/business-innovation-community-screen';
   static const consentScreen = '/consent-screen';
+  static const messageScreen = '/message-screen';
 }

@@ -31,6 +31,8 @@ class KImages {
   static const colorVertIcon = "assets/icons/colorVert.png";
   static const penIcon = "assets/icons/pen.png";
   static const profile1Icon = "assets/icons/profile1.png";
+  static const profile2Icon = "assets/icons/profile2.png";
+  static const importantIcon = "assets/icons/important.png";
 
   static const thumbnail = "assets/icons/thumbnail.png";
 }
