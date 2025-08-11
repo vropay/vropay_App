@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:vropay_final/Utilities/screen_utils.dart';
+import 'package:iconsax/iconsax.dart';
+import 'package:vropay_final/Components/bottom_navbar.dart';
+import 'package:vropay_final/Components/top_navbar.dart';
 import 'package:vropay_final/app/modules/Screens/profile/widgets/sign_out.dart';
-import '../../../../../Components/bottom_navbar.dart';
-import '../../../../../Components/top_navbar.dart';
+
 import '../../../../routes/app_pages.dart';
+import '../../home/controllers/home_controller.dart';
 import '../controllers/profile_controller.dart';
+import '../widgets/blueEditableField.dart';
+import '../widgets/dropdown_preferences.dart';
+import '../widgets/infoRow.dart';
+import '../widgets/interestTopics.dart';
 
 class ProfileView extends StatelessWidget {
   const ProfileView({super.key});
@@ -16,15 +22,13 @@ class ProfileView extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: PreferredSize(
-          preferredSize: Size.fromHeight(150),
-          child: CustomTopNavBar(selectedIndex: null)),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              CustomTopNavBar(selectedIndex: null),
               const SizedBox(height: 16),
               Obx(() => _ProfileSection(
                   isEditMode: controller.isGeneralEditMode.value)),
@@ -44,7 +48,7 @@ class ProfileView extends StatelessWidget {
                         Get.dialog(SignOutDialog());
                       },
                       child: Text(
-                        'SIGN OUT?',
+                        'SIGN OUT',
                         style: TextStyle(color: Colors.white),
                       ),
                     ),
@@ -58,7 +62,7 @@ class ProfileView extends StatelessWidget {
                         Get.toNamed(Routes.DEACTIVATE_SCREEN);
                       },
                       child: Text(
-                        'DEACTIVATE?',
+                        'DEACTIVATE',
                         style: TextStyle(color: Colors.white),
                       ),
                     ),
@@ -98,17 +102,26 @@ class _ProfileSection extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Top right edit/done
+              /// Edit/Done button
               Align(
                 alignment: Alignment.topRight,
                 child: GestureDetector(
-                  onTap: controller.isGeneralEditMode,
+                  onTap: () {
+                    if (controller.isGeneralEditMode.value) {
+                      controller.saveGeneralProfile();
+                    }
+                    controller.isGeneralEditMode.toggle();
+                  },
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(isEditMode ? 'Done' : 'Edit',
-                          style: const TextStyle(
-                              color: Colors.grey, fontSize: 14)),
+                      Text(
+                        isEditMode ? 'done' : 'edit',
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 14,
+                        ),
+                      ),
                       const SizedBox(width: 4),
                       Image.asset(
                         'assets/icons/profileEdit.png',
@@ -122,189 +135,200 @@ class _ProfileSection extends StatelessWidget {
               ),
               const SizedBox(height: 16),
 
+              // Avatar & Name
               Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  CircleAvatar(
-                    radius: 28,
-                    backgroundColor: Colors.transparent,
-                    child: Image.asset(
-                      'assets/icons/avatar.png',
-                      fit: BoxFit.cover,
+                  Padding(
+                    padding: const EdgeInsets.only(left: 20),
+                    child: CircleAvatar(
+                      radius: 28,
+                      backgroundColor: Colors.transparent,
+                      child: Image.asset(
+                        'assets/icons/avatar.png',
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
-                  const SizedBox(width: 70),
+                  const SizedBox(width: 50),
                   Expanded(
-                    child: Column(
+                    child: Row(
                       children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: isEditMode
-                                  ? TextFormField(
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'First',
+                                style: TextStyle(fontWeight: FontWeight.w600),
+                              ),
+                              const SizedBox(height: 4),
+                              isEditMode
+                                  ? BlueEditableField(
                                       controller:
                                           controller.firstNameController,
-                                      decoration: const InputDecoration(
-                                          labelText: 'First'),
+                                      hint: 'Vikas',
                                     )
-                                  : Text('First',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Color(0xFF172B75))),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: isEditMode
-                                  ? TextFormField(
-                                      controller: controller.lastNameController,
-                                      decoration: const InputDecoration(
-                                          labelText: 'Last'),
-                                    )
-                                  : Text('Last',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Color(0xFF172B75))),
-                            ),
-                          ],
+                                  : Text(
+                                      controller.firstNameController.text,
+                                      style: const TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w700,
+                                          color: Color(0xFF616161)),
+                                    ),
+                            ],
+                          ),
                         ),
-                        SizedBox(height: ScreenUtils.height * 0.01),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: !isEditMode
-                                  ? Text(
-                                      controller
-                                              .firstNameController.text.isEmpty
-                                          ? "Vikas"
-                                          : controller.firstNameController.text,
-                                      style: const TextStyle(fontSize: 16),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Last',
+                                style: TextStyle(fontWeight: FontWeight.w600),
+                              ),
+                              const SizedBox(height: 4),
+                              isEditMode
+                                  ? BlueEditableField(
+                                      controller: controller.lastNameController,
+                                      hint: 'raika',
                                     )
-                                  : const SizedBox(),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: !isEditMode
-                                  ? Text(
-                                      controller.lastNameController.text.isEmpty
-                                          ? "Raika"
-                                          : controller.lastNameController.text,
-                                      style: const TextStyle(fontSize: 16),
-                                    )
-                                  : const SizedBox(),
-                            ),
-                          ],
+                                  : Text(
+                                      controller.lastNameController.text,
+                                      style: const TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w700,
+                                          color: Color(0xFF616161)),
+                                    ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
-              isEditMode
-                  ? TextFormField(
+              if (isEditMode)
+                const Padding(
+                  padding: EdgeInsets.only(top: 4.0, left: 100),
+                  child: Text(
+                    '3 time changes allowed',
+                    style: TextStyle(
+                      color: Color(0xFF4D84F7),
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              const SizedBox(height: 20),
+
+              // Phone
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  InfoFieldRow(
+                    icon: Icons.phone_android_outlined,
+                    label: 'Mob no',
+                    value: controller.phoneController.text,
+                    isEditMode: isEditMode,
+                    editChild: BlueEditableField(
                       controller: controller.phoneController,
-                      decoration: const InputDecoration(labelText: 'Mob No'),
-                    )
-                  : Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.phone_android_outlined,
-                              color: Color(0xFF83A5FA),
-                            ),
-                            const SizedBox(
-                              width: 5,
-                            ),
-                            const Text('Mob No',
-                                style: TextStyle(fontWeight: FontWeight.bold)),
-                          ],
-                        ),
-                        Text(controller.phoneController.text.isEmpty
-                            ? ' '
-                            : controller.phoneController.text),
-                      ],
+                      hint: '0245814170',
                     ),
-              SizedBox(
-                height: 10,
+                    helper: null,
+                  ),
+                  if (isEditMode)
+                    const Padding(
+                      padding: EdgeInsets.only(left: 200.0, top: 4),
+                      child: Text(
+                        'otp - verification needed',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF4D84F7),
+                        ),
+                      ),
+                    ),
+                ],
               ),
+
+              SizedBox(height: isEditMode ? 16 : 28),
+
               // Email
-              isEditMode
-                  ? TextFormField(
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  InfoFieldRow(
+                    icon: Icons.email_outlined,
+                    label: 'Email id',
+                    value: controller.emailController.text,
+                    isEditMode: isEditMode,
+                    editChild: BlueEditableField(
                       controller: controller.emailController,
-                      decoration: const InputDecoration(labelText: 'Email ID'),
-                    )
-                  : Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.email_outlined,
-                              color: Color(0xFF83A5FA),
-                            ),
-                            const SizedBox(
-                              width: 5,
-                            ),
-                            const Text('Email id',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFF172B75))),
-                          ],
-                        ),
-                        Text(controller.emailController.text.isEmpty
-                            ? ' '
-                            : controller.emailController.text),
-                      ],
+                      hint: 'vikas67@xyz.com',
                     ),
-              SizedBox(
-                height: 10,
+                    helper: null,
+                  ),
+                  if (isEditMode)
+                    const Padding(
+                      padding: EdgeInsets.only(left: 200.0, top: 4),
+                      child: Text(
+                        'otp - verification needed',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF4D84F7),
+                        ),
+                      ),
+                    ),
+                ],
               ),
+
+              SizedBox(height: isEditMode ? 16 : 28),
+
               // Gender
               isEditMode
-                  ? Obx(() => DropdownButtonFormField<String>(
-                        decoration: const InputDecoration(labelText: 'Gender'),
-                        value: controller.selectedGender.value,
-                        items: controller.genderOptions
-                            .map((gender) => DropdownMenuItem(
-                                  value: gender,
-                                  child: Text(gender),
-                                ))
-                            .toList(),
-                        onChanged: (value) {
-                          if (value != null)
-                            controller.selectedGender.value = value;
-                        },
-                      ))
-                  : Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.person_outlined,
-                              color: Color(0xFF83A5FA),
-                            ),
-                            const SizedBox(
-                              width: 5,
-                            ),
-                            const Text('Gender',
+                  ? DropdownPreference(
+                      label: 'Gender',
+                      options: controller.genderOptions,
+                      selectedValue: controller.selectedGender,
+                      iconPath: 'assets/icons/gender.png',
+                    )
+                  : Container(
+                      padding: const EdgeInsets.symmetric(vertical: 6),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          // Left: icon + label
+                          Row(
+                            children: [
+                              Icon(
+                                Iconsax.profile_circle,
+                                color: Color(0xFF83A5FA),
+                              ),
+                              const SizedBox(width: 10),
+                              const Text(
+                                'Gender',
                                 style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFF172B75))),
-                          ],
-                        ),
-                        Text(controller.selectedGender.value.isEmpty
-                            ? ' '
-                            : controller.selectedGender.value),
-                      ],
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF172B75),
+                                ),
+                              ),
+                            ],
+                          ),
+                          // Right: selected value
+                          Text(
+                            controller.selectedGender.value,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
             ],
           ),
         ),
 
-        // Capsule label
+        // Capsule Label
         Positioned(
           top: 20,
           left: 0,
@@ -315,16 +339,16 @@ class _ProfileSection extends StatelessWidget {
               height: 40,
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               decoration: BoxDecoration(
-                color: const Color(0xFF714FC0),
+                color: isEditMode ? Colors.white : const Color(0xFF714FC0),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Center(
+              child: Center(
                 child: Text(
-                  'General',
+                  isEditMode ? 'general' : 'General',
                   style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w400,
-                      color: Colors.white),
+                      fontSize: 25,
+                      fontWeight: FontWeight.w300,
+                      color: isEditMode ? Color(0xFF172B75) : Colors.white),
                 ),
               ),
             ),
@@ -342,12 +366,38 @@ class _PreferencesSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<ProfileController>();
+
     final items = [
-      ('assets/icons/category.png', 'Category', 'Business owner'),
-      ('assets/icons/topics.png', 'Topics', 'Selected'),
-      ('assets/icons/difficulty.png', 'Difficulty', 'Advance'),
-      ('assets/icons/community.png', 'Community', 'In'),
-      ('assets/icons/notification.png', 'Notifications', 'Allowed'),
+      (
+        'assets/icons/category.png',
+        'Category',
+        controller.categoryOptions,
+        controller.selectedCategory
+      ),
+      (
+        'assets/icons/topics.png',
+        'Topics',
+        controller.topicsOptions,
+        controller.selectedTopics
+      ),
+      (
+        'assets/icons/difficulty.png',
+        'Difficulty',
+        controller.difficultyOptions,
+        controller.selectedDifficulty
+      ),
+      (
+        'assets/icons/community.png',
+        'Community',
+        controller.communityOptions,
+        controller.selectedCommunity
+      ),
+      (
+        'assets/icons/notification.png',
+        'Notifications',
+        controller.notificationOptions,
+        controller.selectedNotifications
+      ),
     ];
 
     return Stack(
@@ -367,7 +417,12 @@ class _PreferencesSection extends StatelessWidget {
               Align(
                 alignment: Alignment.topRight,
                 child: GestureDetector(
-                  onTap: controller.isPreferencesEditMode,
+                  onTap: () {
+                    if (controller.isPreferencesEditMode.value) {
+                      controller.savePreferences();
+                    }
+                    controller.isPreferencesEditMode.toggle();
+                  },
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -379,18 +434,78 @@ class _PreferencesSection extends StatelessWidget {
                         'assets/icons/profileEdit.png',
                         width: 16,
                         height: 16,
-                        color: Colors.red, // Optional: tint the icon
+                        color: Colors.red,
                       ),
                     ],
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(
+                height: 16,
+              ),
               for (var item in items)
-                isEditMode
-                    ? _EditableField(label: item.$2, value: item.$3)
-                    : _InfoRow(
-                        iconPath: item.$1, label: item.$2, value: item.$3),
+                Padding(
+                  padding: EdgeInsets.only(bottom: isEditMode ? 12 : 20),
+                  child: item.$2 == 'Topics' && isEditMode
+                      ? GestureDetector(
+                          onTap: () {
+                            if (!Get.isRegistered<HomeController>()) {
+                              Get.put(HomeController());
+                            }
+                            showDialog(
+                              context: context,
+                              builder: (context) => InterestSelectionDialog(
+                                homeController: Get.find<HomeController>(),
+                                selectedValue: item.$4,
+                              ),
+                            );
+                          },
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  Image.asset(item.$1, width: 20, height: 20),
+                                  const SizedBox(width: 10),
+                                  Text(
+                                    item.$2,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF172B75),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Row(
+                                children: [
+                                  Text(
+                                    item.$4.value.isEmpty
+                                        ? 'Selected'
+                                        : 'Selected',
+                                    style:
+                                        const TextStyle(color: Colors.black87),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  const Icon(Icons.keyboard_arrow_down_sharp,
+                                      color: Color(0xFF83A5FA)),
+                                ],
+                              ),
+                            ],
+                          ),
+                        )
+                      : isEditMode
+                          ? DropdownPreference(
+                              label: item.$2,
+                              options: item.$3,
+                              selectedValue: item.$4,
+                              iconPath: item.$1,
+                            )
+                          : _InfoRow(
+                              iconPath: item.$1,
+                              label: item.$2,
+                              value: item.$4.value,
+                            ),
+                ),
             ],
           ),
         ),
@@ -402,18 +517,18 @@ class _PreferencesSection extends StatelessWidget {
             child: Container(
               width: 200,
               height: 40,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               decoration: BoxDecoration(
-                color: const Color(0xFF714FC0),
+                color: isEditMode ? Colors.white : const Color(0xFF714FC0),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Center(
-                child: const Text(
-                  'Preferences',
+                child: Text(
+                  isEditMode ? 'preferences' : 'Preferences',
                   style: TextStyle(
-                      fontSize: 20,
+                      fontSize: 25,
                       fontWeight: FontWeight.w400,
-                      color: Colors.white),
+                      color: isEditMode ? Color(0xFF172B75) : Colors.white),
                 ),
               ),
             ),
@@ -483,31 +598,6 @@ class _InfoRow extends StatelessWidget {
   }
 }
 
-class _EditableField extends StatelessWidget {
-  final String label;
-  final String value;
-
-  const _EditableField({required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: TextFormField(
-        decoration: InputDecoration(
-          labelText: label,
-          hintText: value,
-          filled: true,
-          fillColor: Colors.grey.shade100,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class _SubscriptionBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -540,35 +630,47 @@ class _SubscriptionBanner extends StatelessWidget {
               const Text(
                 'free ',
                 style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                ),
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w400),
               ),
               const Text(
                 'trial ',
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w400,
                 ),
               ),
               const Text(
                 'ending soon',
                 style: TextStyle(
                   color: Colors.white70,
-                  fontSize: 12,
+                  fontSize: 10,
                 ),
               ),
               const SizedBox(width: 20),
-              const Text(
-                'upgrade',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
+              GestureDetector(
+                onTap: () {
+                  Get.toNamed('/payments');
+                },
+                child: Row(
+                  children: [
+                    const SizedBox(width: 20),
+                    const Text(
+                      'upgrade',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    const Icon(Icons.double_arrow_outlined,
+                        color: Colors.white, size: 15),
+                  ],
                 ),
               ),
-              const SizedBox(width: 4),
-              Icon(Icons.double_arrow_outlined, color: Colors.white, size: 18),
             ],
           ),
         ],

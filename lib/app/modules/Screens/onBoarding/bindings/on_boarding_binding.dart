@@ -1,11 +1,9 @@
 import 'package:get/get.dart';
-
-import '../../OtpScreen/controllers/otp_screen_controller.dart';
-
+import '../controllers/on_boarding_controller.dart';
 
 class OnBoardingBinding extends Bindings {
   @override
   void dependencies() {
-    Get.lazyPut<OTPController>(() => OTPController());
+    Get.lazyPut<OnBoardingController>(() => OnBoardingController());
   }
 }

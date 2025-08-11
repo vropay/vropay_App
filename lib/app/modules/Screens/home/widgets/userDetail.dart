@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:vropay_final/Utilities/screen_utils.dart';
 import 'package:vropay_final/app/modules/Screens/home/widgets/curvedTextField.dart';
 import '../../onBoarding/widgets/faq_help.dart';
 import '../controllers/home_controller.dart';
@@ -9,6 +10,8 @@ class UserDetail extends GetView<HomeController> {
 
   @override
   Widget build(BuildContext context) {
+    // Set the context for ScreenUtils
+    ScreenUtils.setContext(context);
     return Scaffold(
       backgroundColor: Color(0xFFF7F7F7),
       body: SafeArea(
@@ -87,21 +90,29 @@ class UserDetail extends GetView<HomeController> {
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text("proceed", style: TextStyle(fontSize: 16, color: Colors.white)),
+                        Text("proceed",
+                            style:
+                                TextStyle(fontSize: 16, color: Colors.white)),
                         SizedBox(width: 5),
-                        Icon(Icons.arrow_right_alt, color: Colors.white, size: 25,),
+                        Icon(
+                          Icons.arrow_right_alt,
+                          color: Colors.white,
+                          size: 25,
+                        ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: ScreenUtils.height * 0.01),
                   const FaqHelpText()
                 ],
               ),
             ),
-            const Spacer(),
             Padding(
               padding: const EdgeInsets.only(bottom: 12),
-              child: Image.asset( 'assets/images/vropayLogo.png', height: 40,),
+              child: Image.asset(
+                'assets/images/vropayLogo.png',
+                height: 40,
+              ),
             ),
           ],
         ),
@@ -122,7 +133,7 @@ class UserDetail extends GetView<HomeController> {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
                 color:
-                isSelected ? const Color(0xFF00B8F0) : Colors.transparent,
+                    isSelected ? const Color(0xFF00B8F0) : Colors.transparent,
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
@@ -166,13 +177,15 @@ class UserDetail extends GetView<HomeController> {
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<String>(
                   value: selected.isEmpty ? null : selected,
-                  icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF1C1C4D)),
+                  icon: const Icon(Icons.keyboard_arrow_down,
+                      color: Color(0xFF1C1C4D)),
                   style: const TextStyle(
                     fontSize: 16,
                     color: Color(0xFF1C1C4D),
                   ),
                   alignment: Alignment.center,
-                  dropdownColor: const Color(0xFFDEEAF1), // fallback dropdown background
+                  dropdownColor:
+                      const Color(0xFFDEEAF1), // fallback dropdown background
                   hint: const Center(
                     child: Text(
                       "you’re a",
@@ -205,11 +218,13 @@ class UserDetail extends GetView<HomeController> {
                       child: Container(
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? const Color(0xFFE5EBFF) // highlighted background for selected
+                              ? const Color(
+                                  0xFFE5EBFF) // highlighted background for selected
                               : Colors.transparent,
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 8, horizontal: 4),
                         child: Row(
                           children: [
                             Image.asset(
@@ -223,7 +238,9 @@ class UserDetail extends GetView<HomeController> {
                                 role['value']!,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
-                                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                  fontWeight: isSelected
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
                                 ),
                               ),
                             ),
@@ -243,5 +260,4 @@ class UserDetail extends GetView<HomeController> {
       );
     });
   }
-
 }

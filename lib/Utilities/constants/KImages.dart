@@ -3,6 +3,7 @@ class KImages {
   static const authImage = "assets/images/SignUp.png";
   static const otpScreenImage = "assets/images/OTPScreen.png";
   static const backgroundImage = 'assets/images/background.png';
+  static const vropayLogo = 'assets/images/vropayLogo.png';
 
   static const phoneIconImage = "assets/icons/phoneIcon.png";
   static const appleIcon = "assets/icons/apple.png";

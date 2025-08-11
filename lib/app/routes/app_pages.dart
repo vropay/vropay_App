@@ -11,6 +11,8 @@ import 'package:vropay_final/app/modules/Screens/personal_growth/bindings/person
 import 'package:vropay_final/app/modules/Screens/personal_growth/views/personal_growth_screen.dart';
 import 'package:vropay_final/app/modules/Screens/personal_growth_community/bindings/personal_growth_community_binding.dart';
 import 'package:vropay_final/app/modules/Screens/personal_growth_community/views/personal_growth_community_screen.dart';
+import 'package:vropay_final/app/modules/Screens/splash/views/greeting_splash_view.dart';
+import 'package:vropay_final/app/modules/Screens/splash/bindings/greeting_splash_binding.dart';
 import 'package:vropay_final/app/modules/Screens/world_and_culture/bindings/world_and_culture_binding.dart';
 import 'package:vropay_final/app/modules/Screens/world_and_culture/views/world_and_culture_screen.dart';
 import 'package:vropay_final/app/modules/Screens/business_innovation/bindings/business_innovation_binding.dart';
@@ -61,9 +63,14 @@ part 'app_routes.dart';
 class AppPages {
   AppPages._();
 
-  static const INITIAL = Routes.PROFILE;
+  static const INITIAL = Routes.GreetingSplashView;
 
   static final routes = [
+    GetPage(
+      name: _Paths.GreetingSplashView,
+      page: () => GreetingSplashView(),
+      binding: GreetingSplashBinding(),
+    ),
     GetPage(
       name: _Paths.ON_BOARDING,
       page: () => OnBoardingView(),
@@ -197,6 +204,11 @@ class AppPages {
       name: _Paths.messageScreen,
       page: () => const MessageScreen(),
       binding: MessageBindings(),
+    ),
+    GetPage(
+      name: _Paths.GreetingSplashView,
+      page: () => const GreetingSplashView(),
+      binding: GreetingSplashBinding(),
     ),
   ];
 }

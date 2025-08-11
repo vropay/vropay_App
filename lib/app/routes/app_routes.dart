@@ -18,6 +18,7 @@ abstract class Routes {
   static const DASHBOARD = _Paths.DASHBOARD;
   static const DEACTIVATE_SCREEN = _Paths.DEACTIVATE_SCREEN;
   static const firstTimeSplash = _Paths.firstTimeSplash;
+  static const GreetingSplashView = _Paths.GreetingSplashView;
   static const welcomeSplash = _Paths.welcomeSplash;
   static const SIGNOUT_SCREEN = _Paths.SIGNOUT_SCREEN;
   static const KNOWLEDGE_CENTER_SCREEN = _Paths.KNOWLEDGE_CENTER_SCREEN;
@@ -53,6 +54,7 @@ abstract class _Paths {
   static const DASHBOARD = '/dashboard';
   static const DEACTIVATE_SCREEN = '/deactivate-screen';
   static const firstTimeSplash = '/first-time-splash';
+  static const GreetingSplashView = '/greeting-splash-view';
   static const welcomeSplash = '/welcome-splash';
   static const SIGNOUT_SCREEN = '/signout-screen';
   static const KNOWLEDGE_CENTER_SCREEN = '/knowledge-center-screen';

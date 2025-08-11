@@ -1,24 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../signUp/views/sign_up_view.dart';
+import 'package:vropay_final/app/modules/Screens/learn_screen/views/learn_screen.dart';
+import '../../home/views/home_view.dart';
 
 class OnBoardingController extends GetxController {
-  // final PageController pageController = PageController();
   var currentPage = 0.obs;
+  final PageController pageController = PageController();
 
   void goToNextPage() {
     if (currentPage.value < 3) {
-      // pageController.nextPage(
-      //   duration: const Duration(milliseconds: 300),
-      //   curve: Curves.easeInOut,
-      // );
+      currentPage.value++;
+      pageController.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
     } else {
       goToSignup();
     }
   }
 
   void goToSignup() {
-    Get.to(() => SignUpView());
+    Get.offAll(
+        () => HomeView()); // Navigate to home screen instead of sign-up
+  }
+
+  void goToSignIn() {
+    // Navigate to home screen for now since sign-in view doesn't exist yet
+    Get.offAll(() => HomeView());
   }
 
   void onPageChanged(int index) {
@@ -27,7 +35,7 @@ class OnBoardingController extends GetxController {
 
   @override
   void onClose() {
-    // pageController.dispose();
+    pageController.dispose();
     super.onClose();
   }
 }

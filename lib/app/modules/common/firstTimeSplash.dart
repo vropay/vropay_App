@@ -12,7 +12,7 @@ class FirstTimeSplashScreen extends StatelessWidget {
     });
 
     return Scaffold(
-      body: Center(child: Image.asset('assets/images/vropaylogo.png')),
+      body: Center(child: Image.asset('assets/images/vropayLogo.png')),
     );
   }
 }

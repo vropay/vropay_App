@@ -27,110 +27,138 @@ class _OnBoardingViewState extends State<OnBoardingView> {
     return Scaffold(
       body: SafeArea(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const SizedBox(height: 10),
-            Image.asset(
-              KImages.onBoardingScreen,
-              height: 400,
-              width: 400,
-            ),
+            // Skip Button
             Padding(
               padding: const EdgeInsets.all(20.0),
-              child: Column(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  RichText(
-                    textAlign: TextAlign.center,
-                    text: TextSpan(
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w600,
-                        color: KConstColors.onBoardingText,
+                  TextButton(
+                    onPressed:
+                        _controller.goToSignup, // This now goes to home screen
+                    child: Text(
+                      'Skip',
+                      style: TextStyle(
+                        color: KConstColors.onBoardingSubHeading,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
                       ),
-                      children: [
-                        const TextSpan(text: "Smart tools\n", style: TextStyle(
-                            fontWeight: FontWeight.bold
-                        )),
-                        const TextSpan(text: "Real-time insights\n ",style: TextStyle(
-                            fontWeight: FontWeight.bold
-                        )),
-                        TextSpan(
-                          text: "&\n",
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w300,
-                            color: Color(0xFF0066FF),
-                          ),
-                        ),
-                        const TextSpan(text: " Limitless possibilities", style: TextStyle(
-                          fontWeight: FontWeight.bold
-                        )),
-                      ],
                     ),
-                  ),
-                  const Text(
-                    "—ready to level up your skills?",
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: KConstColors.onBoardingSubHeading,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  FaqHelpText(),
-                  const SizedBox(height: 40),
-                  // Progress Indicator
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _buildProgressDot(true),
-                      _buildProgressDot(false),
-                      _buildProgressDot(false),
-                      _buildProgressDot(false)
-                    ],
                   ),
                 ],
               ),
             ),
-            Obx(
-                  () => CommonButton(
-                onPressed: _controller.goToSignup,
-                child: _controller.currentPage.value == 0
-                    ? Row(
-                  children: [
-                    const Icon(Icons.arrow_forward_ios, color: KConstColors.colorPrimary, size: 20),
-                    Transform.translate(
-                      offset: const Offset(-6, 0),
-                      child: const Icon(Icons.arrow_forward_ios, color: KConstColors.colorPrimary, size: 20),
-                    ),
-                    Transform.translate(
-                      offset: const Offset(-12, 0),
-                      child: const Icon(Icons.arrow_forward_ios, color: KConstColors.colorPrimary, size: 20),
-                    ),
-
-                    const SizedBox(width: 40),
-                    const Text(
-                      "Let’s Sign Up",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: KConstColors.colorPrimary,
-                      ),
-                    ),
-                  ],
-                )
-                    : Text(
-                  "Next",
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+            Expanded(
+              child: PageView(
+                controller: _controller.pageController,
+                onPageChanged: _controller.onPageChanged,
+                physics: const BouncingScrollPhysics(),
+                children: [
+                  _buildOnboardingPage(
+                    image: KImages.onBoardingScreen,
+                    title:
+                        "Smart tools\nReal-time insights\n&\nLimitless possibilities",
+                    subtitle: "—ready to level up your skills?",
+                    showFaq: true,
                   ),
+                  _buildOnboardingPage(
+                    image: KImages.onBoardingScreen,
+                    title: "Connect with\nLike-minded\nProfessionals",
+                    subtitle: "—build your network and grow together?",
+                    showFaq: false,
+                  ),
+                  _buildOnboardingPage(
+                    image: KImages.onBoardingScreen,
+                    title: "Learn from\nIndustry Experts\n& Mentors",
+                    subtitle: "—gain insights from the best in the field?",
+                    showFaq: false,
+                  ),
+                  _buildOnboardingPage(
+                    image: KImages.onBoardingScreen,
+                    title: "Track Your\nProgress & Achievements",
+                    subtitle: "—measure your growth and celebrate success?",
+                    showFaq: false,
+                  ),
+                ],
+              ),
+            ),
+            // Progress Indicator
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SmoothPageIndicator(
+                    controller: _controller.pageController,
+                    count: 4,
+                    effect: WormEffect(
+                      dotHeight: 8,
+                      dotWidth: 8,
+                      activeDotColor: KConstColors.colorPrimary,
+                      dotColor: Colors.grey.shade300,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            // Action Button
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Obx(
+                () => CommonButton(
+                  onPressed: _controller.currentPage.value == 3
+                      ? _controller.goToSignup
+                      : _controller.goToNextPage,
+                  child: _controller.currentPage.value == 3
+                      ? Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.arrow_forward_ios,
+                                color: KConstColors.colorPrimary, size: 20),
+                            Transform.translate(
+                              offset: const Offset(-6, 0),
+                              child: const Icon(Icons.arrow_forward_ios,
+                                  color: KConstColors.colorPrimary, size: 20),
+                            ),
+                            Transform.translate(
+                              offset: const Offset(-12, 0),
+                              child: const Icon(Icons.arrow_forward_ios,
+                                  color: KConstColors.colorPrimary, size: 20),
+                            ),
+                            const SizedBox(width: 10),
+                            const Text(
+                              "Let's Sign Up",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: KConstColors.colorPrimary,
+                              ),
+                            ),
+                          ],
+                        )
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text(
+                              "Next",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            const Icon(Icons.arrow_forward,
+                                color: Colors.white, size: 20),
+                          ],
+                        ),
                 ),
               ),
             ),
-
-
             const SizedBox(height: 20),
+            // Sign In Link
             RichText(
               text: TextSpan(
                 children: [
@@ -151,7 +179,7 @@ class _OnBoardingViewState extends State<OnBoardingView> {
                     ),
                     recognizer: TapGestureRecognizer()
                       ..onTap = () {
-                        // Get.to(() => Sign());
+                        _controller.goToSignIn();
                       },
                   ),
                 ],
@@ -164,16 +192,67 @@ class _OnBoardingViewState extends State<OnBoardingView> {
     );
   }
 
-  Widget _buildProgressDot(bool isActive) {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 5),
-      width: isActive ? 9 : 30,
-      height: 4,
-      decoration: BoxDecoration(
-        color: isActive ? Color(0xFF172B75) : Color(0xFFD0D0D0),
-        borderRadius: BorderRadius.circular(19),
-      ),
+  Widget _buildOnboardingPage({
+    required String image,
+    required String title,
+    required String subtitle,
+    required bool showFaq,
+  }) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const SizedBox(height: 10),
+        Expanded(
+          child: Image.asset(
+            image,
+            fit: BoxFit.contain,
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            children: [
+              RichText(
+                textAlign: TextAlign.center,
+                text: TextSpan(
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w600,
+                    color: KConstColors.onBoardingText,
+                  ),
+                  children: title.split('\n').map((line) {
+                    if (line == '&') {
+                      return TextSpan(
+                        text: "$line\n",
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w300,
+                          color: Color(0xFF0066FF),
+                        ),
+                      );
+                    }
+                    return TextSpan(
+                      text: "$line\n",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    );
+                  }).toList(),
+                ),
+              ),
+              Text(
+                subtitle,
+                style: const TextStyle(
+                  fontSize: 18,
+                  color: KConstColors.onBoardingSubHeading,
+                ),
+              ),
+              if (showFaq) ...[
+                const SizedBox(height: 20),
+                FaqHelpText(),
+              ],
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
-

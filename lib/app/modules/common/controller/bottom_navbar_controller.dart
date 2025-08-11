@@ -9,7 +9,8 @@ class BottomNavController extends GetxController {
     currentIndex.value = index;
 
     // Handle default sub-option for multi-option tabs
-    if (index == 1) selectedSubOption.value = 'primary';
+    if (index == 1)
+      selectedSubOption.value = 'primary';
     else if (index == 2) selectedSubOption.value = 'learn';
   }
 
