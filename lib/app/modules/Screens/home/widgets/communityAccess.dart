@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:vropay_final/Utilities/screen_utils.dart';
 
 import '../../../../../Components/back_icon.dart';
 import '../controllers/home_controller.dart';
@@ -12,6 +13,7 @@ class CommunityAccessScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<HomeController>();
+    ScreenUtils.setContext(context);
 
     return Dialog(
       backgroundColor: Colors.white,
@@ -27,23 +29,25 @@ class CommunityAccessScreen extends StatelessWidget {
             ),
             Image.asset(
               'assets/images/communityAccess.png',
-              height: 150,
-              width: 293,
+              height: 167,
+              width: 185,
             ),
-            const SizedBox(height: 20),
-            const Text(
+            SizedBox(height: ScreenUtils.height * 0.02),
+            Text(
               'Community Access',
-              style: TextStyle(fontSize: 23, fontWeight: FontWeight.w300,
+              style: TextStyle(
+                  fontSize: 23,
+                  fontWeight: FontWeight.w300,
                   color: Color(0xFF172B75)),
             ),
-            const Text(
+            Text(
               'for the topics selected',
-              style: TextStyle(color: Color(0x8F172B75),
+              style: TextStyle(
+                  color: Color(0x8F172B75).withOpacity(0.5),
                   fontSize: 14,
-              decoration: TextDecoration.underline),
+                  decoration: TextDecoration.underline),
             ),
-            const SizedBox(height: 20),
-
+            SizedBox(height: ScreenUtils.height * 0.02),
             Obx(() {
               final selected = controller.selectedCommunityAccess.value;
 
@@ -55,7 +59,6 @@ class CommunityAccessScreen extends StatelessWidget {
                     selected,
                     controller,
                   ),
-
                   _buildOption(
                     "Just Scroll",
                     "to read the conversations",
@@ -65,20 +68,18 @@ class CommunityAccessScreen extends StatelessWidget {
                 ],
               );
             }),
-
-
-
-            const SizedBox(height: 20),
-              GestureDetector(
-                onTap: onNext,
-                child: const Text(
-                  "Continue",
-                  style: TextStyle(color: Color(0xFFEF2D56),
-                      fontSize: 17,
-                      decoration: TextDecoration.underline,
-                      decorationColor: Color(0xFFEF2D56)),
-                ),
+            SizedBox(height: ScreenUtils.height * 0.02),
+            GestureDetector(
+              onTap: onNext,
+              child: const Text(
+                "Continue",
+                style: TextStyle(
+                    color: Color(0xFFEF2D56),
+                    fontSize: 17,
+                    decoration: TextDecoration.underline,
+                    decorationColor: Color(0xFFEF2D56)),
               ),
+            ),
           ],
         ),
       ),
@@ -86,11 +87,11 @@ class CommunityAccessScreen extends StatelessWidget {
   }
 
   Widget _buildOption(
-      String title,
-      String description,
-      String? selectedOption,
-      HomeController controller,
-      ) {
+    String title,
+    String description,
+    String? selectedOption,
+    HomeController controller,
+  ) {
     final bool selected = selectedOption == title;
 
     // Choose background based on title
@@ -121,7 +122,7 @@ class CommunityAccessScreen extends StatelessWidget {
                 TextSpan(
                   text: title,
                   style: const TextStyle(
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w400,
                     fontSize: 15,
                     color: Color(0xFF172B75),
                   ),

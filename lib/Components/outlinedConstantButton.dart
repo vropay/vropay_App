@@ -5,6 +5,7 @@ class CustomFilledButton extends StatelessWidget {
   final bool isSelected;
   final bool isDifferent;
   final VoidCallback onPressed;
+  final Color? backgroundColor;
 
   const CustomFilledButton({
     Key? key,
@@ -12,22 +13,28 @@ class CustomFilledButton extends StatelessWidget {
     required this.isSelected,
     this.isDifferent = false,
     required this.onPressed,
+    this.backgroundColor,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    Color backgroundColor;
+    Color finalBackgroundColor;
 
-    if (isSelected) {
+    if (backgroundColor != null) {
+      finalBackgroundColor = backgroundColor!;
+    } else if (isSelected) {
       if (isDifferent) {
-        backgroundColor = const Color(0xFFE3F2FF); // Light blue for "Moderate"
+        finalBackgroundColor =
+            const Color(0xFFE3F2FF); // Light blue for "Moderate"
       } else if (text.toLowerCase() == "advance") {
-        backgroundColor = const Color(0xFFFFEBEE); // Light pink for "Advance"
+        finalBackgroundColor =
+            const Color(0xFFFFEBEE); // Light pink for "Advance"
       } else {
-        backgroundColor = const Color(0xFFEFEFEF); // Light gray for "Beginner"
+        finalBackgroundColor =
+            const Color(0xFFEFEFEF); // Light gray for "Beginner"
       }
     } else {
-      backgroundColor = const Color(0xFFF7F7F7); // Default background
+      finalBackgroundColor = const Color(0xFFF7F7F7); // Default background
     }
 
     return GestureDetector(
@@ -36,7 +43,7 @@ class CustomFilledButton extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
-          color: backgroundColor,
+          color: finalBackgroundColor,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Center(

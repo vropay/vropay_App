@@ -4,7 +4,7 @@ class FreeTrialToggle extends StatelessWidget {
   final bool isEnabled;
   final Function(bool) onToggle;
 
-  const FreeTrialToggle({required this.isEnabled, required this.onToggle});
+  const FreeTrialToggle({super.key, required this.isEnabled, required this.onToggle});
 
   @override
   Widget build(BuildContext context) {

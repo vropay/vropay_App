@@ -4,7 +4,7 @@ import 'package:vropay_final/app/routes/app_pages.dart';
 class GreetingSplashController extends GetxController {
   // Configurable timing - you can easily change this value
   final int greetingDurationSeconds =
-      1000000; // Change this to increase/decrease timing
+      5; // Change this to increase/decrease timing
 
   @override
   void onInit() {

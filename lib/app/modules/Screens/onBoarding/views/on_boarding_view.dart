@@ -2,6 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+import 'package:vropay_final/Utilities/screen_utils.dart';
 import '../../../../../Components/constant_buttons.dart';
 import '../../../../../Utilities/constants/Colors.dart';
 import '../../../../../Utilities/constants/KImages.dart';
@@ -24,6 +25,7 @@ class _OnBoardingViewState extends State<OnBoardingView> {
 
   @override
   Widget build(BuildContext context) {
+    ScreenUtils.setContext(context);
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -89,16 +91,40 @@ class _OnBoardingViewState extends State<OnBoardingView> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  SmoothPageIndicator(
-                    controller: _controller.pageController,
-                    count: 4,
-                    effect: WormEffect(
-                      dotHeight: 8,
-                      dotWidth: 8,
-                      activeDotColor: KConstColors.colorPrimary,
-                      dotColor: Colors.grey.shade300,
-                    ),
-                  ),
+                  Obx(() {
+                    // Get dynamic sizes based on current page
+                    double dotHeight =
+                        _getDotHeight(_controller.currentPage.value);
+                    double dotWidth =
+                        _getDotWidth(_controller.currentPage.value);
+
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(4, (index) {
+                        bool isSelected =
+                            index == _controller.currentPage.value;
+                        return Container(
+                          margin: EdgeInsets.symmetric(horizontal: 4.0),
+                          child: AnimatedContainer(
+                            duration: Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                            width: isSelected ? 9 : 30.0,
+                            height: 4,
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? Color(0xFF172B75)
+                                  : Color(0xFFD0D0D0),
+                              borderRadius: BorderRadius.circular(
+                                isSelected
+                                    ? dotHeight / 2
+                                    : 2.0, // Circle for selected, rounded rectangle for unselected
+                              ),
+                            ),
+                          ),
+                        );
+                      }),
+                    );
+                  }),
                 ],
               ),
             ),
@@ -113,7 +139,7 @@ class _OnBoardingViewState extends State<OnBoardingView> {
                       : _controller.goToNextPage,
                   child: _controller.currentPage.value == 3
                       ? Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.start,
                           children: [
                             const Icon(Icons.arrow_forward_ios,
                                 color: KConstColors.colorPrimary, size: 20),
@@ -127,7 +153,7 @@ class _OnBoardingViewState extends State<OnBoardingView> {
                               child: const Icon(Icons.arrow_forward_ios,
                                   color: KConstColors.colorPrimary, size: 20),
                             ),
-                            const SizedBox(width: 10),
+                            SizedBox(width: ScreenUtils.width * 0.08),
                             const Text(
                               "Let's Sign Up",
                               style: TextStyle(
@@ -254,5 +280,36 @@ class _OnBoardingViewState extends State<OnBoardingView> {
         ),
       ],
     );
+  }
+
+  // Helper methods for dynamic dot sizing
+  double _getDotHeight(int currentPage) {
+    switch (currentPage) {
+      case 0:
+        return 8.0; // First page - larger dots
+      case 1:
+        return 6.0; // Second page - medium dots
+      case 2:
+        return 5.0; // Third page - smaller dots
+      case 3:
+        return 7.0; // Fourth page - medium-large dots
+      default:
+        return 4.0; // Default size
+    }
+  }
+
+  double _getDotWidth(int currentPage) {
+    switch (currentPage) {
+      case 0:
+        return 40.0; // First page - wider dots
+      case 1:
+        return 35.0; // Second page - medium width
+      case 2:
+        return 30.0; // Third page - narrower dots
+      case 3:
+        return 45.0; // Fourth page - widest dots
+      default:
+        return 30.0; // Default width
+    }
   }
 }

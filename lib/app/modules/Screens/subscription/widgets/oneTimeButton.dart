@@ -53,14 +53,17 @@ class OneTimeOfferButton extends StatelessWidget {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 22),
+                    const Icon(Icons.arrow_forward_ios,
+                        color: Colors.white, size: 22),
                     Transform.translate(
                       offset: Offset(-6, 0), // move left to overlap
-                      child: Icon(Icons.arrow_forward_ios, color: Colors.white, size: 22),
+                      child: Icon(Icons.arrow_forward_ios,
+                          color: Colors.white, size: 22),
                     ),
                     Transform.translate(
                       offset: Offset(-12, 0), // move further left
-                      child: Icon(Icons.arrow_forward_ios, color: Colors.white, size: 22),
+                      child: Icon(Icons.arrow_forward_ios,
+                          color: Colors.white, size: 22),
                     ),
                   ],
                 ),
@@ -75,7 +78,7 @@ class OneTimeOfferButton extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
               decoration: BoxDecoration(
-                color: const Color(0xFF1B2C80),
+                color: const Color(0xFF172B75).withOpacity(0.5),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: const Text(
