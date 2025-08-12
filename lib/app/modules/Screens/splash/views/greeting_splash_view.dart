@@ -63,11 +63,11 @@ class GreetingSplashView extends StatelessWidget {
                   children: [
                     TextSpan(
                         text: "You're on the beta wave.. ",
-                        style: TextStyle(fontWeight: FontWeight.w500)),
+                        style: TextStyle(fontWeight: FontWeight.w300)),
                     TextSpan(
                       text:
                           "we're dropping \nnew features real soon. \nAppreciate the love. Big things loading",
-                      style: TextStyle(fontWeight: FontWeight.w300),
+                      style: TextStyle(fontWeight: FontWeight.w200),
                     ),
                     TextSpan(
                       text: "💙",
@@ -93,6 +93,7 @@ class GreetingSplashView extends StatelessWidget {
                       color: Color(0xFF0066FF),
                     ),
                   ),
+                  SizedBox(height: 12),
                   // Logo
                   Image.asset(
                     KImages.vropayLogo,
@@ -100,7 +101,7 @@ class GreetingSplashView extends StatelessWidget {
                     width: ScreenUtils.width * 0.3,
                   ),
 
-                  SizedBox(height: 10),
+                  SizedBox(height: 36),
                 ],
               ),
             ],
