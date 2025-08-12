@@ -8,6 +8,8 @@ class KImages {
   static const phoneIconImage = "assets/icons/phoneIcon.png";
   static const appleIcon = "assets/icons/apple.png";
   static const googleIcon = "assets/icons/google.png";
+  static const doubleArrowIcon = "assets/icons/doubleArrow.png";
+  static const removeIcon = "assets/icons/remove.png";
 
   static const interestScreen = 'assets/images/Interest.png';
   static const catImage = 'assets/images/catFace.png';

@@ -98,7 +98,7 @@ class PersonalGrowthScreen extends GetView<PersonalGrowthController> {
         height: ScreenUtils.height * 0.15,
         width: double.infinity,
         margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 10),
         decoration: BoxDecoration(
           color: Color(0xFFDFDFDF).withOpacity(0.4),
           borderRadius: BorderRadius.circular(25),

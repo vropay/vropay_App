@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:vropay_final/Components/bottom_navbar.dart';
 import 'package:vropay_final/Components/top_navbar.dart';
+import 'package:vropay_final/Utilities/screen_utils.dart';
 
 class NotificationsView extends StatefulWidget {
   const NotificationsView({super.key});
@@ -12,14 +12,14 @@ class NotificationsView extends StatefulWidget {
 }
 
 class _NotificationsViewState extends State<NotificationsView> {
-  String _selectedFilter = 'All';
+  String _selectedFilter = 'all';
   bool _showUnreadOnly = false;
   bool _showTodayOnly = false;
 
   final List<Map<String, dynamic>> _notifications = [
     {
       'title': 'Share your takeaways in the community',
-      'time': 'just now',
+      'time': 'just\nnow',
       'isRead': false,
       'isToday': true,
     },
@@ -76,14 +76,24 @@ class _NotificationsViewState extends State<NotificationsView> {
 
   void _clearAll() {
     setState(() {
-      for (var notification in _notifications) {
-        notification['isRead'] = true;
+      if (_selectedFilter == 'today') {
+        // Remove only today's notifications
+        _notifications
+            .removeWhere((notification) => notification['isToday'] == true);
+      } else if (_selectedFilter == 'unread') {
+        // Remove only unread notifications
+        _notifications
+            .removeWhere((notification) => notification['isRead'] == false);
+      } else {
+        // Remove all notifications (when 'all' is selected)
+        _notifications.clear();
       }
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    ScreenUtils.setContext(context);
     return Scaffold(
       backgroundColor: Color(0xFFF7F7F7),
       appBar: PreferredSize(
@@ -93,76 +103,79 @@ class _NotificationsViewState extends State<NotificationsView> {
       body: SafeArea(
         child: Column(
           children: [
+            SizedBox(height: ScreenUtils.height * 0.02),
             // Filter tabs
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Column(
+              padding: const EdgeInsets.only(left: 60, right: 25),
+              child: Row(
                 children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildFilterTab('All', _selectedFilter == 'All'),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _buildFilterTab(
-                            'unread', _selectedFilter == 'unread'),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _buildFilterTab(
-                            'today', _selectedFilter == 'today'),
-                      ),
-                      const SizedBox(width: 16),
-                    ],
+                  Expanded(
+                    child: _buildFilterTab('all', _selectedFilter == 'all'),
                   ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      RichText(
-                        text: TextSpan(
-                          text: 'Single-tap',
+                  SizedBox(width: ScreenUtils.width * 0.01),
+                  Expanded(
+                    child:
+                        _buildFilterTab('unread', _selectedFilter == 'unread'),
+                  ),
+                  SizedBox(width: ScreenUtils.width * 0.01),
+                  Expanded(
+                    child: _buildFilterTab('today', _selectedFilter == 'today'),
+                  ),
+                  SizedBox(width: ScreenUtils.width * 0.01),
+                ],
+              ),
+            ),
+
+            SizedBox(height: ScreenUtils.height * 0.035),
+            Padding(
+              padding: const EdgeInsets.only(left: 36, right: 22),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  RichText(
+                    text: TextSpan(
+                      text: 'Single-tap',
+                      style: TextStyle(
+                        color: Color(0xFF00B8F0),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w300,
+                      ),
+                      children: [
+                        TextSpan(
+                          text: ' will just mark it as read',
                           style: TextStyle(
-                            color: Color(0xFF00B8F0),
+                            color: Color(0xFF172B75),
                             fontSize: 10,
                             fontWeight: FontWeight.w300,
                           ),
-                          children: [
-                            TextSpan(
-                              text: ' will just mark it as read',
-                              style: TextStyle(
-                                color: Color(0xFF172B75),
-                                fontSize: 10,
-                                fontWeight: FontWeight.w300,
-                              ),
-                            ),
-                          ],
                         ),
-                      ),
-                      GestureDetector(
-                        onTap: _clearAll,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Text(
-                              'Clear',
-                              style: TextStyle(
-                                color: Color(0xFFEF2D56),
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            const Icon(
-                              Iconsax.close_circle,
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 16.0),
+                    child: GestureDetector(
+                      onTap: _clearAll,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text(
+                            'Clear',
+                            style: TextStyle(
                               color: Color(0xFFEF2D56),
-                              size: 16,
+                              fontSize: 14.28,
+                              fontWeight: FontWeight.w500,
                             ),
-                          ],
-                        ),
+                          ),
+                          const SizedBox(width: 4),
+                          const Icon(
+                            Iconsax.close_circle,
+                            color: Color(0xFFEF2D56),
+                            size: 12,
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ],
               ),
@@ -175,7 +188,7 @@ class _NotificationsViewState extends State<NotificationsView> {
               child: _filteredNotifications.isEmpty
                   ? SizedBox()
                   : ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      padding: const EdgeInsets.symmetric(horizontal: 21),
                       itemCount: _filteredNotifications.length,
                       itemBuilder: (context, index) {
                         final notification = _filteredNotifications[index];
@@ -198,15 +211,18 @@ class _NotificationsViewState extends State<NotificationsView> {
         });
       },
       child: Container(
-        height: 40,
-        width: 80,
+        height: ScreenUtils.height * 0.05,
+        width: ScreenUtils.width * 0.2,
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF6253DB) : Colors.white,
+          color: isSelected ? const Color(0xFF6253DB) : Color(0xFFF7F7F7),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Center(
           child: Text(
-            label,
+            isSelected
+                ? label[0].toUpperCase() +
+                    label.substring(1) // Capitalize if selected
+                : label,
             textAlign: TextAlign.center,
             style: TextStyle(
               color: isSelected ? Colors.white : const Color(0xFF6253DB),
@@ -226,10 +242,11 @@ class _NotificationsViewState extends State<NotificationsView> {
         });
       },
       child: Container(
-        margin: const EdgeInsets.only(bottom: 2),
+        margin: const EdgeInsets.only(bottom: 1),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color:
+              notification['isRead'] ? const Color(0xFFF7F7F7) : Colors.white,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
@@ -243,7 +260,7 @@ class _NotificationsViewState extends State<NotificationsView> {
                     fontWeight: FontWeight.w400),
               ),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: ScreenUtils.width * 0.012),
             Text(
               notification['time'],
               style: TextStyle(

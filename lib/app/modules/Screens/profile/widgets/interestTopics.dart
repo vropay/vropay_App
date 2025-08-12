@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:vropay_final/Utilities/screen_utils.dart';
 
 import '../../home/controllers/home_controller.dart';
 
@@ -8,6 +9,7 @@ class InterestSelectionDialog extends StatelessWidget {
   final RxString selectedValue;
 
   const InterestSelectionDialog({
+    super.key,
     required this.homeController,
     required this.selectedValue,
   });
@@ -23,7 +25,7 @@ class InterestSelectionDialog extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const SizedBox(height: 12),
+            SizedBox(height: ScreenUtils.height * 0.02),
             Obx(() => Wrap(
                   spacing: 10,
                   runSpacing: 10,
@@ -41,7 +43,7 @@ class InterestSelectionDialog extends StatelessWidget {
                         color:
                             isSelected ? Colors.white : const Color(0xFF172B75),
                         fontWeight: FontWeight.w400,
-                        fontSize: 14,
+                        fontSize: 12,
                       ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30),
@@ -49,7 +51,7 @@ class InterestSelectionDialog extends StatelessWidget {
                     );
                   }).toList(),
                 )),
-            const SizedBox(height: 20),
+            SizedBox(height: ScreenUtils.height * 0.02),
             ElevatedButton(
               onPressed: () {
                 // Close and update selectedValue
@@ -58,14 +60,17 @@ class InterestSelectionDialog extends StatelessWidget {
                 Navigator.of(context).pop();
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFEF2D56),
+                backgroundColor: Color(0xFFEF2D56),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(25),
                 ),
               ),
-              child: const Text(
+              child: Text(
                 "Done",
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600),
               ),
             )
           ],

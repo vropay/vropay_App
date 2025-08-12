@@ -1,11 +1,12 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:vropay_final/Utilities/screen_utils.dart';
 
 class BlueEditableField extends StatelessWidget {
   final TextEditingController controller;
   final String hint;
 
   const BlueEditableField({
+    super.key,
     required this.controller,
     required this.hint,
   });
@@ -13,7 +14,7 @@ class BlueEditableField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 40,
+      height: ScreenUtils.height * 0.05,
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
         color: const Color(0xFFEAF1FF),
@@ -23,7 +24,11 @@ class BlueEditableField extends StatelessWidget {
       child: TextFormField(
         controller: controller,
         decoration: const InputDecoration.collapsed(hintText: ''),
-        style: const TextStyle(fontSize: 16),
+        style: TextStyle(
+            fontSize: 16,
+            color: Color(0xFF616161),
+            fontWeight: FontWeight.w400),
+        textAlign: TextAlign.center,
       ),
     );
   }

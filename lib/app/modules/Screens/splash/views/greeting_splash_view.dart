@@ -24,7 +24,7 @@ class GreetingSplashView extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               // Greeting text with gradient
-              SizedBox(height: ScreenUtils.height * 0.4),
+              SizedBox(height: ScreenUtils.height * 0.3),
               Column(
                 children: [
                   Center(
@@ -37,7 +37,7 @@ class GreetingSplashView extends StatelessWidget {
                         ).createShader(bounds);
                       },
                       child: Text(
-                        "Hey Vikash",
+                        "Hey Vikas",
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 30,
@@ -52,13 +52,31 @@ class GreetingSplashView extends StatelessWidget {
               SizedBox(height: ScreenUtils.height * 0.015),
 
               // Description text
-              Text(
-                "You're on the beta wave.. we're dropping \nnew features real soon. \nAppreciate the love. Big things loading💙",
+              RichText(
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                text: TextSpan(
+                  style: TextStyle(
                     fontSize: 15,
                     color: Color(0xFF0066FF),
-                    fontWeight: FontWeight.w200),
+                    fontWeight: FontWeight.w200,
+                  ),
+                  children: [
+                    TextSpan(
+                        text: "You're on the beta wave.. ",
+                        style: TextStyle(fontWeight: FontWeight.w500)),
+                    TextSpan(
+                      text:
+                          "we're dropping \nnew features real soon. \nAppreciate the love. Big things loading",
+                      style: TextStyle(fontWeight: FontWeight.w300),
+                    ),
+                    TextSpan(
+                      text: "💙",
+                      style: TextStyle(
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ],
+                ),
               ),
 
               SizedBox(height: 20),

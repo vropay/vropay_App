@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:vropay_final/Utilities/screen_utils.dart';
 import '../../../../../Components/top_navbar.dart';
 import '../../../../../Components/bottom_navbar.dart';
 import '../controllers/dashboard_controller.dart';
@@ -10,11 +11,13 @@ class DashboardView extends GetView<DashboardController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: PreferredSize(
+          preferredSize: Size.fromHeight(ScreenUtils.height * 0.15),
+          child: CustomTopNavBar()),
       body: Padding(
         padding: const EdgeInsets.only(top: 20),
         child: Column(
-          children: const [
-            CustomTopNavBar(),
+          children: [
             Expanded(
               child: Center(
                 child: Text(

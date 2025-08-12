@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:vropay_final/Utilities/screen_utils.dart';
 
 class InfoFieldRow extends StatelessWidget {
   final IconData icon;
@@ -25,12 +26,20 @@ class InfoFieldRow extends StatelessWidget {
         Row(
           children: [
             Icon(icon, color: const Color(0xFF83A5FA)),
-            const SizedBox(width: 8),
-            Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
-            const Spacer(),
+            SizedBox(width: ScreenUtils.width * 0.04),
+            Text(label,
+                style: TextStyle(
+                    fontWeight: FontWeight.w600, color: Color(0xFF172B75))),
+            Spacer(),
             isEditMode
                 ? SizedBox(width: 160, child: editChild)
-                : Text('Selected', textAlign: TextAlign.right),
+                : Text(value,
+                    textAlign: TextAlign.left,
+                    style: TextStyle(
+                        fontSize: 14,
+                        color: Color(0xFF616161),
+                        fontWeight: FontWeight.w600)),
+            SizedBox(width: ScreenUtils.width * 0.04),
           ],
         ),
         if (isEditMode && helper != null)

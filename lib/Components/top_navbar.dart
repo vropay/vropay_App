@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:vropay_final/Utilities/screen_utils.dart';
 
 import 'back_icon.dart';
 
@@ -8,14 +9,14 @@ class CustomTopNavBar extends StatelessWidget {
   final Function(int)? onItemTap;
 
   const CustomTopNavBar({
-    Key? key,
+    super.key,
     this.selectedIndex,
     this.onItemTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
-
+    ScreenUtils.setContext(context);
     final List<_NavItem> _items = const [
       _NavItem(imagePath: 'assets/icons/chat.png', label: 'Chat'),
       _NavItem(imagePath: 'assets/icons/library.png', label: 'Library'),
@@ -24,7 +25,7 @@ class CustomTopNavBar extends StatelessWidget {
     ];
 
     return Padding(
-      padding: const EdgeInsets.only(top: 32, left: 5, right: 5, bottom: 8),
+      padding: const EdgeInsets.only(top: 50, left: 5, right: 5, bottom: 8),
       child: Row(
         children: [
           Padding(
@@ -34,7 +35,6 @@ class CustomTopNavBar extends StatelessWidget {
               child: BackIcon(),
             ),
           ),
-          const SizedBox(width: 2),
           Expanded(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -45,9 +45,11 @@ class CustomTopNavBar extends StatelessWidget {
                 return GestureDetector(
                   onTap: () => onItemTap?.call(index),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
-                      color: isSelected ? Color(0xFF006DF4) : Colors.transparent,
+                      color:
+                          isSelected ? Color(0xFF006DF4) : Colors.transparent,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Column(
@@ -58,7 +60,9 @@ class CustomTopNavBar extends StatelessWidget {
                           height: 40,
                           padding: const EdgeInsets.all(2),
                           decoration: BoxDecoration(
-                            color: isSelected ? Color(0xFF006DF4) : Colors.transparent,
+                            color: isSelected
+                                ? Color(0xFF006DF4)
+                                : Colors.transparent,
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Image.asset(
@@ -66,13 +70,14 @@ class CustomTopNavBar extends StatelessWidget {
                             fit: BoxFit.contain,
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        SizedBox(height: ScreenUtils.height * 0.005),
                         Text(
                           item.label,
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
-                            color: isSelected ? Colors.white : Color(0xFF006DF4),
+                            color:
+                                isSelected ? Colors.white : Color(0xFF006DF4),
                           ),
                         ),
                       ],

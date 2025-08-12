@@ -1,10 +1,14 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:vropay_final/Components/bottom_navbar.dart';
+import 'package:vropay_final/Components/top_navbar.dart';
+import 'package:vropay_final/Utilities/constants/KImages.dart';
+import 'package:vropay_final/Utilities/screen_utils.dart';
 import 'package:vropay_final/app/modules/Screens/knowledge_center_Screen/controllers/knowledge_center_screen_controller.dart';
 import 'package:vropay_final/app/routes/app_pages.dart';
 
-import '../../../../../Components/bottom_navbar.dart';
-import '../../../../../Components/top_navbar.dart';
+
 
 class KnowledgeCenterScreenView
     extends GetView<KnowledgeCenterScreenController> {
@@ -12,17 +16,17 @@ class KnowledgeCenterScreenView
 
   @override
   Widget build(BuildContext context) {
+    ScreenUtils.setContext(context);
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9),
       bottomNavigationBar: CustomBottomNavBar(),
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(150),
+        child: CustomTopNavBar(selectedIndex: null),
+      ),
       body: SafeArea(
         child: Column(
           children: [
-            const CustomTopNavBar(selectedIndex: null),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-            ),
-            // Scrollable content
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -32,68 +36,72 @@ class KnowledgeCenterScreenView
                     const SizedBox(height: 8),
                     TextField(
                       decoration: InputDecoration(
-                        hintText: 'Try searching the topic like “STOCKS”',
-                        filled: true,
-                        fillColor: const Color(0xFFDBEFFF),
-                        prefixIcon:
-                            const Icon(Icons.search, color: Colors.grey),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Flexible(
-                            flex: 3,
-                            child: Column(
-                              children: [
-                                RichText(
-                                  text: TextSpan(
-                                    style: const TextStyle(
-                                      fontSize: 70,
-                                      color: Color(0xFFFA7244),
-                                    ),
-                                    children: [
-                                      TextSpan(
-                                          text: "push\n",
-                                          style: TextStyle(
-                                              color: Color(0xFFFA7244),
-                                              fontWeight: FontWeight.w300)),
-                                      TextSpan(
-                                        text: "Your\n",
-                                        style: TextStyle(
-                                          color: Color(0xFFFF4601),
-                                          fontWeight: FontWeight.w300,
-                                        ),
-                                      ),
-                                      TextSpan(
-                                        text: "Limits",
-                                        style: TextStyle(
-                                          color: Color(0xFFBD1C19),
-                                          fontWeight: FontWeight.w300,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
+                          hintText: 'Try searching the topic like “STOCKS”',
+                          hintStyle: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w400,
+                              color: Color(0xFF4A4A4A)),
+                          filled: true,
+                          fillColor: const Color(0xFFDBEFFF).withOpacity(0.5),
+                          prefixIcon: Image.asset(KImages.searchIcon),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
                           ),
-                          Flexible(
-                            flex: 2,
-                            child: Center(
-                              child: Image.asset(
-                                'assets/images/knowledgeCenter.png',
-                                height: 150,
-                                fit: BoxFit.contain,
+                          suffixIcon: Container(
+                              height: ScreenUtils.height * 0.02,
+                              width: ScreenUtils.width * 0.02,
+                              color: Color(0xFFF2F7FB),
+                              child: Icon(CupertinoIcons.clear,
+                                  color: Color(0xFF4A4A4A)))),
+                    ),
+                    SizedBox(height: ScreenUtils.height * 0.02),
+                    SizedBox(
+                      width: double.infinity,
+                      child: Stack(
+                        children: [
+                          Column(
+                            children: [
+                              RichText(
+                                text: TextSpan(
+                                  style: const TextStyle(
+                                    fontSize: 70,
+                                    color: Color(0xFFFA7244),
+                                  ),
+                                  children: [
+                                    TextSpan(
+                                        text: "push\n",
+                                        style: TextStyle(
+                                            color: Color(0xFFFA7244),
+                                            fontWeight: FontWeight.w300)),
+                                    TextSpan(
+                                      text: "Your\n",
+                                      style: TextStyle(
+                                        color: Color(0xFFFF4601),
+                                        fontWeight: FontWeight.w300,
+                                      ),
+                                    ),
+                                    TextSpan(
+                                      text: "Limits",
+                                      style: TextStyle(
+                                        color: Color(0xFFBD1C19),
+                                        fontSize: 70,
+                                        fontWeight: FontWeight.w300,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
+                            ],
+                          ),
+                          Positioned(
+                            top: 40,
+                            right: 10,
+                            child: Image.asset(
+                              'assets/images/knowledgeCenter.png',
+                              height: ScreenUtils.height * 0.2,
+                              width: ScreenUtils.width * 0.4,
+                              fit: BoxFit.contain,
                             ),
                           ),
                         ],
@@ -127,98 +135,128 @@ class KnowledgeCenterScreenView
                         ],
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: ScreenUtils.height * 0.02),
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(
                           horizontal: 20, vertical: 16),
                       decoration: BoxDecoration(
-                        color: Color(0xFFDBEFFF),
+                        color: Color(0xFFDBEFFF).withOpacity(0.5),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Text("INVESTING (title of last topic read)"),
+                      child: const Text(
+                        "INVESTING (title of last topic read)",
+                        style: TextStyle(
+                            color: Color(0xFF4A4A4A),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w400),
+                      ),
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: ScreenUtils.height * 0.02),
                     _buildCard('world\n&\nculture', () {
                       Get.toNamed(Routes.WORLD_AND_CULTURE_SCREEN);
                     }),
-                    const SizedBox(height: 12),
+                    SizedBox(height: ScreenUtils.height * 0.02),
                     _buildCard('personal\ngrowth', () {
                       Get.toNamed(Routes.PERSONAL_GROWTH_SCREEN);
                     }),
-                    const SizedBox(height: 12),
+                    SizedBox(height: ScreenUtils.height * 0.02),
                     _buildCard('business\n&\ninnovation', () {
                       Get.toNamed(Routes.BUSINESS_INNOVATION_SCREEN);
                     }),
-                    const SizedBox(height: 24),
-                    Container(
-                      color: const Color(0xFFF9E4D7),
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              const Text(
-                                "today's\nreadings",
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w500,
-                                    color: Color(0xFFE93A47),
-                                    fontSize: 25),
-                              ),
-                              SizedBox(
-                                width: 90,
-                              ),
-                              Image.asset(
-                                'assets/icons/communitybox.png',
-                                height: 30,
-                              )
-                            ],
-                          ),
-                          const SizedBox(height: 20),
-                          GridView.count(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            crossAxisCount: 2,
-                            crossAxisSpacing: 12,
-                            mainAxisSpacing: 12,
-                            children: const [
-                              _CommunityBox(
-                                label: 'HEALTH',
-                                color: Color(0xFFFF4F4E),
-                                colorText: Color(0xFF8E2100),
-                              ),
-                              _CommunityBox(
-                                label: 'ASTRO',
-                                color: Color(0xFF8E2100),
-                                colorText: Color(0xFFFF0017),
-                              ),
-                              _CommunityBox(
-                                label: 'TRAVEL',
-                                color: Color(0xFFFF692D),
-                                colorText: Color(0xFFD80031),
-                              ),
-                              _CommunityBox(
-                                label: 'BOOKS',
-                                color: Color(0xFFFF0017),
-                                colorText: Color(0xFF690005),
-                              ),
-                              _CommunityBox(
-                                label: 'FINANCE',
-                                color: Color(0xFFFE8081),
-                                colorText: Color(0xFF8E2100),
-                              ),
-                              _CommunityBox(
-                                label: 'MUSIC',
-                                color: Color(0xFFA65854),
-                                colorText: Color(0xFFFF692D),
-                              ),
-                            ],
-                          ),
-                        ],
+                    SizedBox(height: ScreenUtils.height * 0.02),
+                    Card(
+                      color: Color(0xFFF9E4D7),
+                      elevation: 2,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "today's",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                        color: Color(0xFFE93A47),
+                                        fontSize: 25,
+                                      ),
+                                    ),
+                                    SizedBox(height: 4),
+                                    Container(
+                                      width: ScreenUtils.width * 0.4,
+                                      height: 1,
+                                      color: Color(0xFFE93A47),
+                                    ),
+                                    SizedBox(height: 4),
+                                    Text(
+                                      "readings",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                        color: Color(0xFFE93A47),
+                                        fontSize: 25,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(
+                                  width: ScreenUtils.width * 0.1,
+                                ),
+                                Image.asset(
+                                  'assets/icons/communitybox.png',
+                                  height: 30,
+                                )
+                              ],
+                            ),
+                            SizedBox(height: ScreenUtils.height * 0.02),
+                            GridView.count(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              crossAxisCount: 2,
+                              crossAxisSpacing: 12,
+                              mainAxisSpacing: 12,
+                              children: const [
+                                _CommunityBox(
+                                  label: 'HEALTH',
+                                  color: Color(0xFFFF4F4E),
+                                  colorText: Color(0xFF8E2100),
+                                ),
+                                _CommunityBox(
+                                  label: 'ASTRO',
+                                  color: Color(0xFF8E2100),
+                                  colorText: Color(0xFFFF0017),
+                                ),
+                                _CommunityBox(
+                                  label: 'TRAVEL',
+                                  color: Color(0xFFFF692D),
+                                  colorText: Color(0xFFD80031),
+                                ),
+                                _CommunityBox(
+                                  label: 'BOOKS',
+                                  color: Color(0xFFFF0017),
+                                  colorText: Color(0xFF690005),
+                                ),
+                                _CommunityBox(
+                                  label: 'FINANCE',
+                                  color: Color(0xFFFE8081),
+                                  colorText: Color(0xFF8E2100),
+                                ),
+                                _CommunityBox(
+                                  label: 'MUSIC',
+                                  color: Color(0xFFA65854),
+                                  colorText: Color(0xFFFF692D),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: ScreenUtils.height * 0.02),
                   ],
                 ),
               ),

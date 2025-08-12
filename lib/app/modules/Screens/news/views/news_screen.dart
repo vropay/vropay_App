@@ -35,7 +35,7 @@ class NewsScreen extends GetView<NewsController> {
                       "NEWS",
                       style: TextStyle(
                         fontSize: ScreenUtils.x(25),
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w300,
                         color: Color(0xFF01B3B2).withOpacity(0.5),
                       ),
                     ),
@@ -45,7 +45,7 @@ class NewsScreen extends GetView<NewsController> {
                         "know what is happening",
                         style: TextStyle(
                           fontSize: ScreenUtils.x(5),
-                          fontWeight: FontWeight.w400,
+                          fontWeight: FontWeight.w500,
                           color: Color(0xFF6253DB),
                         ),
                       ),
@@ -83,7 +83,10 @@ class NewsScreen extends GetView<NewsController> {
                                 color: Color(0xFF172B75),
                                 fontSize: ScreenUtils.x(3.5),
                                 fontWeight: FontWeight.w300),
-                            prefixIcon: Image.asset(KImages.searchIcon),
+                            prefixIcon: Image.asset(
+                              KImages.searchIcon,
+                              color: Color(0xFF172B75),
+                            ),
                             suffixIcon: IconButton(
                               icon: Icon(
                                 Icons.clear,

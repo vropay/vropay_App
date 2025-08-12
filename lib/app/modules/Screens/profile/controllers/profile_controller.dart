@@ -12,8 +12,8 @@ class ProfileController extends GetxController {
   final phoneController = TextEditingController(text: '0245814170');
   final emailController = TextEditingController(text: 'vikas67@xyz.com');
 
-  final genderOptions = ['Male', 'Female', 'Other'];
-  final selectedGender = 'Male'.obs;
+  final genderOptions = ['male', 'female', 'other'];
+  final selectedGender = 'male'.obs;
 
   void saveGeneralProfile() {
     /// include logic to send to backend or local storage here.
@@ -24,6 +24,7 @@ class ProfileController extends GetxController {
         '${emailController.text} '
         '${selectedGender.value}');
   }
+
   final categoryOptions = ['Business owner', 'Student', 'Working Professional'];
   final topicsOptions = ['Selected', 'All', 'None'];
   final difficultyOptions = ['Beginner', 'Intermediate', 'Advance'];
@@ -35,7 +36,6 @@ class ProfileController extends GetxController {
     'Working Professional': Image.asset('assets/icons/student.png'),
     'Business owner': Image.asset('assets/icons/student.png'),
   };
-
 
   final selectedCategory = 'Business owner'.obs;
   final selectedTopics = 'Selected'.obs;
@@ -51,6 +51,7 @@ class ProfileController extends GetxController {
         'Community: ${selectedCommunity.value}\n'
         'Notifications: ${selectedNotifications.value}');
   }
+
   @override
   void dispose() {
     firstNameController.dispose();

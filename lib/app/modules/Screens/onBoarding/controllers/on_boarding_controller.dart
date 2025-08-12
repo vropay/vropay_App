@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:vropay_final/app/modules/Screens/learn_screen/views/learn_screen.dart';
 import '../../home/views/home_view.dart';
 
 class OnBoardingController extends GetxController {

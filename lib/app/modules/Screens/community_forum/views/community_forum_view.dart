@@ -1,6 +1,8 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:vropay_final/Utilities/constants/KImages.dart';
+import 'package:vropay_final/Utilities/screen_utils.dart';
 import 'package:vropay_final/app/modules/Screens/community_forum/controllers/community_forum_controller.dart';
 import 'package:vropay_final/app/routes/app_pages.dart';
 
@@ -8,10 +10,11 @@ import '../../../../../Components/bottom_navbar.dart';
 import '../../../../../Components/top_navbar.dart';
 
 class CommunityForumView extends GetView<CommunityForumController> {
-  const CommunityForumView({Key? key}) : super(key: key);
+  const CommunityForumView({super.key});
 
   @override
   Widget build(BuildContext context) {
+    ScreenUtils.setContext(context);
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9),
       bottomNavigationBar: CustomBottomNavBar(),
@@ -32,76 +35,79 @@ class CommunityForumView extends GetView<CommunityForumController> {
                     const SizedBox(height: 8),
                     TextField(
                       decoration: InputDecoration(
-                        hintText: 'Try searching the community like “STOCKS”',
-                        filled: true,
-                        fillColor: const Color(0xFFDBEFFF),
-                        prefixIcon:
-                            const Icon(Icons.search, color: Colors.grey),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Flexible(
-                            flex: 3,
-                            child: Column(
-                              children: [
-                                RichText(
-                                  text: TextSpan(
-                                    style: const TextStyle(
-                                      fontSize: 70,
-                                      color: Color(0xFF18707C),
-                                    ),
-                                    children: [
-                                      TextSpan(
-                                          text: "find\n",
-                                          style: TextStyle(
-                                              color: Color(0xFF5A9267),
-                                              fontWeight: FontWeight.w300)),
-                                      TextSpan(
-                                        text: "Your\n",
-                                        style: TextStyle(
-                                          color: Color(0xFF4D6348),
-                                          fontWeight: FontWeight.w300,
-                                        ),
-                                      ),
-                                      TextSpan(
-                                        text: "Tribe",
-                                        style: TextStyle(
-                                          color: Color(0xFF25525C),
-                                          fontWeight: FontWeight.w300,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
+                          hintText: 'Try searching the community like “STOCKS”',
+                          hintStyle: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w400,
+                              color: Color(0xFF4A4A4A)),
+                          filled: true,
+                          fillColor: const Color(0xFFDBEFFF).withOpacity(0.5),
+                          prefixIcon: Image.asset(KImages.searchIcon),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
                           ),
-                          Flexible(
-                            flex: 2,
-                            child: Center(
-                              child: Image.asset(
-                                'assets/images/findYourTribe.png',
-                                height: 150,
-                                fit: BoxFit.contain,
+                          suffixIcon: Container(
+                              height: ScreenUtils.height * 0.02,
+                              width: ScreenUtils.width * 0.02,
+                              color: Color(0xFFF2F7FB),
+                              child: Icon(CupertinoIcons.clear,
+                                  color: Color(0xFF4A4A4A)))),
+                    ),
+                    SizedBox(height: ScreenUtils.height * 0.02),
+                    SizedBox(
+                      width: double.infinity,
+                      child: Stack(
+                        children: [
+                          Column(
+                            children: [
+                              RichText(
+                                text: TextSpan(
+                                  style: const TextStyle(
+                                    fontSize: 70,
+                                    color: Color(0xFF18707C),
+                                  ),
+                                  children: [
+                                    TextSpan(
+                                        text: "find\n",
+                                        style: TextStyle(
+                                            color: Color(0xFF5A9267),
+                                            fontWeight: FontWeight.w300)),
+                                    TextSpan(
+                                      text: "Your\n",
+                                      style: TextStyle(
+                                        color: Color(0xFF4D6348),
+                                        fontWeight: FontWeight.w300,
+                                      ),
+                                    ),
+                                    TextSpan(
+                                      text: "Tribe",
+                                      style: TextStyle(
+                                        color: Color(0xFF25525C),
+                                        fontWeight: FontWeight.w300,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
+                            ],
+                          ),
+                          Positioned(
+                            top: 0,
+                            right: 0,
+                            child: Image.asset(
+                              'assets/images/findYourTribe.png',
+                              height: ScreenUtils.height * 0.3,
+                              width: ScreenUtils.width * 0.5,
+                              fit: BoxFit.contain,
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: ScreenUtils.height * 0.03),
                     Padding(
-                      padding: const EdgeInsets.only(left: 25),
+                      padding: const EdgeInsets.all(8.0),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -109,7 +115,7 @@ class CommunityForumView extends GetView<CommunityForumController> {
                             "jump back into",
                             style: TextStyle(
                               fontWeight: FontWeight.w500,
-                              color: Color(0xFF18707C),
+                              color: Color(0xFF3E9292),
                               fontSize: 20,
                             ),
                           ),
@@ -120,7 +126,7 @@ class CommunityForumView extends GetView<CommunityForumController> {
                             padding: const EdgeInsets.only(bottom: 12),
                             child: Image.asset(
                               'assets/images/message.png',
-                              color: Color(0xFF18707C),
+                              color: Color(0xFF3E9292),
                               width: 20,
                               height: 20,
                             ),
@@ -128,31 +134,36 @@ class CommunityForumView extends GetView<CommunityForumController> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: ScreenUtils.height * 0.02),
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(
                           horizontal: 20, vertical: 16),
                       decoration: BoxDecoration(
-                        color: Color(0xFFDBEFFF),
+                        color: Color(0xFFDBEFFF).withOpacity(0.5),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child:
-                          const Text("AI (name of last community connected)"),
+                      child: const Text(
+                        "AI (name of last community connected)",
+                        style: TextStyle(
+                            color: Color(0xFF4A4A4A),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w400),
+                      ),
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: ScreenUtils.height * 0.02),
                     _buildCard('world\n&\nculture', () {
                       Get.toNamed(Routes.WORLD_AND_CULTURE_COMMUNITY_SCREEN);
                     }),
-                    const SizedBox(height: 12),
+                    SizedBox(height: ScreenUtils.height * 0.02),
                     _buildCard('personal\ngrowth', () {
                       Get.toNamed(Routes.PERSONAL_GROWTH_COMMUNITY_SCREEN);
                     }),
-                    const SizedBox(height: 12),
+                    SizedBox(height: ScreenUtils.height * 0.02),
                     _buildCard('business\n&\ninnovation', () {
                       Get.toNamed(Routes.BUSINESS_INNOVATION_COMMUNITY_SCREEN);
                     }),
-                    const SizedBox(height: 24),
+                    SizedBox(height: ScreenUtils.height * 0.02),
                     Container(
                       color: const Color(0xFF01B3B2),
                       padding: const EdgeInsets.all(16),
@@ -241,7 +252,7 @@ class CommunityForumView extends GetView<CommunityForumController> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: ScreenUtils.height * 0.02),
                   ],
                 ),
               ),
@@ -265,16 +276,18 @@ class CommunityForumView extends GetView<CommunityForumController> {
             borderRadius: BorderRadius.circular(20),
           ),
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              SizedBox(height: ScreenUtils.height * 0.04),
               Text(
                 text,
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 40, color: Color(0xFFD9D9D9)),
               ),
-              const SizedBox(height: 8),
               const Spacer(),
               const Row(
                 mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text("know more",
                       textAlign: TextAlign.end,
@@ -317,7 +330,7 @@ class _CommunityBox extends StatelessWidget {
           label,
           textAlign: TextAlign.center,
           style: TextStyle(
-              fontWeight: FontWeight.normal, color: colorText, fontSize: 25),
+              fontWeight: FontWeight.w500, color: colorText, fontSize: 25),
         ),
       ),
     );

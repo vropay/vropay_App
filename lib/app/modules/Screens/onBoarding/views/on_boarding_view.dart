@@ -1,8 +1,8 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:vropay_final/Utilities/screen_utils.dart';
+import 'package:vropay_final/app/modules/Screens/profile/views/profile_view.dart';
 import '../../../../../Components/constant_buttons.dart';
 import '../../../../../Utilities/constants/Colors.dart';
 import '../../../../../Utilities/constants/KImages.dart';
@@ -10,6 +10,8 @@ import '../controllers/on_boarding_controller.dart';
 import '../widgets/faq_help.dart';
 
 class OnBoardingView extends StatefulWidget {
+  const OnBoardingView({super.key});
+
   @override
   _OnBoardingViewState createState() => _OnBoardingViewState();
 }
@@ -37,8 +39,10 @@ class _OnBoardingViewState extends State<OnBoardingView> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   TextButton(
-                    onPressed:
-                        _controller.goToSignup, // This now goes to home screen
+                    onPressed: () {
+                      Get.offAll(
+                          () => ProfileView()); // This now goes to home screen
+                    },
                     child: Text(
                       'Skip',
                       style: TextStyle(
@@ -227,7 +231,6 @@ class _OnBoardingViewState extends State<OnBoardingView> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const SizedBox(height: 10),
         Expanded(
           child: Image.asset(
             image,

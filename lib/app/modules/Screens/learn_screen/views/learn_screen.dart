@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:vropay_final/Components/top_navbar.dart';
+import 'package:vropay_final/Utilities/screen_utils.dart';
 
 import 'package:vropay_final/app/routes/app_pages.dart';
 
@@ -12,6 +13,7 @@ class LearnScreenView extends GetView<LearnScreenController> {
 
   @override
   Widget build(BuildContext context) {
+    ScreenUtils.setContext(context);
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(150),
@@ -20,7 +22,7 @@ class LearnScreenView extends GetView<LearnScreenController> {
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
             child: Column(
               children: [
                 Padding(
@@ -31,8 +33,8 @@ class LearnScreenView extends GetView<LearnScreenController> {
                       Container(
                         padding:
                             EdgeInsets.symmetric(horizontal: 20, vertical: 30),
-                        width: 304,
-                        height: 325,
+                        width: ScreenUtils.width * 0.8,
+                        height: ScreenUtils.height * 0.38,
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(20),
@@ -41,10 +43,9 @@ class LearnScreenView extends GetView<LearnScreenController> {
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
-                              blurRadius: 10,
-                              offset: Offset(0, 4),
-                            ),
+                                color: Colors.black.withOpacity(0.05),
+                                blurRadius: 10,
+                                offset: Offset(0, 4)),
                           ],
                         ),
                         child: Column(
@@ -65,7 +66,7 @@ class LearnScreenView extends GetView<LearnScreenController> {
                                   "consistent ,",
                                   style: TextStyle(
                                     fontSize: 40,
-                                    fontWeight: FontWeight.w500,
+                                    fontWeight: FontWeight.w400,
                                     color: Color(0xFF006DF4),
                                   ),
                                 ),
@@ -78,7 +79,7 @@ class LearnScreenView extends GetView<LearnScreenController> {
                                   "let curiosity",
                                   style: TextStyle(
                                     fontSize: 25,
-                                    fontWeight: FontWeight.w400,
+                                    fontWeight: FontWeight.w500,
                                     color: Color(0xFF616161),
                                   ),
                                 ),
@@ -96,28 +97,25 @@ class LearnScreenView extends GetView<LearnScreenController> {
                         ),
                       ),
                       Positioned(
-                        bottom: -35,
+                        bottom: -25,
                         right: -10,
-                        child: SizedBox(
-                          height: 60,
-                          width: 60,
-                          child: FloatingActionButton(
-                              onPressed: () {},
-                              backgroundColor: Color(0xFF6A3DBE),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(40),
-                              ),
-                              child: Image.asset(
-                                  'assets/icons/downward_arrow.png',
-                                  color: Colors.white,
-                                  height: 40)),
+                        child: Container(
+                          height: ScreenUtils.height * 0.07,
+                          width: ScreenUtils.width * 0.15,
+                          decoration: BoxDecoration(
+                            color: Color(0xFF6A3DBE),
+                            shape: BoxShape.circle,
+                          ),
+                          padding: EdgeInsets.all(12),
+                          child: Image.asset('assets/icons/downward_arrow.png',
+                              color: Colors.white, height: 25, width: 25),
                         ),
                       ),
                     ],
                   ),
                 ),
 
-                SizedBox(height: 30),
+                SizedBox(height: ScreenUtils.height * 0.03),
 
                 // Info Cards
                 _infoCard(
@@ -126,11 +124,11 @@ class LearnScreenView extends GetView<LearnScreenController> {
                   Color(0xFFE93A47),
                   "learn",
                   'assets/images/cupboard.png',
-                  128,
-                  80,
+                  ScreenUtils.height * 0.12,
+                  ScreenUtils.width * 0.2,
                   () => Get.toNamed(Routes.KNOWLEDGE_CENTER_SCREEN),
                 ),
-                SizedBox(height: 40),
+                SizedBox(height: ScreenUtils.height * 0.03),
 
                 _infoCard(
                   "Community\n Forum",
@@ -138,30 +136,20 @@ class LearnScreenView extends GetView<LearnScreenController> {
                   Color(0xFF3E9292),
                   "engage",
                   'assets/images/communityForum.png',
-                  122,
-                  102,
+                  ScreenUtils.height * 0.12,
+                  ScreenUtils.width * 0.2,
                   () => Get.toNamed(Routes.COMMUNITY_FORUM),
                 ),
-                SizedBox(height: 40),
-
-                _infoCard(
-                  "StartUp Tuition",
-                  "Turn your ideas into action with simplified startup knowledge",
-                  Color(0xFFEF9736),
-                  "prepare",
-                  'assets/images/startUp.png',
-                  133,
-                  107,
-                  () => Get.toNamed(Routes.TRACK_SELECTION),
-                ),
-                SizedBox(height: 40),
+                SizedBox(height: ScreenUtils.height * 0.03),
 
                 // Bottom Image
                 Image.asset(
                   'assets/images/targetImage.png',
-                  height: 178,
-                  width: 207,
+                  height: ScreenUtils.height * 0.3,
+                  width: ScreenUtils.width * 0.65,
                 ),
+
+                SizedBox(height: ScreenUtils.height * 0.03),
               ],
             ),
           ),
@@ -182,81 +170,86 @@ class LearnScreenView extends GetView<LearnScreenController> {
     VoidCallback onPressed,
   ) {
     return Container(
+      height: ScreenUtils.height * 0.35,
       width: double.infinity,
-      padding: EdgeInsets.all(20),
+      padding: EdgeInsets.only(top: 20, bottom: 10, left: 20, right: 10),
       decoration: BoxDecoration(
         color: color,
         borderRadius: BorderRadius.circular(20),
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Column(
         children: [
-          // Left Text Section
-          Expanded(
-            flex: 3,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 30,
-                    fontWeight: FontWeight.w300,
-                    color: Colors.white,
-                    height: 1.2,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    fontSize: 15,
-                    color: Colors.white70,
-                    height: 1.4,
-                  ),
-                ),
-                const SizedBox(height: 22),
-                Align(
-                  alignment: Alignment.center,
-                  child: SizedBox(
-                    width: 250,
-                    child: ElevatedButton(
-                      onPressed: onPressed,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: color,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 10),
-                        textStyle: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.max,
-                        children: [
-                          Text(
-                            actionText,
-                            style: TextStyle(fontSize: 15),
-                          ),
-                          const SizedBox(width: 40),
-                          const Icon(Icons.arrow_forward, size: 18),
-                        ],
-                      ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              // Left Text Section
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 30,
+                      fontWeight: FontWeight.w300,
+                      color: Color(0xFFD9D9D9),
                     ),
                   ),
-                ),
-              ],
-            ),
-          ),
+                  SizedBox(height: ScreenUtils.height * 0.02),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w300,
+                    ),
+                  ),
+                ],
+              ),
 
-          SizedBox(width: 20),
-          Image.asset(
-            imagePath,
-            height: imageHeight,
-            width: imageWidth,
-            fit: BoxFit.contain,
+              SizedBox(width: ScreenUtils.width * 0.05),
+              Image.asset(
+                imagePath,
+                height: imageHeight,
+                width: imageWidth,
+                fit: BoxFit.contain,
+              ),
+            ],
+          ),
+          SizedBox(height: ScreenUtils.height * 0.04),
+          Align(
+            alignment: Alignment.center,
+            child: SizedBox(
+              width: ScreenUtils.width * 0.5,
+              height: ScreenUtils.height * 0.05,
+              child: ElevatedButton(
+                onPressed: onPressed,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: color,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  textStyle: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    Text(
+                      actionText,
+                      style: TextStyle(
+                          fontSize: 15,
+                          color: Colors.black,
+                          fontWeight: FontWeight.w400),
+                    ),
+                    SizedBox(width: ScreenUtils.width * 0.05),
+                    const Icon(Icons.arrow_forward, size: 24),
+                  ],
+                ),
+              ),
+            ),
           ),
         ],
       ),

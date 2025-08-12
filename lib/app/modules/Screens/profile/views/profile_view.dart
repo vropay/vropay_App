@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:iconsax/iconsax.dart';
 import 'package:vropay_final/Components/bottom_navbar.dart';
 import 'package:vropay_final/Components/top_navbar.dart';
+import 'package:vropay_final/Utilities/constants/KImages.dart';
+import 'package:vropay_final/Utilities/screen_utils.dart';
 import 'package:vropay_final/app/modules/Screens/profile/widgets/sign_out.dart';
 
 import '../../../../routes/app_pages.dart';
@@ -21,57 +22,66 @@ class ProfileView extends StatelessWidget {
     final controller = Get.put(ProfileController());
 
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              CustomTopNavBar(selectedIndex: null),
-              const SizedBox(height: 16),
-              Obx(() => _ProfileSection(
-                  isEditMode: controller.isGeneralEditMode.value)),
-              const SizedBox(height: 20),
-              Obx(() => _PreferencesSection(
-                  isEditMode: controller.isPreferencesEditMode.value)),
-              const SizedBox(height: 20),
-              _SubscriptionBanner(),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                          backgroundColor: Color(0xFF4D84F7)),
-                      onPressed: () {
-                        Get.dialog(SignOutDialog());
-                      },
-                      child: Text(
-                        'SIGN OUT',
-                        style: TextStyle(color: Colors.white),
-                      ),
+      backgroundColor: Color(0xFFF7F7F7),
+      appBar: PreferredSize(
+          preferredSize: Size.fromHeight(ScreenUtils.height * 0.15),
+          child: CustomTopNavBar(selectedIndex: null)),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Obx(() => _ProfileSection(
+                isEditMode: controller.isGeneralEditMode.value)),
+            SizedBox(height: ScreenUtils.height * 0.02),
+            Obx(() => _PreferencesSection(
+                isEditMode: controller.isPreferencesEditMode.value)),
+            SizedBox(height: ScreenUtils.height * 0.02),
+            _SubscriptionBanner(),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor: Color(0xFF4D84F7),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10))),
+                    onPressed: () {
+                      Get.dialog(SignOutDialog());
+                    },
+                    child: Text(
+                      'SIGN OUT',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w400),
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                          backgroundColor: Color(0xFF4D84F7)),
-                      onPressed: () {
-                        Get.toNamed(Routes.DEACTIVATE_SCREEN);
-                      },
-                      child: Text(
-                        'DEACTIVATE',
-                        style: TextStyle(color: Colors.white),
-                      ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor: Color(0xFF4D84F7),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10))),
+                    onPressed: () {
+                      Get.toNamed(Routes.DEACTIVATE_SCREEN);
+                    },
+                    child: Text(
+                      'DEACTIVATE',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w400),
                     ),
                   ),
-                  const SizedBox(height: 10),
-                ],
-              ),
-            ],
-          ),
+                ),
+                const SizedBox(height: 10),
+              ],
+            ),
+          ],
         ),
       ),
       bottomNavigationBar: CustomBottomNavBar(),
@@ -87,56 +97,56 @@ class _ProfileSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<ProfileController>();
+    ScreenUtils.setContext(context);
 
     return Stack(
       clipBehavior: Clip.none,
       children: [
         Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           margin: const EdgeInsets.only(top: 24),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(16),
-            boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 5)],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               /// Edit/Done button
-              Align(
-                alignment: Alignment.topRight,
-                child: GestureDetector(
-                  onTap: () {
-                    if (controller.isGeneralEditMode.value) {
-                      controller.saveGeneralProfile();
-                    }
-                    controller.isGeneralEditMode.toggle();
-                  },
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        isEditMode ? 'done' : 'edit',
-                        style: const TextStyle(
-                          color: Colors.grey,
-                          fontSize: 14,
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      Image.asset(
-                        'assets/icons/profileEdit.png',
-                        width: 16,
-                        height: 16,
-                        color: Colors.red,
-                      ),
-                    ],
-                  ),
+              GestureDetector(
+                onTap: () {
+                  if (controller.isGeneralEditMode.value) {
+                    controller.saveGeneralProfile();
+                  }
+                  controller.isGeneralEditMode.toggle();
+                },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      isEditMode ? 'done' : 'edit',
+                      style: const TextStyle(
+                          color: Color(0xFF616161),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600),
+                    ),
+                    SizedBox(width: ScreenUtils.width * 0.02),
+                    Image.asset(
+                      'assets/icons/profileEdit.png',
+                      width: ScreenUtils.width * 0.03,
+                      height: ScreenUtils.height * 0.03,
+                      color: Color(0xFFEF2D56),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: ScreenUtils.height * 0.04),
 
               // Avatar & Name
               Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Padding(
                     padding: const EdgeInsets.only(left: 20),
@@ -149,77 +159,105 @@ class _ProfileSection extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 50),
+                  SizedBox(width: ScreenUtils.width * 0.05),
                   Expanded(
-                    child: Row(
+                    child: Column(
                       children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'First',
-                                style: TextStyle(fontWeight: FontWeight.w600),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    'First',
+                                    style: TextStyle(
+                                        fontWeight: isEditMode
+                                            ? FontWeight.w400
+                                            : FontWeight.w600,
+                                        color: Color(0xFF172B75)),
+                                  ),
+                                  SizedBox(height: ScreenUtils.height * 0.015),
+                                  isEditMode
+                                      ? BlueEditableField(
+                                          controller:
+                                              controller.firstNameController,
+                                          hint: 'Vikas',
+                                        )
+                                      : Text(
+                                          controller.firstNameController.text,
+                                          style: TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: isEditMode
+                                                  ? FontWeight.w400
+                                                  : FontWeight.w600,
+                                              color: Color(0xFF616161)),
+                                        ),
+                                ],
                               ),
-                              const SizedBox(height: 4),
-                              isEditMode
-                                  ? BlueEditableField(
-                                      controller:
-                                          controller.firstNameController,
-                                      hint: 'Vikas',
-                                    )
-                                  : Text(
-                                      controller.firstNameController.text,
-                                      style: const TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w700,
-                                          color: Color(0xFF616161)),
-                                    ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Last',
-                                style: TextStyle(fontWeight: FontWeight.w600),
+                            ),
+                            SizedBox(
+                                width: isEditMode
+                                    ? ScreenUtils.width * 0.1
+                                    : ScreenUtils.width * 0.01),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  const Text(
+                                    'Last',
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.w600),
+                                  ),
+                                  SizedBox(height: ScreenUtils.height * 0.015),
+                                  isEditMode
+                                      ? BlueEditableField(
+                                          controller:
+                                              controller.lastNameController,
+                                          hint: 'raika',
+                                        )
+                                      : Text(
+                                          controller.lastNameController.text,
+                                          style: TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: isEditMode
+                                                  ? FontWeight.w400
+                                                  : FontWeight.w600,
+                                              color: Color(0xFF616161)),
+                                        ),
+                                ],
                               ),
-                              const SizedBox(height: 4),
-                              isEditMode
-                                  ? BlueEditableField(
-                                      controller: controller.lastNameController,
-                                      hint: 'raika',
-                                    )
-                                  : Text(
-                                      controller.lastNameController.text,
-                                      style: const TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w700,
-                                          color: Color(0xFF616161)),
-                                    ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
+                        SizedBox(height: ScreenUtils.height * 0.01),
+                        if (isEditMode)
+                          RichText(
+                            text: TextSpan(
+                              children: [
+                                TextSpan(
+                                  text: '3 time changes ',
+                                  style: TextStyle(
+                                    color: Color(0xFF00B8F0),
+                                    fontSize: 8,
+                                  ),
+                                ),
+                                TextSpan(
+                                  text: 'allowed',
+                                  style: TextStyle(
+                                    color: Color(0xFF4B5563),
+                                    fontSize: 8,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                       ],
                     ),
                   ),
                 ],
               ),
-              if (isEditMode)
-                const Padding(
-                  padding: EdgeInsets.only(top: 4.0, left: 100),
-                  child: Text(
-                    '3 time changes allowed',
-                    style: TextStyle(
-                      color: Color(0xFF4D84F7),
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-              const SizedBox(height: 20),
+              SizedBox(height: ScreenUtils.height * 0.02),
 
               // Phone
               Column(
@@ -237,16 +275,30 @@ class _ProfileSection extends StatelessWidget {
                     helper: null,
                   ),
                   if (isEditMode)
-                    const Padding(
-                      padding: EdgeInsets.only(left: 200.0, top: 4),
-                      child: Text(
-                        'otp - verification needed',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Color(0xFF4D84F7),
+                    Padding(
+                      padding: EdgeInsets.only(
+                          left: ScreenUtils.width * 0.45, top: 4),
+                      child: RichText(
+                        text: TextSpan(
+                          children: [
+                            TextSpan(
+                              text: 'otp - verification ',
+                              style: TextStyle(
+                                fontSize: 8,
+                                color: Color(0xFF00B8F0),
+                              ),
+                            ),
+                            TextSpan(
+                              text: 'needed',
+                              style: TextStyle(
+                                fontSize: 8,
+                                color: Color(0xFF616161),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ),
+                    )
                 ],
               ),
 
@@ -268,16 +320,30 @@ class _ProfileSection extends StatelessWidget {
                     helper: null,
                   ),
                   if (isEditMode)
-                    const Padding(
-                      padding: EdgeInsets.only(left: 200.0, top: 4),
-                      child: Text(
-                        'otp - verification needed',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Color(0xFF4D84F7),
+                    Padding(
+                      padding: EdgeInsets.only(
+                          left: ScreenUtils.width * 0.45, top: 4),
+                      child: RichText(
+                        text: TextSpan(
+                          children: [
+                            TextSpan(
+                              text: 'otp - verification ',
+                              style: TextStyle(
+                                fontSize: 8,
+                                color: Color(0xFF00B8F0),
+                              ),
+                            ),
+                            TextSpan(
+                              text: 'needed',
+                              style: TextStyle(
+                                fontSize: 8,
+                                color: Color(0xFF616161),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ),
+                    )
                 ],
               ),
 
@@ -294,17 +360,16 @@ class _ProfileSection extends StatelessWidget {
                   : Container(
                       padding: const EdgeInsets.symmetric(vertical: 6),
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           // Left: icon + label
                           Row(
                             children: [
-                              Icon(
-                                Iconsax.profile_circle,
-                                color: Color(0xFF83A5FA),
+                              Image.asset(
+                                KImages.profile2Icon,
+                                height: 22,
                               ),
-                              const SizedBox(width: 10),
-                              const Text(
+                              SizedBox(width: ScreenUtils.width * 0.06),
+                              Text(
                                 'Gender',
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
@@ -313,14 +378,16 @@ class _ProfileSection extends StatelessWidget {
                               ),
                             ],
                           ),
-                          // Right: selected value
+                          Spacer(),
                           Text(
                             controller.selectedGender.value,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 14,
-                              color: Colors.black87,
+                              color: Color(0xFF616161),
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
+                          SizedBox(width: ScreenUtils.width * 0.06),
                         ],
                       ),
                     ),
@@ -330,13 +397,13 @@ class _ProfileSection extends StatelessWidget {
 
         // Capsule Label
         Positioned(
-          top: 20,
+          top: 24,
           left: 0,
           right: 0,
           child: Center(
             child: Container(
-              width: 200,
-              height: 40,
+              width: ScreenUtils.width * 0.4,
+              height: ScreenUtils.height * 0.05,
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               decoration: BoxDecoration(
                 color: isEditMode ? Colors.white : const Color(0xFF714FC0),
@@ -409,40 +476,38 @@ class _PreferencesSection extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(16),
-            boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 5)],
           ),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Align(
-                alignment: Alignment.topRight,
-                child: GestureDetector(
-                  onTap: () {
-                    if (controller.isPreferencesEditMode.value) {
-                      controller.savePreferences();
-                    }
-                    controller.isPreferencesEditMode.toggle();
-                  },
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(isEditMode ? 'done' : 'edit',
-                          style: const TextStyle(
-                              color: Colors.grey, fontSize: 14)),
-                      const SizedBox(width: 4),
-                      Image.asset(
-                        'assets/icons/profileEdit.png',
-                        width: 16,
-                        height: 16,
-                        color: Colors.red,
-                      ),
-                    ],
-                  ),
+              GestureDetector(
+                onTap: () {
+                  if (controller.isPreferencesEditMode.value) {
+                    controller.savePreferences();
+                  }
+                  controller.isPreferencesEditMode.toggle();
+                },
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      isEditMode ? 'done' : 'edit',
+                      style: const TextStyle(
+                          color: Color(0xFF616161),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600),
+                    ),
+                    SizedBox(width: ScreenUtils.width * 0.01),
+                    Image.asset(
+                      'assets/icons/profileEdit.png',
+                      width: ScreenUtils.width * 0.03,
+                      height: ScreenUtils.height * 0.03,
+                      color: Color(0xFFEF2D56),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(
-                height: 16,
-              ),
+              SizedBox(height: ScreenUtils.height * 0.02),
               for (var item in items)
                 Padding(
                   padding: EdgeInsets.only(bottom: isEditMode ? 12 : 20),
@@ -464,30 +529,37 @@ class _PreferencesSection extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  Image.asset(item.$1, width: 20, height: 20),
-                                  const SizedBox(width: 10),
+                                  Image.asset(
+                                    item.$1,
+                                    width: 16,
+                                    height: 16,
+                                    color: Color(0xFF4D84F7),
+                                  ),
+                                  SizedBox(width: ScreenUtils.width * 0.04),
                                   Text(
                                     item.$2,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w600,
                                       color: Color(0xFF172B75),
+                                      fontSize: 12,
                                     ),
                                   ),
                                 ],
                               ),
                               Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   Text(
                                     item.$4.value.isEmpty
                                         ? 'Selected'
                                         : 'Selected',
-                                    style:
-                                        const TextStyle(color: Colors.black87),
+                                    style: TextStyle(color: Color(0xFF616161)),
                                   ),
-                                  const SizedBox(width: 4),
-                                  const Icon(Icons.keyboard_arrow_down_sharp,
-                                      color: Color(0xFF83A5FA)),
+                                  SizedBox(width: ScreenUtils.width * 0.01),
+                                  Icon(Icons.keyboard_arrow_down_sharp,
+                                      color: Color(0xFF4D84F7)),
                                 ],
                               ),
                             ],
@@ -510,13 +582,13 @@ class _PreferencesSection extends StatelessWidget {
           ),
         ),
         Positioned(
-          top: 20,
+          top: 24,
           left: 0,
           right: 0,
           child: Center(
             child: Container(
-              width: 200,
-              height: 40,
+              width: ScreenUtils.width * 0.5,
+              height: ScreenUtils.height * 0.05,
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               decoration: BoxDecoration(
                 color: isEditMode ? Colors.white : const Color(0xFF714FC0),
@@ -528,7 +600,7 @@ class _PreferencesSection extends StatelessWidget {
                   style: TextStyle(
                       fontSize: 25,
                       fontWeight: FontWeight.w400,
-                      color: isEditMode ? Color(0xFF172B75) : Colors.white),
+                      color: isEditMode ? Color(0xFF714FC0) : Colors.white),
                 ),
               ),
             ),
@@ -602,12 +674,12 @@ class _SubscriptionBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 112,
+      height: ScreenUtils.height * 0.15,
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: const Color(0xFFEF2D56),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(5),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -616,58 +688,59 @@ class _SubscriptionBanner extends StatelessWidget {
           Text(
             'subscription',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.0,
-                fontSize: 30),
+                color: Colors.white, fontWeight: FontWeight.w400, fontSize: 30),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: ScreenUtils.height * 0.01),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              const Text(
-                'free ',
-                style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w400),
-              ),
-              const Text(
-                'trial ',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w400,
+              RichText(
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text: 'free trial ',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w300,
+                      ),
+                    ),
+                    TextSpan(
+                      text: 'ending soon',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w300,
+                        fontSize: 10,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const Text(
-                'ending soon',
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 10,
-                ),
-              ),
-              const SizedBox(width: 20),
+              SizedBox(width: ScreenUtils.width * 0.05),
               GestureDetector(
                 onTap: () {
                   Get.toNamed('/payments');
                 },
                 child: Row(
                   children: [
-                    const SizedBox(width: 20),
+                    SizedBox(width: ScreenUtils.width * 0.05),
                     const Text(
                       'upgrade',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 10,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
-                    const SizedBox(width: 4),
-                    const Icon(Icons.double_arrow_outlined,
-                        color: Colors.white, size: 15),
+                    SizedBox(width: ScreenUtils.width * 0.01),
+                    Image.asset(
+                      KImages.doubleArrowIcon,
+                      color: Colors.white,
+                      width: 30,
+                      height: 30,
+                    ),
                   ],
                 ),
               ),
