@@ -3,13 +3,13 @@ import 'dart:ui'; // Add this import
 import 'package:get/get.dart';
 import 'package:vropay_final/Utilities/screen_utils.dart';
 
-class DropdownPreference extends StatelessWidget {
+class DropdownPreference2 extends StatelessWidget {
   final String label;
   final List<String> options;
   final RxString selectedValue;
   final String iconPath;
 
-  const DropdownPreference({
+  const DropdownPreference2({
     super.key,
     required this.label,
     required this.options,
@@ -136,7 +136,7 @@ class DropdownPreference extends StatelessWidget {
                   ),
                 ],
               ),
-              SizedBox(width: ScreenUtils.width * 0.2),
+              SizedBox(width: ScreenUtils.width * 0.15),
 
               // Right side: selected value and dropdown button
               Padding(

@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:vropay_final/Utilities/screen_utils.dart';
 
 class InfoFieldRow extends StatelessWidget {
@@ -6,16 +6,17 @@ class InfoFieldRow extends StatelessWidget {
   final String label;
   final String value;
   final bool isEditMode;
-  final Widget editChild;
   final String? helper;
+  final String? hint;
 
   const InfoFieldRow({
+    super.key,
     required this.icon,
     required this.label,
     required this.value,
     required this.isEditMode,
-    required this.editChild,
     this.helper,
+    this.hint,
   });
 
   @override
@@ -27,19 +28,29 @@ class InfoFieldRow extends StatelessWidget {
           children: [
             Icon(icon, color: const Color(0xFF83A5FA)),
             SizedBox(width: ScreenUtils.width * 0.04),
-            Text(label,
-                style: TextStyle(
-                    fontWeight: FontWeight.w600, color: Color(0xFF172B75))),
-            Spacer(),
+            Text(
+              label,
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF172B75),
+              ),
+            ),
+            const Spacer(),
             isEditMode
-                ? SizedBox(width: 160, child: editChild)
-                : Text(value,
+                ? SizedBox(
+                    width: 160,
+                    child: _buildEditableField(),
+                  )
+                : Text(
+                    value,
                     textAlign: TextAlign.left,
                     style: TextStyle(
-                        fontSize: 14,
-                        color: Color(0xFF616161),
-                        fontWeight: FontWeight.w600)),
-            SizedBox(width: ScreenUtils.width * 0.04),
+                      fontSize: 14,
+                      color: Color(0xFF616161),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+            SizedBox(width: ScreenUtils.width * 0.00),
           ],
         ),
         if (isEditMode && helper != null)
@@ -54,6 +65,29 @@ class InfoFieldRow extends StatelessWidget {
             ),
           ),
       ],
+    );
+  }
+
+  Widget _buildEditableField() {
+    return Container(
+      height: ScreenUtils.height * 0.05,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEAF1FF),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      alignment: Alignment.centerLeft,
+      child: TextFormField(
+        decoration: InputDecoration.collapsed(
+          hintText: hint ?? '',
+        ),
+        style: TextStyle(
+          fontSize: 16,
+          color: Color(0xFF616161),
+          fontWeight: FontWeight.w400,
+        ),
+        textAlign: TextAlign.center,
+      ),
     );
   }
 }

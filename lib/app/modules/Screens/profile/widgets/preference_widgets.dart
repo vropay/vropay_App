@@ -1,0 +1,1062 @@
+import 'package:flutter/material.dart';
+import 'dart:ui';
+import 'package:get/get.dart';
+import 'package:vropay_final/Utilities/screen_utils.dart';
+
+// Category Preference Widget
+class CategoryPreferenceWidget extends StatelessWidget {
+  final RxString selectedValue;
+  final List<String> options;
+
+  const CategoryPreferenceWidget({
+    super.key,
+    required this.selectedValue,
+    required this.options,
+  });
+
+  void _showCustomDropdown(BuildContext context) {
+    final RenderBox button = context.findRenderObject() as RenderBox;
+    final RenderBox overlay =
+        Navigator.of(context).overlay!.context.findRenderObject() as RenderBox;
+    final RelativeRect position = RelativeRect.fromRect(
+        Rect.fromPoints(
+            button.localToGlobal(Offset.zero),
+            button.localToGlobal(button.size.bottomRight(Offset.zero),
+                ancestor: overlay)),
+        Offset.zero & overlay.size);
+
+    OverlayEntry? overlayEntry;
+
+    overlayEntry = OverlayEntry(
+      builder: (context) => Material(
+        color: Colors.transparent,
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 8.0, sigmaY: 8.0),
+                child: GestureDetector(
+                  onTap: () {
+                    overlayEntry?.remove();
+                  },
+                  child: Container(
+                    color: Colors.black.withOpacity(0.5),
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 400,
+              right: 10,
+              child: Material(
+                elevation: 8,
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  width: ScreenUtils.width * 0.6,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: options.map((String choice) {
+                      final bool isSelected = selectedValue.value == choice;
+                      return InkWell(
+                        onTap: () {
+                          selectedValue.value = choice;
+                          overlayEntry?.remove();
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? const Color(0xFFEAF1FF)
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 12),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                choice,
+                                style: const TextStyle(
+                                  color: Color(0xFF616161),
+                                  fontSize: 14,
+                                ),
+                              ),
+                              if (isSelected)
+                                const Icon(Icons.check_circle,
+                                    color: Colors.redAccent, size: 18),
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+    Overlay.of(context).insert(overlayEntry);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() => Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: Row(
+            children: [
+              Row(
+                children: [
+                  Image.asset(
+                    'assets/icons/category.png',
+                    width: 21,
+                    height: 21,
+                    color: Color(0xFF4D84F7),
+                  ),
+                  SizedBox(width: ScreenUtils.width * 0.04),
+                  Text(
+                    'category',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF172B75),
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(width: ScreenUtils.width * 0.10),
+              Padding(
+                padding: const EdgeInsets.only(right: 0),
+                child: GestureDetector(
+                  onTap: () => _showCustomDropdown(context),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        selectedValue.value.isEmpty ? ' ' : selectedValue.value,
+                        style: const TextStyle(
+                            color: Color(0xFF616161),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400),
+                      ),
+                      SizedBox(width: ScreenUtils.width * 0.05),
+                      Icon(Icons.keyboard_arrow_down_sharp,
+                          color: Color(0xFF4D84F7)),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ));
+  }
+}
+
+// Topics Preference Widget
+class TopicsPreferenceWidget extends StatelessWidget {
+  final RxString selectedValue;
+  final List<String> options;
+
+  const TopicsPreferenceWidget({
+    super.key,
+    required this.selectedValue,
+    required this.options,
+  });
+
+  void _showCustomDropdown(BuildContext context) {
+    final RenderBox button = context.findRenderObject() as RenderBox;
+    final RenderBox overlay =
+        Navigator.of(context).overlay!.context.findRenderObject() as RenderBox;
+    final RelativeRect position = RelativeRect.fromRect(
+        Rect.fromPoints(
+            button.localToGlobal(Offset.zero),
+            button.localToGlobal(button.size.bottomRight(Offset.zero),
+                ancestor: overlay)),
+        Offset.zero & overlay.size);
+
+    OverlayEntry? overlayEntry;
+
+    overlayEntry = OverlayEntry(
+      builder: (context) => Material(
+        color: Colors.transparent,
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 8.0, sigmaY: 8.0),
+                child: GestureDetector(
+                  onTap: () {
+                    overlayEntry?.remove();
+                  },
+                  child: Container(
+                    color: Colors.black.withOpacity(0.5),
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 400,
+              right: 10,
+              child: Material(
+                elevation: 8,
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  width: ScreenUtils.width * 0.6,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: options.map((String choice) {
+                      final bool isSelected = selectedValue.value == choice;
+                      return InkWell(
+                        onTap: () {
+                          selectedValue.value = choice;
+                          overlayEntry?.remove();
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? const Color(0xFFEAF1FF)
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 12),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                choice,
+                                style: const TextStyle(
+                                  color: Color(0xFF616161),
+                                  fontSize: 14,
+                                ),
+                              ),
+                              if (isSelected)
+                                const Icon(Icons.check_circle,
+                                    color: Colors.redAccent, size: 18),
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+    Overlay.of(context).insert(overlayEntry);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() => Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: Row(
+            children: [
+              Row(
+                children: [
+                  Image.asset(
+                    'assets/icons/topics.png',
+                    width: 16,
+                    height: 16,
+                    color: Color(0xFF4D84F7),
+                  ),
+                  SizedBox(width: ScreenUtils.width * 0.04),
+                  Text(
+                    'Topics',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF172B75),
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(width: ScreenUtils.width * 0.2),
+              Padding(
+                padding: const EdgeInsets.only(right: 0),
+                child: GestureDetector(
+                  onTap: () => _showCustomDropdown(context),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        selectedValue.value.isEmpty ? ' ' : selectedValue.value,
+                        style: const TextStyle(
+                            color: Color(0xFF616161),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400),
+                      ),
+                      SizedBox(width: ScreenUtils.width * 0.1),
+                      Icon(Icons.keyboard_arrow_down_sharp,
+                          color: Color(0xFF4D84F7)),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ));
+  }
+}
+
+// Difficulty Preference Widget
+class DifficultyPreferenceWidget extends StatelessWidget {
+  final RxString selectedValue;
+  final List<String> options;
+
+  const DifficultyPreferenceWidget({
+    super.key,
+    required this.selectedValue,
+    required this.options,
+  });
+
+  void _showCustomDropdown(BuildContext context) {
+    final RenderBox button = context.findRenderObject() as RenderBox;
+    final RenderBox overlay =
+        Navigator.of(context).overlay!.context.findRenderObject() as RenderBox;
+    final RelativeRect position = RelativeRect.fromRect(
+        Rect.fromPoints(
+            button.localToGlobal(Offset.zero),
+            button.localToGlobal(button.size.bottomRight(Offset.zero),
+                ancestor: overlay)),
+        Offset.zero & overlay.size);
+
+    OverlayEntry? overlayEntry;
+
+    overlayEntry = OverlayEntry(
+      builder: (context) => Material(
+        color: Colors.transparent,
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 8.0, sigmaY: 8.0),
+                child: GestureDetector(
+                  onTap: () {
+                    overlayEntry?.remove();
+                  },
+                  child: Container(
+                    color: Colors.black.withOpacity(0.5),
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 400,
+              right: 10,
+              child: Material(
+                elevation: 8,
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  width: ScreenUtils.width * 0.6,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: options.map((String choice) {
+                      final bool isSelected = selectedValue.value == choice;
+                      return InkWell(
+                        onTap: () {
+                          selectedValue.value = choice;
+                          overlayEntry?.remove();
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? const Color(0xFFEAF1FF)
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 12),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                choice,
+                                style: const TextStyle(
+                                  color: Color(0xFF616161),
+                                  fontSize: 14,
+                                ),
+                              ),
+                              if (isSelected)
+                                const Icon(Icons.check_circle,
+                                    color: Colors.redAccent, size: 18),
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+    Overlay.of(context).insert(overlayEntry);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() => Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: Row(
+            children: [
+              Row(
+                children: [
+                  Image.asset(
+                    'assets/icons/difficulty.png',
+                    width: 21,
+                    height: 21,
+                    color: Color(0xFF4D84F7),
+                  ),
+                  SizedBox(width: ScreenUtils.width * 0.04),
+                  Text(
+                    'difficulty',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF172B75),
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(width: ScreenUtils.width * 0.178),
+              Padding(
+                padding: const EdgeInsets.only(right: 0),
+                child: GestureDetector(
+                  onTap: () => _showCustomDropdown(context),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        selectedValue.value.isEmpty ? ' ' : selectedValue.value,
+                        style: const TextStyle(
+                            color: Color(0xFF616161),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400),
+                      ),
+                      SizedBox(width: ScreenUtils.width * 0.1),
+                      Icon(Icons.keyboard_arrow_down_sharp,
+                          color: Color(0xFF4D84F7)),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ));
+  }
+}
+
+// Community Preference Widget
+class CommunityPreferenceWidget extends StatelessWidget {
+  final RxString selectedValue;
+  final List<String> options;
+
+  const CommunityPreferenceWidget({
+    super.key,
+    required this.selectedValue,
+    required this.options,
+  });
+
+  void _showCustomDropdown(BuildContext context) {
+    final RenderBox button = context.findRenderObject() as RenderBox;
+    final RenderBox overlay =
+        Navigator.of(context).overlay!.context.findRenderObject() as RenderBox;
+    final RelativeRect position = RelativeRect.fromRect(
+        Rect.fromPoints(
+            button.localToGlobal(Offset.zero),
+            button.localToGlobal(button.size.bottomRight(Offset.zero),
+                ancestor: overlay)),
+        Offset.zero & overlay.size);
+
+    OverlayEntry? overlayEntry;
+
+    overlayEntry = OverlayEntry(
+      builder: (context) => Material(
+        color: Colors.transparent,
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 8.0, sigmaY: 8.0),
+                child: GestureDetector(
+                  onTap: () {
+                    overlayEntry?.remove();
+                  },
+                  child: Container(
+                    color: Colors.black.withOpacity(0.5),
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 400,
+              right: 10,
+              child: Material(
+                elevation: 8,
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  width: ScreenUtils.width * 0.6,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: options.map((String choice) {
+                      final bool isSelected = selectedValue.value == choice;
+                      return InkWell(
+                        onTap: () {
+                          selectedValue.value = choice;
+                          overlayEntry?.remove();
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? const Color(0xFFEAF1FF)
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 12),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                choice,
+                                style: const TextStyle(
+                                  color: Color(0xFF616161),
+                                  fontSize: 14,
+                                ),
+                              ),
+                              if (isSelected)
+                                const Icon(Icons.check_circle,
+                                    color: Colors.redAccent, size: 18),
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+    Overlay.of(context).insert(overlayEntry);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() => Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: Row(
+            children: [
+              Row(
+                children: [
+                  Image.asset(
+                    'assets/icons/community.png',
+                    width: 19,
+                    height: 16,
+                    color: Color(0xFF4D84F7),
+                  ),
+                  SizedBox(width: ScreenUtils.width * 0.045),
+                  Text(
+                    'community',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF172B75),
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(width: ScreenUtils.width * 0.205),
+              Padding(
+                padding: const EdgeInsets.only(right: 0),
+                child: GestureDetector(
+                  onTap: () => _showCustomDropdown(context),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        selectedValue.value.isEmpty ? ' ' : selectedValue.value,
+                        style: const TextStyle(
+                            color: Color(0xFF616161),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400),
+                      ),
+                      SizedBox(width: ScreenUtils.width * 0.16),
+                      Icon(Icons.keyboard_arrow_down_sharp,
+                          color: Color(0xFF4D84F7)),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ));
+  }
+}
+
+// Notifications Preference Widget
+class NotificationsPreferenceWidget extends StatelessWidget {
+  final RxString selectedValue;
+  final List<String> options;
+
+  const NotificationsPreferenceWidget({
+    super.key,
+    required this.selectedValue,
+    required this.options,
+  });
+
+  void _showCustomDropdown(BuildContext context) {
+    final RenderBox button = context.findRenderObject() as RenderBox;
+    final RenderBox overlay =
+        Navigator.of(context).overlay!.context.findRenderObject() as RenderBox;
+    final RelativeRect position = RelativeRect.fromRect(
+        Rect.fromPoints(
+            button.localToGlobal(Offset.zero),
+            button.localToGlobal(button.size.bottomRight(Offset.zero),
+                ancestor: overlay)),
+        Offset.zero & overlay.size);
+
+    OverlayEntry? overlayEntry;
+
+    overlayEntry = OverlayEntry(
+      builder: (context) => Material(
+        color: Colors.transparent,
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 8.0, sigmaY: 8.0),
+                child: GestureDetector(
+                  onTap: () {
+                    overlayEntry?.remove();
+                  },
+                  child: Container(
+                    color: Colors.black.withOpacity(0.5),
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 400,
+              right: 10,
+              child: Material(
+                elevation: 8,
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  width: ScreenUtils.width * 0.6,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: options.map((String choice) {
+                      final bool isSelected = selectedValue.value == choice;
+                      return InkWell(
+                        onTap: () {
+                          selectedValue.value = choice;
+                          overlayEntry?.remove();
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? const Color(0xFFEAF1FF)
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 12),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                choice,
+                                style: const TextStyle(
+                                  color: Color(0xFF616161),
+                                  fontSize: 14,
+                                ),
+                              ),
+                              if (isSelected)
+                                const Icon(Icons.check_circle,
+                                    color: Colors.redAccent, size: 18),
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+    Overlay.of(context).insert(overlayEntry);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() => Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: Row(
+            children: [
+              Row(
+                children: [
+                  Image.asset(
+                    'assets/icons/notification.png',
+                    width: 12,
+                    height: 19,
+                    color: Color(0xFF4D84F7),
+                  ),
+                  SizedBox(width: ScreenUtils.width * 0.065),
+                  Text(
+                    'notifications',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF172B75),
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(width: ScreenUtils.width * 0.118),
+              Padding(
+                padding: const EdgeInsets.only(right: 0),
+                child: GestureDetector(
+                  onTap: () => _showCustomDropdown(context),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        selectedValue.value.isEmpty ? ' ' : selectedValue.value,
+                        style: const TextStyle(
+                            color: Color(0xFF616161),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400),
+                      ),
+                      SizedBox(width: ScreenUtils.width * 0.113),
+                      Icon(Icons.keyboard_arrow_down_sharp,
+                          color: Color(0xFF4D84F7)),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ));
+  }
+}
+
+// Individual Info Row Widgets for each preference type
+
+// Category Info Row Widget
+class CategoryInfoRow extends StatelessWidget {
+  final String value;
+
+  const CategoryInfoRow({
+    super.key,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 20),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Image.asset(
+            'assets/icons/category.png',
+            width: 21,
+            height: 21,
+          ),
+          const SizedBox(width: 9),
+          Expanded(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Flexible(
+                  flex: 2,
+                  child: Text('Category',
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF172B75),
+                          fontSize: 12)),
+                ),
+                const SizedBox(width: 10),
+                Flexible(
+                  flex: 3,
+                  child: Text(
+                    value,
+                    textAlign: TextAlign.right,
+                    style: const TextStyle(
+                        color: Color(0xFF616161),
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 2,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Topics Info Row Widget
+class TopicsInfoRow extends StatelessWidget {
+  final String value;
+
+  const TopicsInfoRow({
+    super.key,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 2.5,
+          ),
+          Image.asset(
+            'assets/icons/topics.png',
+            width: 16,
+            height: 16,
+          ),
+          const SizedBox(width: 11.5),
+          Expanded(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Flexible(
+                  flex: 2,
+                  child: Text(
+                    'Topics',
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF172B75),
+                        fontSize: 12),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Flexible(
+                  flex: 3,
+                  child: Text(
+                    value,
+                    textAlign: TextAlign.right,
+                    style: const TextStyle(
+                        color: Color(0xFF616161),
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 2,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Difficulty Info Row Widget
+class DifficultyInfoRow extends StatelessWidget {
+  final String value;
+
+  const DifficultyInfoRow({
+    super.key,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Image.asset(
+            'assets/icons/difficulty.png',
+            width: 21,
+            height: 21,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Flexible(
+                  flex: 2,
+                  child: Text('Difficulty',
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF172B75),
+                          fontSize: 12)),
+                ),
+                const SizedBox(width: 10),
+                Flexible(
+                  flex: 3,
+                  child: Text(
+                    value,
+                    textAlign: TextAlign.right,
+                    style: const TextStyle(
+                        color: Color(0xFF616161),
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 2,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Community Info Row Widget
+class CommunityInfoRow extends StatelessWidget {
+  final String value;
+
+  const CommunityInfoRow({
+    super.key,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Image.asset(
+            'assets/icons/community.png',
+            width: 19,
+            height: 16,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Community',
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF172B75),
+                        fontSize: 12)),
+                SizedBox(width: ScreenUtils.width * 0.3),
+                Text(
+                  value,
+                  textAlign: TextAlign.right,
+                  style: const TextStyle(
+                      color: Color(0xFF616161),
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 2,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Notifications Info Row Widget
+class NotificationsInfoRow extends StatelessWidget {
+  final String value;
+
+  const NotificationsInfoRow({
+    super.key,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Image.asset(
+            'assets/icons/notification.png',
+            width: 12,
+            height: 19,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Notifications',
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF172B75),
+                        fontSize: 12)),
+                SizedBox(width: ScreenUtils.width * 0.23),
+                Text(
+                  value,
+                  textAlign: TextAlign.right,
+                  style: const TextStyle(
+                      color: Color(0xFF616161),
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 2,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
