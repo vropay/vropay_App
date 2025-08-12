@@ -115,7 +115,7 @@ class LearnScreenView extends GetView<LearnScreenController> {
                   ),
                 ),
 
-                SizedBox(height: ScreenUtils.height * 0.03),
+                SizedBox(height: ScreenUtils.height * 0.042),
 
                 // Info Cards
                 _infoCard(
@@ -124,11 +124,12 @@ class LearnScreenView extends GetView<LearnScreenController> {
                   Color(0xFFE93A47),
                   "learn",
                   'assets/images/cupboard.png',
-                  ScreenUtils.height * 0.12,
+                  ScreenUtils.height * 0.128,
                   ScreenUtils.width * 0.2,
+                  ScreenUtils.width * 0.08,
                   () => Get.toNamed(Routes.KNOWLEDGE_CENTER_SCREEN),
                 ),
-                SizedBox(height: ScreenUtils.height * 0.03),
+                SizedBox(height: ScreenUtils.height * 0.058),
 
                 _infoCard(
                   "Community\n Forum",
@@ -136,8 +137,9 @@ class LearnScreenView extends GetView<LearnScreenController> {
                   Color(0xFF3E9292),
                   "engage",
                   'assets/images/communityForum.png',
-                  ScreenUtils.height * 0.12,
-                  ScreenUtils.width * 0.2,
+                  ScreenUtils.height * 0.122,
+                  ScreenUtils.width * 0.27,
+                  ScreenUtils.width * 0.3,
                   () => Get.toNamed(Routes.COMMUNITY_FORUM),
                 ),
                 SizedBox(height: ScreenUtils.height * 0.03),
@@ -146,10 +148,10 @@ class LearnScreenView extends GetView<LearnScreenController> {
                 Image.asset(
                   'assets/images/targetImage.png',
                   height: ScreenUtils.height * 0.3,
-                  width: ScreenUtils.width * 0.65,
+                  width: ScreenUtils.width * 0.45,
                 ),
 
-                SizedBox(height: ScreenUtils.height * 0.03),
+                SizedBox(height: ScreenUtils.height * 0.02),
               ],
             ),
           ),
@@ -167,12 +169,13 @@ class LearnScreenView extends GetView<LearnScreenController> {
     String imagePath,
     double imageHeight,
     double imageWidth,
+    double imageSpaceWidth,
     VoidCallback onPressed,
   ) {
     return Container(
       height: ScreenUtils.height * 0.35,
       width: double.infinity,
-      padding: EdgeInsets.only(top: 20, bottom: 10, left: 20, right: 10),
+      padding: EdgeInsets.only(top: 20, bottom: 10, left: 20, right: 0),
       decoration: BoxDecoration(
         color: color,
         borderRadius: BorderRadius.circular(20),
@@ -193,6 +196,7 @@ class LearnScreenView extends GetView<LearnScreenController> {
                       fontWeight: FontWeight.w300,
                       color: Color(0xFFD9D9D9),
                     ),
+                    textAlign: TextAlign.center,
                   ),
                   SizedBox(height: ScreenUtils.height * 0.02),
                   Text(
@@ -206,7 +210,7 @@ class LearnScreenView extends GetView<LearnScreenController> {
                 ],
               ),
 
-              SizedBox(width: ScreenUtils.width * 0.05),
+              SizedBox(width: ScreenUtils.width * 0.08),
               Image.asset(
                 imagePath,
                 height: imageHeight,
@@ -220,7 +224,7 @@ class LearnScreenView extends GetView<LearnScreenController> {
             alignment: Alignment.center,
             child: SizedBox(
               width: ScreenUtils.width * 0.5,
-              height: ScreenUtils.height * 0.05,
+              height: ScreenUtils.height * 0.035,
               child: ElevatedButton(
                 onPressed: onPressed,
                 style: ElevatedButton.styleFrom(
@@ -230,7 +234,7 @@ class LearnScreenView extends GetView<LearnScreenController> {
                     borderRadius: BorderRadius.circular(30),
                   ),
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
                   textStyle: const TextStyle(fontWeight: FontWeight.bold),
                 ),
                 child: Row(
