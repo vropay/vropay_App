@@ -8,8 +8,6 @@ import 'package:vropay_final/Utilities/screen_utils.dart';
 import 'package:vropay_final/app/modules/Screens/knowledge_center_Screen/controllers/knowledge_center_screen_controller.dart';
 import 'package:vropay_final/app/routes/app_pages.dart';
 
-
-
 class KnowledgeCenterScreenView
     extends GetView<KnowledgeCenterScreenController> {
   const KnowledgeCenterScreenView({super.key});
@@ -60,43 +58,46 @@ class KnowledgeCenterScreenView
                       width: double.infinity,
                       child: Stack(
                         children: [
-                          Column(
-                            children: [
-                              RichText(
-                                text: TextSpan(
-                                  style: const TextStyle(
-                                    fontSize: 70,
-                                    color: Color(0xFFFA7244),
-                                  ),
-                                  children: [
-                                    TextSpan(
-                                        text: "push\n",
+                          Padding(
+                            padding: const EdgeInsets.only(left: 10, top: 10),
+                            child: Column(
+                              children: [
+                                RichText(
+                                  text: TextSpan(
+                                    style: const TextStyle(
+                                      fontSize: 70,
+                                      color: Color(0xFFFA7244),
+                                    ),
+                                    children: [
+                                      TextSpan(
+                                          text: "push\n",
+                                          style: TextStyle(
+                                              color: Color(0xFFFA7244),
+                                              fontWeight: FontWeight.w300)),
+                                      TextSpan(
+                                        text: "Your\n",
                                         style: TextStyle(
-                                            color: Color(0xFFFA7244),
-                                            fontWeight: FontWeight.w300)),
-                                    TextSpan(
-                                      text: "Your\n",
-                                      style: TextStyle(
-                                        color: Color(0xFFFF4601),
-                                        fontWeight: FontWeight.w300,
+                                          color: Color(0xFFFF4601),
+                                          fontWeight: FontWeight.w300,
+                                        ),
                                       ),
-                                    ),
-                                    TextSpan(
-                                      text: "Limits",
-                                      style: TextStyle(
-                                        color: Color(0xFFBD1C19),
-                                        fontSize: 70,
-                                        fontWeight: FontWeight.w300,
+                                      TextSpan(
+                                        text: "Limits",
+                                        style: TextStyle(
+                                          color: Color(0xFFBD1C19),
+                                          fontSize: 70,
+                                          fontWeight: FontWeight.w300,
+                                        ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                           Positioned(
-                            top: 40,
-                            right: 10,
+                            top: ScreenUtils.height * 0.06,
+                            right: ScreenUtils.width * 0.0,
                             child: Image.asset(
                               'assets/images/knowledgeCenter.png',
                               height: ScreenUtils.height * 0.2,
@@ -107,7 +108,7 @@ class KnowledgeCenterScreenView
                         ],
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: ScreenUtils.height * 0.036),
                     Padding(
                       padding: const EdgeInsets.only(left: 25),
                       child: Row(
@@ -128,8 +129,8 @@ class KnowledgeCenterScreenView
                             padding: const EdgeInsets.only(left: 10),
                             child: Image.asset(
                               'assets/icons/knowledgeicon.png',
-                              width: 20,
-                              height: 20,
+                              width: 25,
+                              height: 25,
                             ),
                           ),
                         ],
@@ -138,8 +139,9 @@ class KnowledgeCenterScreenView
                     SizedBox(height: ScreenUtils.height * 0.02),
                     Container(
                       width: double.infinity,
+                      margin: EdgeInsets.only(left: 5, right: 6),
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 16),
+                          horizontal: 24, vertical: 16),
                       decoration: BoxDecoration(
                         color: Color(0xFFDBEFFF).withOpacity(0.5),
                         borderRadius: BorderRadius.circular(12),
@@ -153,17 +155,29 @@ class KnowledgeCenterScreenView
                       ),
                     ),
                     SizedBox(height: ScreenUtils.height * 0.02),
-                    _buildCard('world\n&\nculture', () {
-                      Get.toNamed(Routes.WORLD_AND_CULTURE_SCREEN);
-                    }),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 24, right: 24),
+                      child: _buildCard('world\n&\nculture', () {
+                        Get.toNamed(Routes.WORLD_AND_CULTURE_SCREEN);
+                      }, ScreenUtils.height * 0.036,
+                          ScreenUtils.height * 0.045),
+                    ),
                     SizedBox(height: ScreenUtils.height * 0.02),
-                    _buildCard('personal\ngrowth', () {
-                      Get.toNamed(Routes.PERSONAL_GROWTH_SCREEN);
-                    }),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 24, right: 24),
+                      child: _buildCard('personal\ngrowth', () {
+                        Get.toNamed(Routes.PERSONAL_GROWTH_SCREEN);
+                      }, ScreenUtils.height * 0.056,
+                          ScreenUtils.height * 0.040),
+                    ),
                     SizedBox(height: ScreenUtils.height * 0.02),
-                    _buildCard('business\n&\ninnovation', () {
-                      Get.toNamed(Routes.BUSINESS_INNOVATION_SCREEN);
-                    }),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 24, right: 24),
+                      child: _buildCard('business\n&\ninnovation', () {
+                        Get.toNamed(Routes.BUSINESS_INNOVATION_SCREEN);
+                      }, ScreenUtils.height * 0.027,
+                          ScreenUtils.height * 0.045),
+                    ),
                     SizedBox(height: ScreenUtils.height * 0.02),
                     Card(
                       color: Color(0xFFF9E4D7),
@@ -256,7 +270,7 @@ class KnowledgeCenterScreenView
                         ),
                       ),
                     ),
-                    SizedBox(height: ScreenUtils.height * 0.02),
+                    SizedBox(height: ScreenUtils.height * 0.050),
                   ],
                 ),
               ),
@@ -267,14 +281,16 @@ class KnowledgeCenterScreenView
     );
   }
 
-  Widget _buildCard(String text, VoidCallback onTap) {
+  Widget _buildCard(
+      String text, VoidCallback onTap, double topHeight, double bottomHeight) {
     return GestureDetector(
       onTap: onTap,
       child: Center(
         child: Container(
-          width: 304,
-          height: 355,
-          padding: const EdgeInsets.all(24),
+          width: ScreenUtils.width * 0.73,
+          height: ScreenUtils.height * 0.4,
+          padding: EdgeInsets.only(
+              top: topHeight, left: 22, right: 22, bottom: bottomHeight),
           decoration: BoxDecoration(
             color: Color(0xFFE93A47),
             borderRadius: BorderRadius.circular(20),
@@ -283,15 +299,14 @@ class KnowledgeCenterScreenView
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Padding(
-                padding: const EdgeInsets.only(top: 20),
+                padding: const EdgeInsets.only(top: 16.5),
                 child: Text(
                   text,
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 40, color: Color(0xFFD9D9D9)),
                 ),
               ),
-              const SizedBox(height: 8),
-              const Spacer(),
+              Spacer(),
               const Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
