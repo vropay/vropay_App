@@ -9,8 +9,8 @@ class WorldAndCultureCommunityController extends GetxController {
   final categories = [
     'news',
     'history',
-    'astrology',
     'travel',
+    'astrology',
     'art',
     'music',
     'usa',

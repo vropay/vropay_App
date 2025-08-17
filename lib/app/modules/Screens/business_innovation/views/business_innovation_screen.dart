@@ -15,10 +15,10 @@ class BusinessInnovationScreen extends GetView<BusinessInnovationController> {
     ScreenUtils.setContext(context);
 
     return Scaffold(
-        appBar: PreferredSize(
-          preferredSize: Size.fromHeight(150),
-          child: CustomTopNavBar(selectedIndex: null),
-        ),
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(150),
+        child: CustomTopNavBar(selectedIndex: null),
+      ),
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -55,11 +55,11 @@ class BusinessInnovationScreen extends GetView<BusinessInnovationController> {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: ScreenUtils.height * 0.045),
 
             // Categories List
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 60),
+              padding: const EdgeInsets.symmetric(horizontal: 46),
               child: Obx(() {
                 if (controller.isLoading.value) {
                   return const Center(
@@ -81,7 +81,7 @@ class BusinessInnovationScreen extends GetView<BusinessInnovationController> {
               }),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 34),
           ],
         ),
       ),
@@ -95,19 +95,19 @@ class BusinessInnovationScreen extends GetView<BusinessInnovationController> {
         Get.toNamed(Routes.NEWS_SCREEN);
       },
       child: Container(
-        height: ScreenUtils.height * 0.15,
+        height: ScreenUtils.height * 0.2,
         width: double.infinity,
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         decoration: BoxDecoration(
-          color: Color(0xFFDFDFDF).withOpacity(0.4),
+          color: _getCategoryContainerColor(category),
           borderRadius: BorderRadius.circular(25),
         ),
         child: Center(
           child: Text(
             category,
             style: TextStyle(
-              fontSize: ScreenUtils.x(8),
+              fontSize: _getCategoryFontSize(category),
               fontWeight: FontWeight.w400,
               color: _getCategoryColor(category),
             ),
@@ -115,6 +115,48 @@ class BusinessInnovationScreen extends GetView<BusinessInnovationController> {
         ),
       ),
     );
+  }
+
+  double _getCategoryFontSize(String category) {
+    switch (category) {
+      case 'STARTUP':
+        return 50;
+      case 'INVESTING':
+        return 44;
+      case 'FINANCE':
+        return 50;
+      case 'STOCKS':
+        return 50;
+      case 'TECH':
+        return 50;
+      case 'AI TOOLS':
+        return 50;
+      case 'HUSTLE':
+        return 50;
+      default:
+        return ScreenUtils.x(7.0);
+    }
+  }
+
+  Color _getCategoryContainerColor(String category) {
+    switch (category) {
+      case 'STARTUP':
+        return Color(0xFFDFDFDF).withOpacity(0.2); // Light green background
+      case 'INVESTING':
+        return Color(0xFFDFDFDF).withOpacity(0.2); // Light blue background
+      case 'FINANCE':
+        return Color(0xFFDFDFDF).withOpacity(0.2); // Light red background
+      case 'STOCKS':
+        return Color(0xFFDFDFDF).withOpacity(0.25); // Light purple background
+      case 'TECH':
+        return Color(0xFFDFDFDF).withOpacity(0.25); // Light orange background
+      case 'AI TOOLS':
+        return Color(0xFFDFDFDF).withOpacity(0.25); // Light indigo background
+      case 'HUSTLE':
+        return Color(0xFFDFDFDF).withOpacity(0.25); // Light pink background
+      default:
+        return Color(0xFFDFDFDF).withOpacity(0.2); // Default light gray
+    }
   }
 
   Color _getCategoryColor(String category) {

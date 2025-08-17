@@ -18,13 +18,12 @@ class CommunityForumView extends GetView<CommunityForumController> {
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9),
       bottomNavigationBar: CustomBottomNavBar(),
+      appBar: PreferredSize(
+          preferredSize: Size.fromHeight(150),
+          child: const CustomTopNavBar(selectedIndex: null)),
       body: SafeArea(
         child: Column(
           children: [
-            const CustomTopNavBar(selectedIndex: null),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-            ),
             // Scrollable content
             Expanded(
               child: SingleChildScrollView(
@@ -32,82 +31,91 @@ class CommunityForumView extends GetView<CommunityForumController> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 8),
-                    TextField(
-                      decoration: InputDecoration(
-                          hintText: 'Try searching the community like “STOCKS”',
-                          hintStyle: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w400,
-                              color: Color(0xFF4A4A4A)),
-                          filled: true,
-                          fillColor: const Color(0xFFDBEFFF).withOpacity(0.5),
-                          prefixIcon: Image.asset(KImages.searchIcon),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                          suffixIcon: Container(
-                              height: ScreenUtils.height * 0.02,
-                              width: ScreenUtils.width * 0.02,
-                              color: Color(0xFFF2F7FB),
-                              child: Icon(CupertinoIcons.clear,
-                                  color: Color(0xFF4A4A4A)))),
+                    SizedBox(height: ScreenUtils.height * 0.04),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 20, right: 20),
+                      child: TextField(
+                        decoration: InputDecoration(
+                            hintText:
+                                'Try searching the community like “STOCKS”',
+                            hintStyle: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w400,
+                                color: Color(0xFF4A4A4A)),
+                            filled: true,
+                            fillColor: const Color(0xFFDBEFFF).withOpacity(0.5),
+                            prefixIcon: Image.asset(KImages.searchIcon),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                            suffixIcon: Container(
+                                height: ScreenUtils.height * 0.01,
+                                width: ScreenUtils.width * 0.01,
+                                color: Color(0xFFF2F7FB),
+                                child: Icon(CupertinoIcons.clear,
+                                    color: Color(0xFF4A4A4A)))),
+                      ),
                     ),
                     SizedBox(height: ScreenUtils.height * 0.02),
                     SizedBox(
                       width: double.infinity,
                       child: Stack(
                         children: [
-                          Column(
-                            children: [
-                              RichText(
-                                text: TextSpan(
-                                  style: const TextStyle(
-                                    fontSize: 70,
-                                    color: Color(0xFF18707C),
-                                  ),
-                                  children: [
-                                    TextSpan(
-                                        text: "find\n",
+                          Padding(
+                            padding: const EdgeInsets.only(left: 32, right: 20),
+                            child: Column(
+                              children: [
+                                RichText(
+                                  text: TextSpan(
+                                    style: const TextStyle(
+                                        fontSize: 70,
+                                        color: Color(0xFF18707C),
+                                        height: 1,
+                                        fontWeight: FontWeight.w300),
+                                    children: [
+                                      TextSpan(
+                                          text: "find\n",
+                                          style: TextStyle(
+                                              color: Color(0xFF5A9267),
+                                              fontWeight: FontWeight.w300,
+                                              fontSize: 70)),
+                                      TextSpan(
+                                        text: "Your\n",
                                         style: TextStyle(
-                                            color: Color(0xFF5A9267),
-                                            fontWeight: FontWeight.w300)),
-                                    TextSpan(
-                                      text: "Your\n",
-                                      style: TextStyle(
-                                        color: Color(0xFF4D6348),
-                                        fontWeight: FontWeight.w300,
+                                            color: Color(0xFF4D6348),
+                                            fontWeight: FontWeight.w300,
+                                            fontSize: 70),
                                       ),
-                                    ),
-                                    TextSpan(
-                                      text: "Tribe",
-                                      style: TextStyle(
-                                        color: Color(0xFF25525C),
-                                        fontWeight: FontWeight.w300,
+                                      TextSpan(
+                                        text: "Tribe",
+                                        style: TextStyle(
+                                            color: Color(0xFF25525C),
+                                            fontWeight: FontWeight.w300,
+                                            fontSize: 70),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                           Positioned(
-                            top: 0,
-                            right: 0,
+                            top: 15,
+                            right: 25,
                             child: Image.asset(
                               'assets/images/findYourTribe.png',
-                              height: ScreenUtils.height * 0.3,
-                              width: ScreenUtils.width * 0.5,
+                              height: 169,
+                              width: 129,
                               fit: BoxFit.contain,
                             ),
                           ),
                         ],
                       ),
                     ),
-                    SizedBox(height: ScreenUtils.height * 0.03),
+                    SizedBox(height: ScreenUtils.height * 0.038),
                     Padding(
-                      padding: const EdgeInsets.all(8.0),
+                      padding: const EdgeInsets.only(left: 45, right: 20),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -137,33 +145,45 @@ class CommunityForumView extends GetView<CommunityForumController> {
                     SizedBox(height: ScreenUtils.height * 0.02),
                     Container(
                       width: double.infinity,
+                      margin: EdgeInsets.only(left: 20, right: 20),
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 16),
+                          horizontal: 25, vertical: 16),
                       decoration: BoxDecoration(
                         color: Color(0xFFDBEFFF).withOpacity(0.5),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Text(
-                        "AI (name of last community connected)",
+                        "AI",
                         style: TextStyle(
                             color: Color(0xFF4A4A4A),
-                            fontSize: 12,
+                            fontSize: 20,
                             fontWeight: FontWeight.w400),
                       ),
                     ),
                     SizedBox(height: ScreenUtils.height * 0.02),
-                    _buildCard('world\n&\nculture', () {
-                      Get.toNamed(Routes.WORLD_AND_CULTURE_COMMUNITY_SCREEN);
-                    }),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 40, right: 40),
+                      child: _buildCard('world\n&\nculture', () {
+                        Get.toNamed(Routes.WORLD_AND_CULTURE_COMMUNITY_SCREEN);
+                      }, ScreenUtils.height * 0.058,
+                          ScreenUtils.height * 0.039),
+                    ),
                     SizedBox(height: ScreenUtils.height * 0.02),
-                    _buildCard('personal\ngrowth', () {
-                      Get.toNamed(Routes.PERSONAL_GROWTH_COMMUNITY_SCREEN);
-                    }),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 40, right: 40),
+                      child: _buildCard('personal\ngrowth', () {
+                        Get.toNamed(Routes.PERSONAL_GROWTH_COMMUNITY_SCREEN);
+                      }, ScreenUtils.height * 0.07, ScreenUtils.height * 0.039),
+                    ),
                     SizedBox(height: ScreenUtils.height * 0.02),
-                    _buildCard('business\n&\ninnovation', () {
-                      Get.toNamed(Routes.BUSINESS_INNOVATION_COMMUNITY_SCREEN);
-                    }),
-                    SizedBox(height: ScreenUtils.height * 0.02),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 40, right: 40),
+                      child: _buildCard('business\n&\ninnovation', () {
+                        Get.toNamed(
+                            Routes.BUSINESS_INNOVATION_COMMUNITY_SCREEN);
+                      }, ScreenUtils.height * 0.04, ScreenUtils.height * 0.04),
+                    ),
+                    SizedBox(height: ScreenUtils.height * 0.063),
                     Container(
                       color: const Color(0xFF01B3B2),
                       padding: const EdgeInsets.all(16),
@@ -209,14 +229,17 @@ class CommunityForumView extends GetView<CommunityForumController> {
                               )
                             ],
                           ),
-                          const SizedBox(height: 20),
+                          SizedBox(height: ScreenUtils.height * 0.03),
                           GridView.count(
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
                             crossAxisCount: 2,
-                            crossAxisSpacing: 12,
-                            mainAxisSpacing: 12,
-                            children: const [
+                            crossAxisSpacing: 8,
+                            mainAxisSpacing: 29,
+                            padding: EdgeInsets.only(
+                              bottom: 37,
+                            ),
+                            children: [
                               _CommunityBox(
                                 label: 'STOCKS',
                                 color: Color(0xFF02D7C3),
@@ -252,7 +275,7 @@ class CommunityForumView extends GetView<CommunityForumController> {
                         ],
                       ),
                     ),
-                    SizedBox(height: ScreenUtils.height * 0.02),
+                    SizedBox(height: ScreenUtils.height * 0.050),
                   ],
                 ),
               ),
@@ -263,14 +286,16 @@ class CommunityForumView extends GetView<CommunityForumController> {
     );
   }
 
-  Widget _buildCard(String text, VoidCallback onTap) {
+  Widget _buildCard(
+      String text, VoidCallback onTap, double topHeight, double bottomHeight) {
     return GestureDetector(
       onTap: onTap,
       child: Center(
         child: Container(
-          width: 304,
-          height: 355,
-          padding: const EdgeInsets.all(24),
+          width: ScreenUtils.width * 0.73,
+          height: ScreenUtils.height * 0.4,
+          padding: EdgeInsets.only(
+              top: topHeight, left: 22, right: 22, bottom: bottomHeight),
           decoration: BoxDecoration(
             color: Color(0xFF3E9292),
             borderRadius: BorderRadius.circular(20),
@@ -278,14 +303,13 @@ class CommunityForumView extends GetView<CommunityForumController> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              SizedBox(height: ScreenUtils.height * 0.04),
               Text(
                 text,
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 40, color: Color(0xFFD9D9D9)),
               ),
               const Spacer(),
-              const Row(
+              Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -323,7 +347,7 @@ class _CommunityBox extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: color,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(5),
       ),
       child: Center(
         child: Text(

@@ -106,7 +106,7 @@ class _NotificationsViewState extends State<NotificationsView> {
             SizedBox(height: ScreenUtils.height * 0.02),
             // Filter tabs
             Container(
-              padding: const EdgeInsets.only(left: 60, right: 25),
+              padding: const EdgeInsets.only(left: 50, right: 49),
               child: Row(
                 children: [
                   Expanded(
@@ -211,7 +211,7 @@ class _NotificationsViewState extends State<NotificationsView> {
         });
       },
       child: Container(
-        height: ScreenUtils.height * 0.05,
+        height: ScreenUtils.height * 0.04,
         width: ScreenUtils.width * 0.2,
         decoration: BoxDecoration(
           color: isSelected ? const Color(0xFF6253DB) : Color(0xFFF7F7F7),

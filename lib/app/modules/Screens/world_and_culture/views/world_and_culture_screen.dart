@@ -55,7 +55,7 @@ class WorldAndCultureScreen extends GetView<WorldAndCultureController> {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: ScreenUtils.height * 0.045),
 
             // Categories List
             Padding(
@@ -81,7 +81,7 @@ class WorldAndCultureScreen extends GetView<WorldAndCultureController> {
               }),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 34),
           ],
         ),
       ),
@@ -89,7 +89,9 @@ class WorldAndCultureScreen extends GetView<WorldAndCultureController> {
     );
   }
 
-  Widget _buildCategoryCard(String category) {
+  Widget _buildCategoryCard(
+    String category,
+  ) {
     return GestureDetector(
       onTap: () {
         Get.toNamed(Routes.NEWS_SCREEN);
@@ -100,14 +102,14 @@ class WorldAndCultureScreen extends GetView<WorldAndCultureController> {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         decoration: BoxDecoration(
-          color: Color(0xFFDFDFDF).withOpacity(0.4),
+          color: Color(0xFFDFDFDF).withOpacity(0.2),
           borderRadius: BorderRadius.circular(25),
         ),
         child: Center(
           child: Text(
             category,
             style: TextStyle(
-              fontSize: 50,
+              fontSize: _getCategoryFontSize(category),
               fontWeight: FontWeight.w400,
               color: _getCategoryColor(category),
             ),
@@ -115,6 +117,31 @@ class WorldAndCultureScreen extends GetView<WorldAndCultureController> {
         ),
       ),
     );
+  }
+
+  double _getCategoryFontSize(String category) {
+    switch (category) {
+      case 'NEWS':
+        return 50;
+      case 'HISTORY':
+        return 45;
+      case 'ASTRO':
+        return 50;
+      case 'TRAVEL':
+        return 50;
+      case 'ART':
+        return 50;
+      case 'MUSIC':
+        return 50;
+      case 'USA':
+        return 50;
+      case 'NATURE':
+        return 50;
+      case 'PODCAST':
+        return 44;
+      default:
+        return 50;
+    }
   }
 
   Color _getCategoryColor(String category) {

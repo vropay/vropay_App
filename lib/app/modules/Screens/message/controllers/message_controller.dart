@@ -221,7 +221,7 @@ class MessageController extends GetxController {
       },
       {
         'id': 13,
-        'sender': 'System',
+        'sender': 'Kevin',
         'message': '',
         'timestamp': DateTime.now().add(Duration(minutes: 5)),
         'isRead': true,
@@ -269,7 +269,7 @@ class MessageController extends GetxController {
       // Important Message 1 - Tech Partnership News
       {
         'id': 16,
-        'sender': 'Community Admin',
+        'sender': 'Rahul',
         'message':
             'India and UAE have signed a major tech-finance partnership to boost AI-led trade infrastructure and digital payments across borders. The pact enables instant UPI-based settlements in dirhams and rupees. Meanwhile, OpenAI announced GPT-5 pre-release access for enterprise clients, offering stronger reasoning and memory. In markets, Sensex jumped 600+ points as global investors bet big on India\'s infra growth. Elon Musk also confirmed Neuralink\'s second successful human brain-chip implant, claiming improved motor control in the patient.',
         'timestamp': DateTime.now().subtract(Duration(minutes: 15)),
@@ -283,7 +283,7 @@ class MessageController extends GetxController {
       // Important Message 2 - RBI & Nvidia News
       {
         'id': 17,
-        'sender': 'Community Admin',
+        'sender': 'Rahul',
         'message':
             'RBI greenlights tokenized digital lending for fintechs, aiming to curb fraud and boost transparency. Meanwhile, Nvidia hits 5T valuation, driven by AI chip demand',
         'timestamp': DateTime.now().subtract(Duration(minutes: 12)),

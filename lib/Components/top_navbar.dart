@@ -25,7 +25,7 @@ class CustomTopNavBar extends StatelessWidget {
     ];
 
     return Padding(
-      padding: const EdgeInsets.only(top: 50, left: 5, right: 5, bottom: 8),
+      padding: const EdgeInsets.only(top: 50, left: 5, right: 27, bottom: 8),
       child: Row(
         children: [
           Padding(

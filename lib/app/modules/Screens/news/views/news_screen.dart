@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:iconsax/iconsax.dart';
 import 'package:vropay_final/Components/bottom_navbar.dart';
 import 'package:vropay_final/Components/top_navbar.dart';
 import 'package:vropay_final/Utilities/constants/KImages.dart';
@@ -31,20 +32,24 @@ class NewsScreen extends GetView<NewsController> {
                 Stack(
                   alignment: Alignment.center,
                   children: [
-                    Text(
-                      "NEWS",
-                      style: TextStyle(
-                        fontSize: ScreenUtils.x(25),
-                        fontWeight: FontWeight.w300,
-                        color: Color(0xFF01B3B2).withOpacity(0.5),
+                    Container(
+                      padding: EdgeInsets.only(left: 56, right: 56),
+                      child: Text(
+                        "NEWS",
+                        style: TextStyle(
+                          fontSize: 85,
+                          fontWeight: FontWeight.w300,
+                          color: Color(0xFF01B3B2).withOpacity(0.5),
+                        ),
                       ),
                     ),
                     Positioned(
+                      left: 75,
                       // This will overlay the text exactly in the center of "NEWS"
                       child: Text(
                         "know what is happening",
                         style: TextStyle(
-                          fontSize: ScreenUtils.x(5),
+                          fontSize: ScreenUtils.x(4.8),
                           fontWeight: FontWeight.w500,
                           color: Color(0xFF6253DB),
                         ),
@@ -57,7 +62,7 @@ class NewsScreen extends GetView<NewsController> {
             SizedBox(height: ScreenUtils.height * 0.01),
             // Search Bar and View Mode Icon
             Padding(
-              padding: const EdgeInsets.only(left: 40.0, right: 20),
+              padding: const EdgeInsets.only(left: 30.0, right: 20),
               child: Column(
                 children: [
                   Container(
@@ -112,15 +117,18 @@ class NewsScreen extends GetView<NewsController> {
                       if (suggestions.isNotEmpty) {
                         return Container(
                           width: double.infinity,
-                          margin: EdgeInsets.only(top: 8),
+                          margin: EdgeInsets.only(top: 8, left: 20, right: 20),
+                          padding: EdgeInsets.only(left: 10, right: 20),
                           constraints: BoxConstraints(
                             maxHeight: ScreenUtils.height * 0.3,
                           ),
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(15),
                             border: Border.all(
                                 color: Colors.black.withOpacity(0.1)),
+                            borderRadius: BorderRadius.only(
+                                bottomLeft: Radius.circular(5),
+                                bottomRight: Radius.circular(5)),
                           ),
                           child: ListView.builder(
                             shrinkWrap: true,
@@ -130,15 +138,17 @@ class NewsScreen extends GetView<NewsController> {
                               return ListTile(
                                 title: RichText(
                                   text: TextSpan(
-                                    children: _highlightOccurrences(
-                                      news['title'] ?? '',
-                                      controller.searchText.value,
-                                    ),
-                                  ),
+                                      children: _highlightOccurrences(
+                                        news['title'] ?? '',
+                                        controller.searchText.value,
+                                      ),
+                                      style:
+                                          TextStyle(color: Color(0xFF797C7B))),
                                 ),
                                 onTap: () {
                                   controller.searchText.value =
                                       news['title'] ?? ''; // Add null check
+
                                   // You can add navigation or other action here
                                 },
                               );
@@ -152,286 +162,314 @@ class NewsScreen extends GetView<NewsController> {
                 ],
               ),
             ),
+            SizedBox(height: ScreenUtils.height * 0.046),
 
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                SizedBox(width: ScreenUtils.width * 0.01),
-                GestureDetector(
-                  key: _filterButtonKey,
-                  onTap: () async {
-                    final RenderBox button = _filterButtonKey.currentContext!
-                        .findRenderObject() as RenderBox;
-                    final RenderBox overlay = Navigator.of(context)
-                        .overlay!
-                        .context
-                        .findRenderObject() as RenderBox;
-                    final RelativeRect position = RelativeRect.fromRect(
-                      Rect.fromPoints(
-                        button.localToGlobal(Offset.zero, ancestor: overlay),
-                        button.localToGlobal(
-                            button.size.bottomRight(Offset.zero),
-                            ancestor: overlay),
-                      ),
-                      Offset.zero & overlay.size,
-                    );
+            // Filter and More Options Icons
+            Padding(
+              padding: const EdgeInsets.only(left: 20, right: 20),
+              child: Row(
+                children: [
+                  SizedBox(width: ScreenUtils.width * 0.15),
+                  GestureDetector(
+                    key: _filterButtonKey,
+                    onTap: () async {
+                      final RenderBox button = _filterButtonKey.currentContext!
+                          .findRenderObject() as RenderBox;
+                      final RenderBox overlay = Navigator.of(context)
+                          .overlay!
+                          .context
+                          .findRenderObject() as RenderBox;
+                      final RelativeRect position = RelativeRect.fromRect(
+                        Rect.fromPoints(
+                          button.localToGlobal(Offset.zero, ancestor: overlay),
+                          button.localToGlobal(
+                              button.size.bottomRight(Offset.zero),
+                              ancestor: overlay),
+                        ),
+                        Offset.zero & overlay.size,
+                      );
 
-                    await showGeneralDialog(
-                      context: context,
-                      barrierColor: Colors.transparent,
-                      barrierDismissible: true,
-                      barrierLabel: "Filter",
-                      pageBuilder: (context, anim1, anim2) {
-                        return Stack(
-                          children: [
-                            // Blur background
-                            Positioned.fromRect(
-                              rect: Rect.fromPoints(
-                                Offset(0, 0),
-                                Offset(ScreenUtils.width * 0.05,
-                                    ScreenUtils.height * 0.05),
+                      await showGeneralDialog(
+                        context: context,
+                        barrierColor: Colors.transparent,
+                        barrierDismissible: true,
+                        barrierLabel: "Filter",
+                        transitionDuration: Duration.zero,
+                        pageBuilder: (context, anim1, anim2) {
+                          return Stack(
+                            children: [
+                              // Blur background
+                              Positioned.fromRect(
+                                rect: Rect.fromPoints(
+                                  Offset(0, 0),
+                                  Offset(ScreenUtils.width * 0.05,
+                                      ScreenUtils.height * 0.05),
+                                ),
+                                child: BackdropFilter(
+                                  filter:
+                                      ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+                                  child: Container(
+                                    color: Colors.transparent,
+                                  ),
+                                ),
                               ),
-                              child: BackdropFilter(
-                                filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
-                                child: Container(
+                              // The filter menu
+                              Positioned(
+                                left: 100,
+                                top: position.top,
+                                child: Material(
                                   color: Colors.transparent,
+                                  child: Container(
+                                    height: ScreenUtils.height * 0.22,
+                                    width: ScreenUtils.width * 0.45,
+                                    decoration: BoxDecoration(
+                                      color:
+                                          Colors.transparent.withOpacity(0.4),
+                                      borderRadius: BorderRadius.circular(40),
+                                    ),
+                                    padding: EdgeInsets.only(left: 30),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        SizedBox(
+                                          height: 14,
+                                        ),
+                                        _buildFilterChip(
+                                            context,
+                                            "All",
+                                            controller.selectedFilter.value ==
+                                                "All", () {
+                                          controller.selectedFilter.value =
+                                              "All";
+                                          Navigator.of(context).pop();
+                                        }),
+                                        _buildFilterChip(
+                                            context,
+                                            "today",
+                                            controller.selectedFilter.value ==
+                                                "today", () {
+                                          controller.selectedFilter.value =
+                                              "today";
+                                          Navigator.of(context).pop();
+                                        }),
+                                        _buildFilterChip(
+                                            context,
+                                            "this week",
+                                            controller.selectedFilter.value ==
+                                                "this week", () {
+                                          controller.selectedFilter.value =
+                                              "this week";
+                                          Navigator.of(context).pop();
+                                        }),
+                                        _buildFilterChip(
+                                            context,
+                                            "this month",
+                                            controller.selectedFilter.value ==
+                                                "this month", () {
+                                          controller.selectedFilter.value =
+                                              "this month";
+                                          Navigator.of(context).pop();
+                                        }),
+                                        SizedBox(
+                                          height: 14,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    },
+                    child: Image.asset(KImages.filterIcon),
+                  ),
+
+                  SizedBox(width: ScreenUtils.width * 0.1),
+                  IconButton(
+                    key: _moreVertButtonKey,
+                    onPressed: () async {
+                      final RenderBox button =
+                          _moreVertButtonKey.currentContext!.findRenderObject()
+                              as RenderBox;
+                      final RenderBox overlay = Navigator.of(context)
+                          .overlay!
+                          .context
+                          .findRenderObject() as RenderBox;
+                      final RelativeRect position = RelativeRect.fromRect(
+                        Rect.fromPoints(
+                          button.localToGlobal(Offset.zero, ancestor: overlay),
+                          button.localToGlobal(
+                              button.size.bottomRight(Offset.zero),
+                              ancestor: overlay),
+                        ),
+                        Offset.zero & overlay.size,
+                      );
+
+                      // Custom menu with transparent and blur background
+                      await showGeneralDialog(
+                        context: context,
+                        barrierColor: Colors.transparent,
+                        barrierDismissible: true,
+                        barrierLabel: "More Options",
+                        transitionDuration: Duration.zero,
+                        pageBuilder: (context, anim1, anim2) {
+                          return Stack(
+                            children: [
+                              // Blur background
+                              Positioned.fromRect(
+                                rect: Rect.fromPoints(
+                                  Offset(0, 0),
+                                  Offset(ScreenUtils.width * 0.05,
+                                      ScreenUtils.height * 0.05),
+                                ),
+                                child: BackdropFilter(
+                                  filter:
+                                      ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+                                  child: Container(
+                                    color: Colors.transparent,
+                                  ),
+                                ),
+                              ),
+                              // The more options menu
+                              Positioned(
+                                right: 100,
+                                top: position.top,
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: Container(
+                                    height: ScreenUtils.height * 0.18,
+                                    width: ScreenUtils.width * 0.35,
+                                    decoration: BoxDecoration(
+                                      color:
+                                          Colors.transparent.withOpacity(0.4),
+                                      borderRadius: BorderRadius.circular(30),
+                                    ),
+                                    padding: EdgeInsets.only(left: 30),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        SizedBox(
+                                          height: 11.5,
+                                        ),
+                                        _buildFilterChip(
+                                            context,
+                                            "All",
+                                            controller.selectedFilter.value ==
+                                                "All", () {
+                                          controller.selectedFilter.value =
+                                              "All";
+                                          Navigator.of(context).pop();
+                                        }),
+                                        _buildFilterChip(
+                                            context,
+                                            "read",
+                                            controller.selectedFilter.value ==
+                                                "read", () {
+                                          controller.selectedFilter.value =
+                                              "read";
+                                          Navigator.of(context).pop();
+                                        }),
+                                        _buildFilterChip(
+                                            context,
+                                            "unread",
+                                            controller.selectedFilter.value ==
+                                                "unread", () {
+                                          controller.selectedFilter.value =
+                                              "unread";
+                                          Navigator.of(context).pop();
+                                        }),
+                                        SizedBox(
+                                          height: 11.5,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    },
+                    icon: Icon(Icons.more_vert),
+                  ),
+
+                  SizedBox(width: ScreenUtils.width * 0.125),
+                  // View Mode Icon
+                  Obx(() => AnimatedContainer(
+                        duration: Duration(milliseconds: 250),
+                        height: ScreenUtils.height * 0.056,
+                        width: ScreenUtils.width * 0.29,
+                        decoration: BoxDecoration(
+                          color: Color(0xFFB5E3FF),
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            GestureDetector(
+                              onTap: () {
+                                if (controller.isGridView.value) return;
+                                controller.toggleViewMode();
+                              },
+                              child: AnimatedContainer(
+                                duration: Duration(milliseconds: 250),
+                                padding: EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: controller.isGridView.value
+                                      ? Color(0xFF41B7FF)
+                                      : Colors.transparent,
+                                  shape: BoxShape.rectangle,
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                                child: Icon(
+                                  Iconsax.grid_25,
+                                  color: controller.isGridView.value
+                                      ? Color(0xFFFFFFFF)
+                                      : Color(0xFF65778E),
+                                  size: 20,
                                 ),
                               ),
                             ),
-                            // The filter menu
-                            Positioned(
-                              left: 100,
-                              top: position.top,
-                              child: Material(
-                                color: Colors.transparent,
-                                child: Container(
-                                  height: ScreenUtils.height * 0.16,
-                                  width: ScreenUtils.width * 0.4,
-                                  decoration: BoxDecoration(
-                                    color: Colors.transparent.withOpacity(0.4),
-                                    borderRadius: BorderRadius.circular(30),
-                                  ),
-                                  padding: EdgeInsets.only(left: 30),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      _buildFilterChip(
-                                          context,
-                                          "All",
-                                          controller.selectedFilter.value ==
-                                              "All", () {
-                                        controller.selectedFilter.value = "All";
-                                        Navigator.of(context).pop();
-                                      }),
-                                      _buildFilterChip(
-                                          context,
-                                          "today",
-                                          controller.selectedFilter.value ==
-                                              "today", () {
-                                        controller.selectedFilter.value =
-                                            "today";
-                                        Navigator.of(context).pop();
-                                      }),
-                                      _buildFilterChip(
-                                          context,
-                                          "this week",
-                                          controller.selectedFilter.value ==
-                                              "this week", () {
-                                        controller.selectedFilter.value =
-                                            "this week";
-                                        Navigator.of(context).pop();
-                                      }),
-                                      _buildFilterChip(
-                                          context,
-                                          "this month",
-                                          controller.selectedFilter.value ==
-                                              "this month", () {
-                                        controller.selectedFilter.value =
-                                            "this month";
-                                        Navigator.of(context).pop();
-                                      }),
-                                    ],
-                                  ),
+                            SizedBox(width: ScreenUtils.width * 0.030),
+                            GestureDetector(
+                              onTap: () {
+                                if (!controller.isGridView.value) return;
+                                controller.toggleViewMode();
+                              },
+                              child: AnimatedContainer(
+                                duration: Duration(milliseconds: 250),
+                                padding: EdgeInsets.all(15),
+                                decoration: BoxDecoration(
+                                  color: controller.isGridView.value
+                                      ? Colors.transparent
+                                      : Color(0xFF41B7FF),
+                                  shape: BoxShape.rectangle,
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                                child: Image.asset(
+                                  KImages.listIcon,
+                                  color: !controller.isGridView.value
+                                      ? Color(0xFFFFFFFF)
+                                      : Color(0xFF65778E),
+                                  height: 17,
+                                  width: 19,
                                 ),
                               ),
                             ),
                           ],
-                        );
-                      },
-                    );
-                  },
-                  child: Image.asset(KImages.filterIcon),
-                ),
-                IconButton(
-                  key: _moreVertButtonKey,
-                  onPressed: () async {
-                    final RenderBox button = _moreVertButtonKey.currentContext!
-                        .findRenderObject() as RenderBox;
-                    final RenderBox overlay = Navigator.of(context)
-                        .overlay!
-                        .context
-                        .findRenderObject() as RenderBox;
-                    final RelativeRect position = RelativeRect.fromRect(
-                      Rect.fromPoints(
-                        button.localToGlobal(Offset.zero, ancestor: overlay),
-                        button.localToGlobal(
-                            button.size.bottomRight(Offset.zero),
-                            ancestor: overlay),
-                      ),
-                      Offset.zero & overlay.size,
-                    );
-
-                    // Custom menu with transparent and blur background
-                    await showGeneralDialog(
-                      context: context,
-                      barrierColor: Colors.transparent,
-                      barrierDismissible: true,
-                      barrierLabel: "More Options",
-                      pageBuilder: (context, anim1, anim2) {
-                        return Stack(
-                          children: [
-                            // Blur background
-                            Positioned.fromRect(
-                              rect: Rect.fromPoints(
-                                Offset(0, 0),
-                                Offset(ScreenUtils.width * 0.05,
-                                    ScreenUtils.height * 0.05),
-                              ),
-                              child: BackdropFilter(
-                                filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
-                                child: Container(
-                                  color: Colors.transparent,
-                                ),
-                              ),
-                            ),
-                            // The more options menu
-                            Positioned(
-                              right: 100,
-                              top: position.top,
-                              child: Material(
-                                color: Colors.transparent,
-                                child: Container(
-                                  height: ScreenUtils.height * 0.13,
-                                  width: ScreenUtils.width * 0.3,
-                                  decoration: BoxDecoration(
-                                    color: Colors.transparent.withOpacity(0.4),
-                                    borderRadius: BorderRadius.circular(30),
-                                  ),
-                                  padding: EdgeInsets.only(left: 30),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      _buildFilterChip(
-                                          context,
-                                          "All",
-                                          controller.selectedFilter.value ==
-                                              "All", () {
-                                        controller.selectedFilter.value = "All";
-                                        Navigator.of(context).pop();
-                                      }),
-                                      _buildFilterChip(
-                                          context,
-                                          "read",
-                                          controller.selectedFilter.value ==
-                                              "read", () {
-                                        controller.selectedFilter.value =
-                                            "read";
-                                        Navigator.of(context).pop();
-                                      }),
-                                      _buildFilterChip(
-                                          context,
-                                          "unread",
-                                          controller.selectedFilter.value ==
-                                              "unread", () {
-                                        controller.selectedFilter.value =
-                                            "unread";
-                                        Navigator.of(context).pop();
-                                      }),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                  },
-                  icon: Icon(Icons.more_vert),
-                ),
-
-                // View Mode Icon
-                Obx(() => AnimatedContainer(
-                      duration: Duration(milliseconds: 250),
-                      height: ScreenUtils.height * 0.07,
-                      width: ScreenUtils.width * 0.33,
-                      decoration: BoxDecoration(
-                        color: Color(0xFFB5E3FF),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          GestureDetector(
-                            onTap: () {
-                              if (controller.isGridView.value) return;
-                              controller.toggleViewMode();
-                            },
-                            child: AnimatedContainer(
-                              duration: Duration(milliseconds: 250),
-                              padding: EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: controller.isGridView.value
-                                    ? Color(0xFF41B7FF)
-                                    : Colors.transparent,
-                                shape: BoxShape.rectangle,
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Icon(
-                                Icons.grid_view,
-                                color: controller.isGridView.value
-                                    ? Color(0xFFFFFFFF)
-                                    : Color(0xFF65778E),
-                                size: 30,
-                              ),
-                            ),
-                          ),
-                          SizedBox(width: ScreenUtils.width * 0.025),
-                          GestureDetector(
-                            onTap: () {
-                              if (!controller.isGridView.value) return;
-                              controller.toggleViewMode();
-                            },
-                            child: AnimatedContainer(
-                              duration: Duration(milliseconds: 250),
-                              padding: EdgeInsets.all(15),
-                              decoration: BoxDecoration(
-                                color: controller.isGridView.value
-                                    ? Colors.transparent
-                                    : Color(0xFF41B7FF),
-                                shape: BoxShape.rectangle,
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                              child: Image.asset(
-                                KImages.listIcon,
-                                color: !controller.isGridView.value
-                                    ? Color(0xFFFFFFFF)
-                                    : Color(0xFF65778E),
-                                height: 25,
-                                width: 25,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    )),
-              ],
+                        ),
+                      )),
+                ],
+              ),
             ),
-            SizedBox(height: ScreenUtils.height * 0.01),
+            SizedBox(height: ScreenUtils.height * 0.025),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -504,11 +542,15 @@ class NewsScreen extends GetView<NewsController> {
               }
 
               if (controller.isGridView.value) {
-                return _buildGridView(filteredNews);
+                return Padding(
+                  padding: const EdgeInsets.only(left: 46, right: 46),
+                  child: _buildGridView(filteredNews),
+                );
               } else {
                 return _buildListView(filteredNews);
               }
             }),
+            SizedBox(height: ScreenUtils.height * 0.04),
           ],
         ),
       ),
@@ -555,13 +597,13 @@ class NewsScreen extends GetView<NewsController> {
         Get.to(() => NewsDetailScreen(news: news));
       },
       child: Container(
-        height: ScreenUtils.height * 0.15,
+        height: ScreenUtils.height * 0.07,
         width: double.infinity,
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.symmetric(vertical: 10),
+        margin: const EdgeInsets.only(bottom: 2, left: 20, right: 21),
+        padding: EdgeInsets.zero,
         decoration: BoxDecoration(
-          color: Color(0xFFDFDFDF).withOpacity(0.1),
-          borderRadius: BorderRadius.circular(25),
+          color: Color(0xFFF7F7F7),
+          borderRadius: BorderRadius.circular(5.5),
         ),
         child: Center(
           child: ListTile(
@@ -597,9 +639,9 @@ class NewsScreen extends GetView<NewsController> {
             title: Text(
               news['title'],
               style: TextStyle(
-                fontSize: ScreenUtils.x(4),
+                fontSize: 15,
                 fontWeight: FontWeight.w500,
-                color: Colors.black,
+                color: Color(0xFF1E2025),
               ),
               textAlign: TextAlign.start,
               maxLines: 2,
@@ -617,54 +659,61 @@ class NewsScreen extends GetView<NewsController> {
         Get.to(() => NewsDetailScreen(news: news));
       },
       child: Container(
-        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Color(0xFFDFDFDF).withOpacity(0.4),
-          borderRadius: BorderRadius.circular(20),
+          color: Color(0xFFF7F7F7),
+          borderRadius: BorderRadius.circular(5),
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            (news['thumbnail'] != null &&
-                    news['thumbnail'].toString().isNotEmpty)
-                ? Image.asset(
-                    news['thumbnail'],
-                    height: ScreenUtils.height * 0.1,
-                    width: ScreenUtils.width * 0.5,
-                    fit: BoxFit.fitWidth,
-                  )
-                : Container(
-                    height: ScreenUtils.height * 0.05,
-                    width: ScreenUtils.width * 0.1,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.black.withOpacity(0.1)),
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      news['thumbnail'] != null &&
-                              news['thumbnail'].toString().isNotEmpty
-                          ? news['thumbnail'].toString()
-                          : 'thumbnail',
-                      style: TextStyle(
-                        color: Color(0xFF616161),
-                        fontSize: ScreenUtils.x(1),
-                        fontWeight: FontWeight.w500,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-            Text(
-              news['keyword'],
-              style: TextStyle(
-                fontSize: ScreenUtils.x(3),
-                fontWeight: FontWeight.w400,
-                color: Colors.black,
+            // Thumbnail covering the top part of the card
+            Container(
+              height: ScreenUtils.height * 0.08,
+              width: ScreenUtils.width * 0.744,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(5),
               ),
-              textAlign: TextAlign.center,
-              maxLines: 4,
-              overflow: TextOverflow.ellipsis,
+              child: (news['thumbnail'] != null &&
+                      news['thumbnail'].toString().isNotEmpty)
+                  ? Image.asset(
+                      news['thumbnail'],
+                      fit: BoxFit.cover,
+                    )
+                  : Container(
+                      decoration: BoxDecoration(
+                        color: Color(0xFFF7F7F7),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: Center(
+                        child: Text(
+                          'Image',
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: ScreenUtils.x(2.5),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ),
+            ),
+            // Title text below the image
+            Container(
+              height: ScreenUtils.height * 0.04,
+              width: double.infinity,
+              padding: EdgeInsets.only(left: 10, right: 10, bottom: 10),
+              child: Center(
+                child: Text(
+                  news['keyword'] ?? 'No Title',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    color: Color(0xFF1E2025),
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
             ),
           ],
         ),
@@ -717,7 +766,7 @@ class NewsScreen extends GetView<NewsController> {
         TextSpan(
           text: text,
           style: TextStyle(
-            color: Colors.black87,
+            color: Color(0xFF797C7B),
             fontSize: ScreenUtils.x(3.5),
             fontWeight: FontWeight.w500,
           ),
@@ -736,9 +785,9 @@ class NewsScreen extends GetView<NewsController> {
         spans.add(TextSpan(
           text: text.substring(start),
           style: TextStyle(
-            color: Colors.black87,
-            fontSize: ScreenUtils.x(3.5),
-            fontWeight: FontWeight.w500,
+            color: Color(0xFF797C7B),
+            fontSize: 14,
+            fontWeight: FontWeight.w300,
           ),
         ));
         break;
@@ -748,9 +797,9 @@ class NewsScreen extends GetView<NewsController> {
         spans.add(TextSpan(
           text: text.substring(start, index),
           style: TextStyle(
-            color: Colors.black87,
-            fontSize: ScreenUtils.x(3.5),
-            fontWeight: FontWeight.w500,
+            color: Color(0xFF797C7B),
+            fontSize: 14,
+            fontWeight: FontWeight.w300,
           ),
         ));
       }
@@ -758,10 +807,9 @@ class NewsScreen extends GetView<NewsController> {
       spans.add(TextSpan(
         text: text.substring(index, index + query.length),
         style: TextStyle(
-          color: Color(0xFF1976D2),
-          fontSize: ScreenUtils.x(3.5),
-          fontWeight: FontWeight.bold,
-          backgroundColor: Color(0xFFE3F2FD),
+          color: Color(0xFF714FC0),
+          fontSize: 14,
+          fontWeight: FontWeight.w400,
         ),
       ));
 

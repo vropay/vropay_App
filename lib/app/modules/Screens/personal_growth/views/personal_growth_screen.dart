@@ -55,11 +55,11 @@ class PersonalGrowthScreen extends GetView<PersonalGrowthController> {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: ScreenUtils.height * 0.045),
 
             // Categories List
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 60),
+              padding: const EdgeInsets.symmetric(horizontal: 46),
               child: Obx(() {
                 if (controller.isLoading.value) {
                   return const Center(
@@ -95,19 +95,19 @@ class PersonalGrowthScreen extends GetView<PersonalGrowthController> {
         Get.toNamed(Routes.NEWS_SCREEN);
       },
       child: Container(
-        height: ScreenUtils.height * 0.15,
+        height: ScreenUtils.height * 0.2,
         width: double.infinity,
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 10),
+        margin: const EdgeInsets.only(bottom: 18),
+        padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 18),
         decoration: BoxDecoration(
-          color: Color(0xFFDFDFDF).withOpacity(0.4),
+          color: _getContainerColor(category),
           borderRadius: BorderRadius.circular(25),
         ),
         child: Center(
           child: Text(
             category,
             style: TextStyle(
-              fontSize: ScreenUtils.x(8),
+              fontSize: _getCategoryFontSize(category),
               fontWeight: FontWeight.w400,
               color: _getCategoryColor(category),
             ),
@@ -115,6 +115,69 @@ class PersonalGrowthScreen extends GetView<PersonalGrowthController> {
         ),
       ),
     );
+  }
+
+  Color _getContainerColor(String category) {
+    switch (category) {
+      case 'ENTREPRENEURSHIP':
+        return Color(0xFFDFDFDF)
+            .withOpacity(0.2); // Deep Green - represents growth and success
+      case 'VISIONARIES':
+        return Color(0xFFDFDFDF)
+            .withOpacity(0.2); // Deep Blue - represents wisdom and vision
+      case 'LAW':
+        return Color(0xFFDFDFDF)
+            .withOpacity(0.2); // Deep Red - represents authority and justice
+      case 'BOOKS':
+        return Color(0xFFDFDFDF).withOpacity(
+            0.25); // Deep Purple - represents knowledge and learning
+      case 'VOCAB':
+        return Color(0xFFDFDFDF).withOpacity(
+            0.25); // Deep Orange - represents energy and communication
+      case 'HEALTH':
+        return Color(0xFFDFDFDF)
+            .withOpacity(0.25); // Green - represents wellness and vitality
+      case 'SPIRITUALITY':
+        return Color(0xFFDFDFDF)
+            .withOpacity(0.25); // Purple - represents spiritual connection
+      case 'QUANTUMLEAP':
+        return Color(0xFFDFDFDF)
+            .withOpacity(0.25); // Blue - represents transformation and progress
+      case 'GEETA GYAN':
+        return Color(0xFFDFDFDF)
+            .withOpacity(0.25); // Amber - represents ancient wisdom
+      case 'VEDIC WISE':
+        return Color(0xFFDFDFDF).withOpacity(0.25); // Light gray with opacity
+      default:
+        return Color(0xFFDFDFDF).withOpacity(0.4); // Default teal color
+    }
+  }
+
+  double _getCategoryFontSize(String category) {
+    switch (category) {
+      case 'ENTREPRENEURSHIP':
+        return 35;
+      case 'VISIONARIES':
+        return 42;
+      case 'LAW':
+        return 50;
+      case 'BOOKS':
+        return 50;
+      case 'VOCAB':
+        return 50;
+      case 'HEALTH':
+        return 45;
+      case 'SPIRITUALITY':
+        return 40;
+      case 'QUANTUMLEAP':
+        return 50;
+      case 'GEETA GYAN':
+        return 42;
+      case 'VEDIC WISE':
+        return 45;
+      default:
+        return 40;
+    }
   }
 
   Color _getCategoryColor(String category) {

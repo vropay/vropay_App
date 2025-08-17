@@ -23,6 +23,7 @@ class BusinessAndInnovationCommunityScreen
       body: SingleChildScrollView(
         child: Column(
           children: [
+            SizedBox(height: ScreenUtils.height * 0.03),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -53,19 +54,17 @@ class BusinessAndInnovationCommunityScreen
                 ),
               ],
             ),
-            SizedBox(
-              height: ScreenUtils.height * 0.03,
-            ),
+            SizedBox(height: ScreenUtils.height * 0.05),
 
             // Categories Grid View
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20),
+              padding: EdgeInsets.symmetric(horizontal: 42),
               child: Obx(() => GridView.builder(
                   shrinkWrap: true,
                   physics: NeverScrollableScrollPhysics(),
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
-                    crossAxisSpacing: 15,
+                    crossAxisSpacing: 8,
                     mainAxisSpacing: 15,
                     childAspectRatio: 1.3,
                   ),
@@ -89,7 +88,8 @@ class BusinessAndInnovationCommunityScreen
       },
       child: Container(
         decoration: BoxDecoration(
-          color: Color(0xFF3E9292).withOpacity(0.3),
+          color: Color(0xFF3E9292).withOpacity(0.1),
+          borderRadius: BorderRadius.circular(5),
         ),
         child: Center(
           child: Column(
@@ -99,7 +99,7 @@ class BusinessAndInnovationCommunityScreen
               Text(
                 category,
                 style: TextStyle(
-                  fontSize: ScreenUtils.x(6),
+                  fontSize: 25,
                   fontWeight: FontWeight.w500,
                   color: _getCategoryColor(index),
                 ),

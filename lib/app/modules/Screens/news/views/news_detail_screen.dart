@@ -20,6 +20,7 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
   final selectedFilter = 'All'.obs; // Add filter state
   final GlobalKey _moreButtonKey = GlobalKey(); // Add key for positioning
   bool _showBlur = false; // Add blur state
+  bool _showHighlightView = false; // Add highlight view state
 
   @override
   void initState() {
@@ -130,8 +131,8 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
                         child: Text(
                           widget.news['title'] ?? 'No Title',
                           style: TextStyle(
-                            fontSize: ScreenUtils.x(6),
-                            fontWeight: FontWeight.bold,
+                            fontSize: 23,
+                            fontWeight: FontWeight.w500,
                             color: Color(0xFF172B75),
                             height: 1.3,
                           ),
@@ -144,7 +145,7 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
                       if (!_showFixedActionButtons)
                         Padding(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 10.0,
+                            horizontal: 20.0,
                           ),
                           child: Container(
                             width: double.infinity,
@@ -190,181 +191,24 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
                       SizedBox(height: ScreenUtils.height * 0.01),
 
                       // Full Description with right-side icon column
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      Stack(
                         children: [
-                          // Description text (expanded to take available space)
-                          Expanded(
-                            child: Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 20.0),
-                              child: Text(
-                                _getFullDescription(widget.news['title'] ?? ''),
-                                style: TextStyle(
-                                  fontSize: ScreenUtils.x(4),
-                                  fontWeight: FontWeight.w400,
-                                  color: Color(0xFF424242),
-                                  height: 1.6,
-                                ),
-                              ),
-                            ),
-                          ),
-                          // Icon column on the right
+                          // Description text (takes full width)
                           Padding(
                             padding:
-                                const EdgeInsets.only(right: 20.0, top: 8.0),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: Icon(Icons.favorite_border,
-                                      color: Color(0xFFEF2D56)),
-                                  onPressed: () {},
-                                ),
-                                SizedBox(height: 10),
-                                IconButton(
-                                  icon: Icon(Icons.bookmark_border,
-                                      color: Color(0xFF6253DB)),
-                                  onPressed: () {},
-                                ),
-                                SizedBox(height: 10),
-                                IconButton(
-                                  icon: Image.asset(KImages.colorVertIcon),
-                                  onPressed: () {},
-                                ),
-                                SizedBox(height: 10),
-                                IconButton(
-                                  icon: Image.asset(KImages.penIcon),
-                                  onPressed: () {},
-                                ),
-                                SizedBox(height: 10),
-                                IconButton(
-                                  key: _moreButtonKey,
-                                  icon: Icon(Icons.more_horiz,
-                                      color: Colors.orange),
-                                  onPressed: () async {
-                                    setState(() {
-                                      _showBlur = true;
-                                    });
-
-                                    final RenderBox button = _moreButtonKey
-                                        .currentContext!
-                                        .findRenderObject() as RenderBox;
-                                    final RenderBox overlay =
-                                        Navigator.of(context)
-                                            .overlay!
-                                            .context
-                                            .findRenderObject() as RenderBox;
-                                    final RelativeRect position =
-                                        RelativeRect.fromRect(
-                                      Rect.fromPoints(
-                                        button.localToGlobal(Offset.zero,
-                                            ancestor: overlay),
-                                        button.localToGlobal(
-                                            button.size
-                                                .bottomRight(Offset.zero),
-                                            ancestor: overlay),
-                                      ),
-                                      Offset.zero & overlay.size,
-                                    );
-
-                                    // Custom menu with transparent and blur background
-                                    await showGeneralDialog(
-                                      context: context,
-                                      barrierColor: Colors.transparent,
-                                      barrierDismissible: true,
-                                      barrierLabel: "Menu",
-                                      pageBuilder: (context, anim1, anim2) {
-                                        return Stack(
-                                          children: [
-                                            // Blur background
-                                            Positioned.fromRect(
-                                              rect: Rect.fromPoints(
-                                                Offset(0, 0),
-                                                Offset(ScreenUtils.width * 0.05,
-                                                    ScreenUtils.height * 0.05),
-                                              ),
-                                              child: BackdropFilter(
-                                                filter: ImageFilter.blur(
-                                                    sigmaX: 6, sigmaY: 6),
-                                                child: Container(
-                                                  color: Colors.transparent,
-                                                ),
-                                              ),
-                                            ),
-                                            // The menu
-                                            Positioned(
-                                              right: 60,
-                                              top: position.top,
-                                              child: Material(
-                                                color: Colors.transparent,
-                                                child: Container(
-                                                  height:
-                                                      ScreenUtils.height * 0.14,
-                                                  width:
-                                                      ScreenUtils.width * 0.3,
-                                                  decoration: BoxDecoration(
-                                                    color: Colors.transparent
-                                                        .withOpacity(0.1),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            12),
-                                                  ),
-                                                  child: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .center,
-                                                    children: [
-                                                      _buildFilterChip(
-                                                          context,
-                                                          "beginner",
-                                                          selectedFilter
-                                                                  .value ==
-                                                              "beginner", () {
-                                                        selectedFilter.value =
-                                                            "beginner";
-                                                        Navigator.of(context)
-                                                            .pop();
-                                                      }),
-                                                      _buildFilterChip(
-                                                          context,
-                                                          "moderate",
-                                                          selectedFilter
-                                                                  .value ==
-                                                              "moderate", () {
-                                                        selectedFilter.value =
-                                                            "moderate";
-                                                        Navigator.of(context)
-                                                            .pop();
-                                                      }),
-                                                      _buildFilterChip(
-                                                          context,
-                                                          "advance",
-                                                          selectedFilter
-                                                                  .value ==
-                                                              "advance", () {
-                                                        selectedFilter.value =
-                                                            "advance";
-                                                        Navigator.of(context)
-                                                            .pop();
-                                                      }),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        );
-                                      },
-                                    );
-
-                                    setState(() {
-                                      _showBlur = false;
-                                    });
-                                  },
-                                ),
-                              ],
-                            ),
+                                const EdgeInsets.only(left: 20.0, right: 60),
+                            child: _showHighlightView
+                                ? _buildHighlightedText()
+                                : Text(
+                                    _getFullDescription(
+                                        widget.news['title'] ?? ''),
+                                    style: TextStyle(
+                                      fontSize: ScreenUtils.x(4),
+                                      fontWeight: FontWeight.w300,
+                                      color: Color(0xFF424242),
+                                      height: 1,
+                                    ),
+                                  ),
                           ),
                         ],
                       ),
@@ -386,6 +230,168 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
               ),
             ),
 
+            // Fixed Action Buttons on the right side (outside scrollable area)
+            Positioned(
+              right: 20,
+              top: 400, // Adjust this value to position below the header
+              child: Container(
+                width: 50,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon:
+                          Icon(Icons.favorite_border, color: Color(0xFFEF2D56)),
+                      onPressed: () {},
+                    ),
+                    SizedBox(height: 10),
+                    IconButton(
+                      icon:
+                          Icon(Icons.bookmark_border, color: Color(0xFF6253DB)),
+                      onPressed: () {},
+                    ),
+                    SizedBox(height: 10),
+                    IconButton(
+                      icon: Image.asset(KImages.colorVertIcon),
+                      onPressed: () {},
+                    ),
+                    SizedBox(height: 10),
+                    IconButton(
+                      icon: Image.asset(KImages.penIcon),
+                      style: IconButton.styleFrom(
+                        backgroundColor: _showHighlightView
+                            ? Colors.white
+                            : Colors.transparent,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          side: BorderSide(
+                            color: _showHighlightView
+                                ? Color(0xFF00B8F0)
+                                : Colors.transparent,
+                            width: 1,
+                          ),
+                        ),
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _showHighlightView = !_showHighlightView;
+                        });
+                      },
+                    ),
+                    SizedBox(height: 10),
+                    IconButton(
+                      key: _moreButtonKey,
+                      icon: Icon(Icons.more_horiz, color: Color(0xFF6253DB)),
+                      onPressed: () async {
+                        setState(() {
+                          _showBlur = true;
+                        });
+
+                        final RenderBox button = _moreButtonKey.currentContext!
+                            .findRenderObject() as RenderBox;
+                        final RenderBox overlay = Navigator.of(context)
+                            .overlay!
+                            .context
+                            .findRenderObject() as RenderBox;
+                        final RelativeRect position = RelativeRect.fromRect(
+                          Rect.fromPoints(
+                            button.localToGlobal(Offset.zero,
+                                ancestor: overlay),
+                            button.localToGlobal(
+                                button.size.bottomRight(Offset.zero),
+                                ancestor: overlay),
+                          ),
+                          Offset.zero & overlay.size,
+                        );
+
+                        // Custom menu with transparent and blur background
+                        await showGeneralDialog(
+                          context: context,
+                          barrierColor: Colors.transparent,
+                          barrierDismissible: true,
+                          transitionDuration: Duration.zero,
+                          barrierLabel: "Menu",
+                          pageBuilder: (context, anim1, anim2) {
+                            return Stack(
+                              children: [
+                                // Blur background
+                                Positioned.fromRect(
+                                  rect: Rect.fromPoints(
+                                    Offset(0, 0),
+                                    Offset(ScreenUtils.width * 0.05,
+                                        ScreenUtils.height * 0.05),
+                                  ),
+                                  child: BackdropFilter(
+                                    filter:
+                                        ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+                                    child: Container(
+                                      color: Colors.transparent,
+                                    ),
+                                  ),
+                                ),
+                                // The menu
+                                Positioned(
+                                  right: 60,
+                                  top: position.top,
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    child: Container(
+                                      height: ScreenUtils.height * 0.16,
+                                      width: ScreenUtils.width * 0.35,
+                                      decoration: BoxDecoration(
+                                        color:
+                                            Color(0xFF87706A).withOpacity(0.5),
+                                        borderRadius: BorderRadius.circular(31),
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          SizedBox(
+                                            height: 10,
+                                          ),
+                                          _buildFilterChip(
+                                              context,
+                                              "beginner",
+                                              selectedFilter.value ==
+                                                  "beginner", () {
+                                            selectedFilter.value = "beginner";
+                                            Navigator.of(context).pop();
+                                          }),
+                                          _buildFilterChip(
+                                              context,
+                                              "moderate",
+                                              selectedFilter.value ==
+                                                  "moderate", () {
+                                            selectedFilter.value = "moderate";
+                                            Navigator.of(context).pop();
+                                          }),
+                                          _buildFilterChip(context, "advance",
+                                              selectedFilter.value == "advance",
+                                              () {
+                                            selectedFilter.value = "advance";
+                                            Navigator.of(context).pop();
+                                          }),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+
+                        setState(() {
+                          _showBlur = false;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
             // Dark Background Overlay
             if (_showBlur)
               Positioned.fill(
@@ -402,41 +408,40 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
                 right: 0,
                 child: Container(
                   height: ScreenUtils.height * 0.08,
-                  margin:
-                      EdgeInsets.only(top: MediaQuery.of(context).padding.top),
-                  padding: EdgeInsets.symmetric(horizontal: 6, vertical: 10),
+                  margin: EdgeInsets.only(
+                    top: MediaQuery.of(context).padding.top,
+                  ),
+                  padding: EdgeInsets.only(left: 5, right: 20, top: 10),
                   decoration: BoxDecoration(
                     color: Color(0xFFFFFFFF),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 10,
-                        offset: Offset(0, 2),
-                      ),
-                    ],
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      GestureDetector(
-                        onTap: () => Get.back(),
-                        child: BackIcon(),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 10),
+                        child: GestureDetector(
+                          onTap: () => Get.back(),
+                          child: BackIcon(),
+                        ),
                       ),
                       Row(
                         children: [
+                          SizedBox(width: ScreenUtils.width * 0.05),
                           GestureDetector(
                               onTap: () {},
                               child:
-                                  Image.asset(KImages.contentIcon, height: 30)),
-                          SizedBox(width: 20),
+                                  Image.asset(KImages.contentIcon, height: 25)),
+                          SizedBox(width: ScreenUtils.width * 0.05),
                           GestureDetector(
                               onTap: () {},
-                              child: Image.asset(KImages.nextIcon, height: 30)),
-                          SizedBox(width: 20),
+                              child: Image.asset(KImages.nextIcon, height: 25)),
+                          SizedBox(width: ScreenUtils.width * 0.05),
                           GestureDetector(
                               onTap: () {},
                               child:
-                                  Image.asset(KImages.shareIcon, height: 30)),
+                                  Image.asset(KImages.shareIcon, height: 25)),
+                          SizedBox(width: ScreenUtils.width * 0.05),
                         ],
                       ),
                     ],
@@ -489,10 +494,131 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.w300,
-            fontSize: ScreenUtils.x(3.5),
+            fontSize: 15,
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildHighlightedText() {
+    final String fullText = _getFullDescription(widget.news['title'] ?? '');
+    return _buildDynamicHighlightedText(fullText);
+  }
+
+  Widget _buildDynamicHighlightedText(String text) {
+    // Define keywords to highlight with their colors
+    final Map<String, Color> highlightKeywords = {
+      'Mallikarjun Kharge': Color(0xFFEF2D56),
+      'Rahul Gandhi': Color(0xFFEF2D56),
+      'Narendra Modi': Color(0xFFEF2D56),
+      'Jammu and Kashmir': Color(0xFFEF2D56),
+      'J&K': Color(0xFFEF2D56),
+      'Congress': Color(0xFFEF2D56),
+      'Parliament': Color(0xFFEF2D56),
+      'Supreme Court': Color(0xFFEF2D56),
+      'Statehood': Color(0xFFEF2D56),
+      'constitutional': Color(0xFFEF2D56),
+      'democratic': Color(0xFFEF2D56),
+      'legitimate': Color(0xFFEF2D56),
+      'rights': Color(0xFFEF2D56),
+      'Ladakh': Color(0xFFEF2D56),
+      'Union Territories': Color(0xFFEF2D56),
+      'Independent India': Color(0xFFEF2D56),
+      'GCC': Color(0xFFEF2D56),
+      'Group of Concerned Citizens': Color(0xFFEF2D56),
+    };
+
+    // Create a list of TextSpan widgets
+    List<TextSpan> spans = [];
+    String remainingText = text;
+
+    // Sort keywords by length (longest first) to avoid partial matches
+    List<String> sortedKeywords = highlightKeywords.keys.toList()
+      ..sort((a, b) => b.length.compareTo(a.length));
+
+    while (remainingText.isNotEmpty) {
+      bool foundMatch = false;
+
+      for (String keyword in sortedKeywords) {
+        if (remainingText.toLowerCase().startsWith(keyword.toLowerCase())) {
+          // Add highlighted keyword
+          spans.add(TextSpan(
+            text: remainingText.substring(0, keyword.length),
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w300,
+              color: highlightKeywords[keyword]!,
+              height: 1,
+            ),
+          ));
+
+          // Remove the matched keyword from remaining text
+          remainingText = remainingText.substring(keyword.length);
+          foundMatch = true;
+          break;
+        }
+      }
+
+      if (!foundMatch) {
+        // Find the next keyword match
+        int nextMatchIndex = -1;
+        String nextKeyword = '';
+
+        for (String keyword in sortedKeywords) {
+          int index =
+              remainingText.toLowerCase().indexOf(keyword.toLowerCase());
+          if (index != -1 && (nextMatchIndex == -1 || index < nextMatchIndex)) {
+            nextMatchIndex = index;
+            nextKeyword = keyword;
+          }
+        }
+
+        if (nextMatchIndex != -1) {
+          // Add text before the next keyword
+          spans.add(TextSpan(
+            text: remainingText.substring(0, nextMatchIndex),
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w300,
+              color: Color(0xFF424242),
+              height: 1,
+            ),
+          ));
+
+          // Add highlighted keyword
+          spans.add(TextSpan(
+            text: remainingText.substring(
+                nextMatchIndex, nextMatchIndex + nextKeyword.length),
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w300,
+              color: highlightKeywords[nextKeyword]!,
+              height: 1,
+            ),
+          ));
+
+          // Remove processed text
+          remainingText =
+              remainingText.substring(nextMatchIndex + nextKeyword.length);
+        } else {
+          // No more keywords, add remaining text
+          spans.add(TextSpan(
+            text: remainingText,
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w300,
+              color: Color(0xFF424242),
+              height: 1,
+            ),
+          ));
+          remainingText = '';
+        }
+      }
+    }
+
+    return RichText(
+      text: TextSpan(children: spans),
     );
   }
 }

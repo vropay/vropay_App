@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:vropay_final/Components/back_icon.dart';
 import 'package:vropay_final/Utilities/constants/KImages.dart';
 import 'package:vropay_final/Utilities/screen_utils.dart';
@@ -11,14 +12,11 @@ class ConsentScreen extends GetView<ConsentController> {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
-
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 15),
+            padding: EdgeInsets.symmetric(horizontal: 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -33,6 +31,7 @@ class ConsentScreen extends GetView<ConsentController> {
                     Image.asset(
                       KImages.catImage,
                       height: ScreenUtils.height * 0.135,
+                      width: ScreenUtils.width * 0.800,
                     ),
                     SizedBox(
                       width: 0,
@@ -50,64 +49,81 @@ class ConsentScreen extends GetView<ConsentController> {
                       color: Color(0xFF00B8F0)),
                 ),
                 SizedBox(
-                  height: ScreenUtils.height * 0.01,
+                  height: ScreenUtils.height * 0.015,
                 ),
                 Text(
                   "Your texts and comments help make VroPay A safe and inspiring place. Remember to:",
                   style: TextStyle(
-                      fontSize: ScreenUtils.x(4),
+                      fontSize: 15,
                       fontWeight: FontWeight.w400,
                       color: Color(0xFF000000)),
                 ),
                 SizedBox(
-                  height: ScreenUtils.height * 0.02,
+                  height: ScreenUtils.height * 0.025,
                 ),
-                Text(
-                  "Be Kind",
-                  style: TextStyle(
-                      fontSize: ScreenUtils.x(6), color: Color(0xFF172B75)),
+                Padding(
+                  padding: EdgeInsets.only(left: 10),
+                  child: Text(
+                    "Be Kind",
+                    style: TextStyle(
+                        fontSize: 25,
+                        fontWeight: FontWeight.w300,
+                        color: Color(0xFF172B75)),
+                  ),
                 ),
                 SizedBox(
                   height: ScreenUtils.height * 0.001,
                 ),
-                Text(
-                  "Always show respect, especially when sharing feedback or different perspectives.",
-                  style: TextStyle(
-                      fontSize: ScreenUtils.x(4),
-                      fontWeight: FontWeight.w300,
-                      color: Color(0xFF000000)),
-                  textAlign: TextAlign.center,
+                Padding(
+                  padding: EdgeInsets.only(right: 15),
+                  child: Text(
+                    "Always show respect, especially when sharing feedback or different perspectives.",
+                    style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w300,
+                        color: Color(0xFF000000)),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
                 SizedBox(
                   height: ScreenUtils.height * 0.02,
                 ),
-                Text(
-                  "Be Purposeful",
-                  style: TextStyle(
-                      fontSize: ScreenUtils.x(6),
-                      fontWeight: FontWeight.w400,
-                      color: Color(0xFF172B75)),
+                Padding(
+                  padding: EdgeInsets.only(left: 10),
+                  child: Text(
+                    "Be Purposeful",
+                    style: TextStyle(
+                        fontSize: 25,
+                        fontWeight: FontWeight.w300,
+                        color: Color(0xFF172B75)),
+                  ),
                 ),
                 SizedBox(
                   height: ScreenUtils.height * 0.001,
                 ),
-                Text(
-                  "Focus on sharing new ideas and expertise that will inspire the community.",
-                  style: TextStyle(
-                      fontSize: ScreenUtils.x(4),
-                      fontWeight: FontWeight.w300,
-                      color: Color(0xFF000000)),
-                  textAlign: TextAlign.center,
+                Padding(
+                  padding: EdgeInsets.only(left: 8),
+                  child: Text(
+                    "Focus on sharing new ideas and expertise that will inspire the community.",
+                    style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w300,
+                        color: Color(0xFF000000)),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
                 SizedBox(
                   height: ScreenUtils.height * 0.02,
                 ),
-                Text(
-                  "Be Constructive",
-                  style: TextStyle(
-                      fontSize: ScreenUtils.x(6),
-                      fontWeight: FontWeight.w400,
-                      color: Color(0xFF172B75)),
+                Padding(
+                  padding: EdgeInsets.only(left: 10),
+                  child: Text(
+                    "Be Constructive",
+                    style: TextStyle(
+                        fontSize: 25,
+                        fontWeight: FontWeight.w300,
+                        color: Color(0xFF172B75)),
+                  ),
                 ),
                 SizedBox(
                   height: ScreenUtils.height * 0.001,
@@ -115,7 +131,7 @@ class ConsentScreen extends GetView<ConsentController> {
                 Text(
                   "Make sure u’re adding to the conversation rather than debating or spamming.",
                   style: TextStyle(
-                    fontSize: ScreenUtils.x(4),
+                    fontSize: 15,
                     fontWeight: FontWeight.w300,
                     color: Color(0xFF000000),
                   ),
@@ -126,8 +142,8 @@ class ConsentScreen extends GetView<ConsentController> {
                 ),
                 Center(
                   child: Container(
-                    height: ScreenUtils.height * 0.2,
-                    width: ScreenUtils.width * 0.7,
+                    height: ScreenUtils.height * 0.19,
+                    width: ScreenUtils.width * 0.8,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(10),
                       color: Color(0xFFFFC746),
@@ -137,15 +153,15 @@ class ConsentScreen extends GetView<ConsentController> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         SizedBox(
-                          height: ScreenUtils.height * 0.01,
+                          height: ScreenUtils.height * 0.016,
                         ),
                         Text(
                           "You can tap & hold on any message or user \nto report !\n     But hey you can be reported too.\nRepeated reports = chat disabled.\nYou’ll still be able to scroll and read.",
                           style: TextStyle(
-                            fontSize: ScreenUtils.x(3),
+                            fontSize: 12,
                             fontWeight: FontWeight.w400,
                             color: Color(0xFF000000),
-                            height: 20 / ScreenUtils.x(3),
+                            height: 1.5,
                           ),
                         ),
                         SizedBox(
@@ -158,7 +174,7 @@ class ConsentScreen extends GetView<ConsentController> {
                             style: TextStyle(
                                 fontSize: ScreenUtils.x(3),
                                 fontWeight: FontWeight.w600,
-                                color: Color(0xFF000000)),
+                                color: Color(0xFF172B75)),
                           ),
                         ),
                       ],
@@ -166,7 +182,7 @@ class ConsentScreen extends GetView<ConsentController> {
                   ),
                 ),
                 SizedBox(
-                  height: ScreenUtils.height * 0.03,
+                  height: ScreenUtils.height * 0.02,
                 ),
                 Center(
                   child: ElevatedButton(
@@ -174,8 +190,8 @@ class ConsentScreen extends GetView<ConsentController> {
                         Get.toNamed(Routes.MESSAGE_SCREEN);
                       },
                       style: ElevatedButton.styleFrom(
-                          fixedSize: Size(ScreenUtils.width * 0.4,
-                              ScreenUtils.height * 0.03),
+                          fixedSize: Size(ScreenUtils.width * 0.5,
+                              ScreenUtils.height * 0.025),
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12)),
                           backgroundColor: Color(0xFFE70025)),
@@ -184,16 +200,23 @@ class ConsentScreen extends GetView<ConsentController> {
                         children: [
                           Text(
                             "agreed",
-                            style: TextStyle(color: Colors.white),
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                                fontFamily: GoogleFonts.poppins().fontFamily),
                           ),
                           Icon(
                             Icons.arrow_forward_rounded,
                             color: Colors.white,
-                            size: 24,
+                            size: 20,
                           )
                         ],
                       )),
-                )
+                ),
+                SizedBox(
+                  height: ScreenUtils.height * 0.0,
+                ),
               ],
             ),
           ),

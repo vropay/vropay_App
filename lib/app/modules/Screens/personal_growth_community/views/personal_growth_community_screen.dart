@@ -19,11 +19,11 @@ class PersonalGrowthCommunityScreen
         preferredSize: Size.fromHeight(150),
         child: CustomTopNavBar(selectedIndex: null),
       ),
-      
       bottomNavigationBar: CustomBottomNavBar(),
       body: SingleChildScrollView(
         child: Column(
           children: [
+            SizedBox(height: ScreenUtils.height * 0.03),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -54,19 +54,18 @@ class PersonalGrowthCommunityScreen
                 ),
               ],
             ),
-            SizedBox(
-              height: ScreenUtils.height * 0.03,
-            ),
+
+            SizedBox(height: ScreenUtils.height * 0.05),
 
             // Categories Grid View
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20),
+              padding: EdgeInsets.symmetric(horizontal: 42),
               child: Obx(() => GridView.builder(
                   shrinkWrap: true,
                   physics: NeverScrollableScrollPhysics(),
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
-                    crossAxisSpacing: 15,
+                    crossAxisSpacing: 8,
                     mainAxisSpacing: 15,
                     childAspectRatio: 1.3,
                   ),
@@ -89,8 +88,12 @@ class PersonalGrowthCommunityScreen
         Get.toNamed(Routes.CONSENT_SCREEN);
       },
       child: Container(
+        height: ScreenUtils.height * 0.2,
+        width: double.infinity,
+        padding: EdgeInsets.only(left: 9, right: 9),
         decoration: BoxDecoration(
-          color: Color(0xFF3E9292).withOpacity(0.3),
+          color: Color(0xFF3E9292).withOpacity(0.1),
+          borderRadius: BorderRadius.circular(5),
         ),
         child: Center(
           child: Column(
@@ -100,17 +103,43 @@ class PersonalGrowthCommunityScreen
               Text(
                 category,
                 style: TextStyle(
-                  fontSize: ScreenUtils.x(6),
+                  fontSize: _getCategoryFontSize(category),
                   fontWeight: FontWeight.w500,
                   color: _getCategoryColor(index),
                 ),
-                textAlign: TextAlign.center,
               ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  double _getCategoryFontSize(String category) {
+    switch (category) {
+      case 'entrepreneurship':
+        return 18;
+      case 'visionaries':
+        return 22;
+      case 'law':
+        return 22;
+      case 'books':
+        return 22;
+      case 'vocab':
+        return 22;
+      case 'health':
+        return 22;
+      case 'spirituality':
+        return 22;
+      case 'quantumleap':
+        return 22;
+      case 'geeta gyan':
+        return 22;
+      case 'vedic wise':
+        return 22;
+      default:
+        return 22;
+    }
   }
 
   Color _getCategoryColor(int index) {

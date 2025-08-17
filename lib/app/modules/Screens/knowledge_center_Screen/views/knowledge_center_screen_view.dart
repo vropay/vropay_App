@@ -231,8 +231,11 @@ class KnowledgeCenterScreenView
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
                               crossAxisCount: 2,
-                              crossAxisSpacing: 12,
-                              mainAxisSpacing: 12,
+                              crossAxisSpacing: 8,
+                              mainAxisSpacing: 29,
+                              padding: EdgeInsets.only(
+                                bottom: 37,
+                              ),
                               children: const [
                                 _CommunityBox(
                                   label: 'HEALTH',
@@ -344,14 +347,14 @@ class _CommunityBox extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: color,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(5),
       ),
       child: Center(
         child: Text(
           label,
           textAlign: TextAlign.center,
           style: TextStyle(
-              fontWeight: FontWeight.normal, color: colorText, fontSize: 25),
+              fontWeight: FontWeight.w500, color: colorText, fontSize: 25),
         ),
       ),
     );

@@ -73,615 +73,703 @@ class _MessageScreenState extends State<MessageScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFFFFF),
-      body: Stack(
-        children: [
-          CustomScrollView(
-            slivers: [
-              // SliverAppBar with blur effect
-              Obx(() => SliverAppBar(
-                    expandedHeight: 0,
-                    floating: false,
-                    pinned: true,
-                    toolbarHeight: kToolbarHeight,
-                    collapsedHeight: kToolbarHeight,
-                    backgroundColor: controller.isImportantIconPressed.value
-                        ? Colors.grey.withOpacity(0.1)
-                        : Colors.white,
-                    elevation: 0,
-                    surfaceTintColor: Colors.transparent,
-                    shadowColor: Colors.transparent,
-                    flexibleSpace: null,
-                    leading: IconButton(
-                        onPressed: () {
-                          Get.back();
-                        },
-                        icon: const BackIcon()),
-                    actionsPadding: EdgeInsets.zero,
-                    title: Row(
-                      children: [
-                        Text(
-                          "news",
-                          style: TextStyle(
-                            fontSize: ScreenUtils.x(12.5),
-                            color: const Color(0xFFCC415D),
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        SizedBox(
-                            width: MediaQuery.of(context).size.width * 0.01),
-                        Text(
-                          "400 members",
-                          style: TextStyle(
-                            fontSize: ScreenUtils.x(2.5),
-                            color: const Color(0xFF616161),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        )
-                      ],
-                    ),
-                    actions: [
-                      Padding(
-                        padding: const EdgeInsets.only(right: 10.0),
-                        child: GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              _showSearchOverlay = true;
-                            });
+        backgroundColor: const Color(0xFFFFFFFF),
+        body: Stack(
+          children: [
+            CustomScrollView(
+              slivers: [
+                // SliverAppBar with blur effect
+                Obx(() => SliverAppBar(
+                      expandedHeight: 0,
+                      floating: false,
+                      pinned: true,
+                      toolbarHeight: kToolbarHeight,
+                      collapsedHeight: kToolbarHeight,
+                      backgroundColor: controller.isImportantIconPressed.value
+                          ? Colors.grey.withOpacity(0.1)
+                          : Colors.white,
+                      elevation: 0,
+                      surfaceTintColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
+                      flexibleSpace: null,
+                      leading: IconButton(
+                          onPressed: () {
+                            Get.back();
                           },
-                          child: Container(
-                            width: 30,
-                            height: 30,
-                            decoration: const BoxDecoration(
-                              shape: BoxShape.circle,
+                          icon: Padding(
+                            padding: const EdgeInsets.only(left: 10),
+                            child: const BackIcon(),
+                          )),
+                      leadingWidth: 10,
+                      title: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            "news",
+                            style: TextStyle(
+                              fontSize: 50,
+                              color: const Color(0xFFCC415D),
+                              fontWeight: FontWeight.w300,
                             ),
-                            child: CustomPaint(
-                              painter: _DottedCirclePainter(),
-                              child: const Center(
-                                child: Icon(
-                                  Icons.add,
-                                  size: 20,
-                                  color: Color(0xFF714FC0),
+                          ),
+                          SizedBox(width: ScreenUtils.width * 0.02),
+                          Text(
+                            "\n400 members",
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: const Color(0xFF616161),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          )
+                        ],
+                      ),
+                      actions: [
+                        Padding(
+                          padding: const EdgeInsets.only(right: 20.0, top: 15),
+                          child: GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _showSearchOverlay = true;
+                              });
+                            },
+                            child: Container(
+                              width: 30,
+                              height: 30,
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                              ),
+                              child: CustomPaint(
+                                painter: _DottedCirclePainter(),
+                                child: const Center(
+                                  child: Icon(
+                                    Icons.add,
+                                    size: 20,
+                                    color: Color(0xFF714FC0),
+                                  ),
                                 ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(right: 18.0),
-                        child: GestureDetector(
-                          onTap: () {
-                            controller.toggleBlurEffect();
-                            setState(() {
-                              _showImportantMessage = true;
-                            });
-                          },
-                          child:
-                              Obx(() => controller.isImportantIconPressed.value
-                                  ? Container(
-                                      padding: const EdgeInsets.all(4),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(8),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color:
-                                                Colors.black.withOpacity(0.1),
-                                            blurRadius: 4,
-                                            offset: const Offset(0, 2),
-                                          ),
-                                        ],
-                                      ),
-                                      child: Image.asset(
-                                        KImages.importantIcon,
-                                        height: 30,
-                                      ),
-                                    )
-                                  : Image.asset(
-                                      KImages.importantIcon,
-                                      height: 30,
-                                    )),
-                        ),
-                      )
-                    ],
-                  )),
-
-              // Divider
-              SliverToBoxAdapter(
-                child: const Divider(
-                  endIndent: 20,
-                  indent: 20,
-                  color: Color(0xFF01B3B2),
-                ),
-              ),
-
-              // Reply indicator
-              SliverToBoxAdapter(
-                child: Obx(() => controller.replyToMessage.value != null
-                    ? _buildReplyIndicator()
-                    : const SizedBox.shrink()),
-              ),
-
-              // Chat messages
-              SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final message = controller.messages[index];
-                    if (message['isOwnMessage'] == true) {
-                      return _buildOwnMessage(message, index);
-                    } else {
-                      return _buildMessageItem(message, index);
-                    }
-                  },
-                  childCount: controller.messages.length,
-                ),
-              ),
-            ],
-          ),
-
-          // Fixed Message Input Area at Bottom
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              color: Colors.white,
-              padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).padding.bottom,
-                top: 8,
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Divider(
-                    color: Color(0xFF01B3B2).withOpacity(0.5),
-                  ),
-                  // Quick reply buttons above message input
-                  if (_showQuickReplies) _buildQuickReplyButtons(),
-                  // Message input field
-                  Padding(
-                    padding: const EdgeInsets.only(left: 10, right: 10),
-                    child: _buildMessageInput(),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // Important Message Overlay
-          if (_showImportantMessage)
-            Positioned.fill(
-              child: Stack(
-                children: [
-                  // Blur overlay for entire background
-                  Positioned.fill(
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 8.0, sigmaY: 8.0),
-                      child: Container(
-                        color: Colors.black.withValues(alpha: 0.3),
-                      ),
-                    ),
-                  ),
-                  // Important Message Overlay - Simple Input Popup
-                  Positioned.fill(
-                    child: Stack(
-                      children: [
-                        // Full screen gesture detector to dismiss on outside tap
-                        Positioned.fill(
+                        Padding(
+                          padding: const EdgeInsets.only(right: 29.0, top: 15),
                           child: GestureDetector(
                             onTap: () {
+                              controller.toggleBlurEffect();
                               setState(() {
-                                _showImportantMessage = false;
-                                _importantMessageController.clear();
-                                _showConfirmationOptions = false;
+                                _showImportantMessage = true;
                               });
-                              controller.disableBlurEffect();
                             },
-                            behavior: HitTestBehavior.translucent,
-                          ),
-                        ),
-                        Positioned(
-                          top: 50,
-                          right: 20,
-                          child: Image.asset(
-                            KImages.importantIcon,
-                            height: 50,
-                          ),
-                        ),
-                        // Popup content positioned on top
-                        Positioned(
-                          top: 100,
-                          right: 50,
-                          child: GestureDetector(
-                            onTap: () {
-                              // Prevent taps on popup from dismissing it
-                            },
-                            child: Container(
-                              width: ScreenUtils.width * 0.7,
-                              decoration: BoxDecoration(
-                                color: Colors.transparent,
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  // Header
-                                  Container(
-                                    height: ScreenUtils.height * 0.06,
-                                    width: ScreenUtils.width * 0.7,
-                                    padding: const EdgeInsets.all(10),
+                            child: Obx(() => controller
+                                    .isImportantIconPressed.value
+                                ? Container(
+                                    padding: const EdgeInsets.all(4),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFFFFFFFF),
-                                      borderRadius: const BorderRadius.only(
-                                        topLeft: Radius.circular(16),
-                                        topRight: Radius.circular(16),
-                                      ),
-                                    ),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        const Text(
-                                          'Important Message',
-                                          style: TextStyle(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.w300,
-                                            color: Color(0xFF172B75),
-                                          ),
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(8),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.1),
+                                          blurRadius: 4,
+                                          offset: const Offset(0, 2),
                                         ),
                                       ],
                                     ),
-                                  ),
-                                  SizedBox(height: ScreenUtils.height * 0.005),
+                                    child: Image.asset(
+                                      KImages.importantIcon,
+                                      height: 30,
+                                    ),
+                                  )
+                                : Image.asset(
+                                    KImages.importantIcon,
+                                    height: 30,
+                                  )),
+                          ),
+                        )
+                      ],
+                    )),
 
-                                  // Message Input Field with Send Button Inside
-                                  Container(
-                                    padding: const EdgeInsets.all(10),
-                                    decoration: BoxDecoration(
-                                        color: Color(0xFFD9D9D9),
-                                        borderRadius: BorderRadius.circular(8)),
-                                    child: Column(
-                                      children: [
-                                        TextField(
-                                          controller:
-                                              _importantMessageController,
-                                          autofocus: true,
-                                          maxLines: _calculateMaxLines(
-                                              _importantMessageController.text),
-                                          onChanged: (_) => setState(() {}),
-                                          decoration: InputDecoration(
-                                            hintText:
-                                                'Write your message \nupto 100 words only',
-                                            hintStyle: TextStyle(
-                                              color: Color(0xFF797C7B),
-                                              fontSize: 14,
+                // Divider
+                SliverToBoxAdapter(
+                  child: const Divider(
+                    endIndent: 20,
+                    indent: 20,
+                    color: Color(0xFF01B3B2),
+                  ),
+                ),
+
+                // Reply indicator
+                SliverToBoxAdapter(
+                  child: Obx(() => controller.replyToMessage.value != null
+                      ? _buildReplyIndicator()
+                      : const SizedBox.shrink()),
+                ),
+
+                // Chat messages
+                SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final message = controller.messages[index];
+                      if (message['isOwnMessage'] == true) {
+                        return Padding(
+                          padding: EdgeInsets.only(
+                            top: 10,
+                            right: 20,
+                          ),
+                          child: _buildOwnMessage(message, index),
+                        );
+                      } else {
+                        return Padding(
+                          padding: EdgeInsets.only(
+                            left: 20,
+                          ),
+                          child: _buildMessageItem(message, index),
+                        );
+                      }
+                    },
+                    childCount: controller.messages.length,
+                  ),
+                ),
+              ],
+            ),
+
+            // Fixed Message Input Area at Bottom
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                color: Colors.white,
+                padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).padding.bottom,
+                  top: 8,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Divider(
+                      color: Color(0xFF01B3B2).withOpacity(0.5),
+                    ),
+                    // Quick reply buttons above message input
+                    if (_showQuickReplies) _buildQuickReplyButtons(),
+                    // Message input field
+                    Padding(
+                      padding: const EdgeInsets.only(left: 10, right: 10),
+                      child: _buildMessageInput(),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // Important Message Overlay
+            if (_showImportantMessage)
+              Positioned.fill(
+                child: Stack(
+                  children: [
+                    // Blur overlay for entire background
+                    Positioned.fill(
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 8.0, sigmaY: 8.0),
+                        child: Container(
+                          color: Colors.black.withValues(alpha: 0.3),
+                        ),
+                      ),
+                    ),
+                    // Important Message Overlay - Simple Input Popup
+                    Positioned.fill(
+                      child: Stack(
+                        children: [
+                          // Full screen gesture detector to dismiss on outside tap
+                          Positioned.fill(
+                            child: GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _showImportantMessage = false;
+                                  _importantMessageController.clear();
+                                  _showConfirmationOptions = false;
+                                });
+                                controller.disableBlurEffect();
+                              },
+                              behavior: HitTestBehavior.translucent,
+                            ),
+                          ),
+                          Positioned(
+                            top: 50,
+                            right: 20,
+                            child: Image.asset(
+                              KImages.importantIcon,
+                              height: 50,
+                            ),
+                          ),
+                          // Popup content positioned on top
+                          Positioned(
+                            top: 100,
+                            right: 50,
+                            child: GestureDetector(
+                              onTap: () {},
+                              child: Container(
+                                width: ScreenUtils.width * 0.7,
+                                decoration: BoxDecoration(
+                                  color: Colors.transparent,
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    // Header
+                                    Container(
+                                      height: ScreenUtils.height * 0.06,
+                                      width: ScreenUtils.width * 0.7,
+                                      padding: const EdgeInsets.all(10),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFFFFFFF),
+                                        borderRadius: const BorderRadius.only(
+                                          topLeft: Radius.circular(16),
+                                          topRight: Radius.circular(16),
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          const Text(
+                                            'Important Message',
+                                            style: TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.w300,
+                                              color: Color(0xFF172B75),
                                             ),
-                                            border: InputBorder.none,
-                                            // Send button inside the text field
-                                            suffixIcon: GestureDetector(
-                                              onTap: () {
-                                                if (_importantMessageController
-                                                    .text
-                                                    .trim()
-                                                    .isNotEmpty) {
-                                                  // Show confirmation options below
-                                                  setState(() {
-                                                    _showConfirmationOptions =
-                                                        true;
-                                                  });
-                                                }
-                                              },
-                                              child: Container(
-                                                height: 25,
-                                                width: 25,
-                                                decoration: BoxDecoration(
-                                                  borderRadius:
-                                                      BorderRadius.circular(12),
-                                                  border: Border.all(
-                                                    color: Color(0xFF172B75),
-                                                    width: 1,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    SizedBox(
+                                        height: ScreenUtils.height * 0.005),
+
+                                    // Message Input Field with Send Button Inside
+                                    Container(
+                                      constraints: BoxConstraints(
+                                        minHeight: ScreenUtils.height * 0.08,
+                                        maxHeight: ScreenUtils.height * 0.7,
+                                      ),
+                                      padding: const EdgeInsets.all(16),
+                                      decoration: BoxDecoration(
+                                          color: Color(0xFFD9D9D9),
+                                          borderRadius:
+                                              BorderRadius.circular(8)),
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          // Simple TextField that works
+                                          TextField(
+                                            controller:
+                                                _importantMessageController,
+                                            autofocus: true,
+                                            keyboardType:
+                                                TextInputType.multiline,
+                                            textInputAction:
+                                                TextInputAction.newline,
+                                            textAlignVertical:
+                                                TextAlignVertical.top,
+                                            maxLines: null,
+                                            style: const TextStyle(
+                                              color: Color(0xFF172B75),
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w400,
+                                            ),
+                                            cursorColor: Color(0xFF172B75),
+                                            onChanged: (value) =>
+                                                setState(() {}),
+                                            decoration: InputDecoration(
+                                              hintText:
+                                                  "Write your message\n upto 100 words",
+                                              hintStyle: TextStyle(
+                                                  fontSize: 8,
+                                                  fontWeight: FontWeight.w400),
+                                              border: InputBorder.none,
+                                              contentPadding:
+                                                  const EdgeInsets.all(8),
+                                              filled: false,
+                                              // Send button
+                                              suffixIcon: GestureDetector(
+                                                onTap: () {
+                                                  if (_importantMessageController
+                                                      .text
+                                                      .trim()
+                                                      .isNotEmpty) {
+                                                    setState(() {
+                                                      _showConfirmationOptions =
+                                                          true;
+                                                    });
+                                                  }
+                                                },
+                                                child: Container(
+                                                  height: 30,
+                                                  width: 30,
+                                                  decoration: BoxDecoration(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            8),
+                                                    border: Border.all(
+                                                      color: Color(0xFF172B75),
+                                                      width:
+                                                          _importantMessageController
+                                                                  .text
+                                                                  .trim()
+                                                                  .isNotEmpty
+                                                              ? 2
+                                                              : 1,
+                                                    ),
                                                   ),
-                                                ),
-                                                child: const Icon(
-                                                  Iconsax.arrow_up_3,
-                                                  color: Color(0xFF172B75),
-                                                  size: 18,
+                                                  child: const Icon(
+                                                    Iconsax.arrow_up_3,
+                                                    color: Color(0xFF172B75),
+                                                    size: 20,
+                                                  ),
                                                 ),
                                               ),
                                             ),
                                           ),
-                                        ),
-                                      ],
+                                          // // Hint text below the TextField
+                                          // if (_importantMessageController
+                                          //     .text.isEmpty)
+                                          //   Padding(
+                                          //     padding:
+                                          //         const EdgeInsets.only(top: 8),
+                                          //     child: RichText(
+                                          //       text: TextSpan(
+                                          //         children: [
+                                          //           TextSpan(
+                                          //             text:
+                                          //                 'Write your message\n',
+                                          //             style: TextStyle(
+                                          //               color:
+                                          //                   Color(0xFF797C7B),
+                                          //               fontSize: 12,
+                                          //               fontWeight:
+                                          //                   FontWeight.w400,
+                                          //             ),
+                                          //           ),
+                                          //           TextSpan(
+                                          //             text: 'upto 100 words',
+                                          //             style: TextStyle(
+                                          //               color:
+                                          //                   Color(0xFFFFA000),
+                                          //               fontSize: 10,
+                                          //               fontWeight:
+                                          //                   FontWeight.w400,
+                                          //             ),
+                                          //           ),
+                                          //         ],
+                                          //       ),
+                                          //     ),
+                                          //   ),
+                                        ],
+                                      ),
                                     ),
+                                    SizedBox(height: 20),
+                                    // Confirmation options below text field
+                                    if (_showConfirmationOptions)
+                                      Container(
+                                        width: ScreenUtils.width * 0.7,
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 20, vertical: 10),
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.only(
+                                            topLeft: Radius.circular(16),
+                                            topRight: Radius.circular(16),
+                                          ),
+                                          color: Color(0xFFFFFFFF),
+                                        ),
+                                        child: Align(
+                                          alignment: Alignment.center,
+                                          child: const Text(
+                                            'not a regular update ?\nneed community attention ?',
+                                            style: TextStyle(
+                                                fontSize: 15,
+                                                color: Color(0xFF3E9292),
+                                                fontWeight: FontWeight.w300),
+                                          ),
+                                        ),
+                                      ),
+                                    SizedBox(height: 20),
+                                    if (_showConfirmationOptions)
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          // Send as important message (Yes button)
+                                          GestureDetector(
+                                            onTap: () {
+                                              controller.sendImportantMessage(
+                                                _importantMessageController.text
+                                                    .trim(),
+                                              );
+                                              setState(() {
+                                                _showImportantMessage = false;
+                                                _importantMessageController
+                                                    .clear();
+                                                _showConfirmationOptions =
+                                                    false;
+                                              });
+                                              controller.disableBlurEffect();
+                                            },
+                                            child: Container(
+                                              height: 52,
+                                              width: ScreenUtils.width * 0.2,
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      vertical: 8,
+                                                      horizontal: 12),
+                                              decoration: BoxDecoration(
+                                                color: Color(0xFFFFC746),
+                                                borderRadius: BorderRadius.only(
+                                                  topLeft: Radius.circular(20),
+                                                  bottomLeft:
+                                                      Radius.circular(20),
+                                                  topRight: Radius.circular(0),
+                                                  bottomRight:
+                                                      Radius.circular(20),
+                                                ),
+                                              ),
+                                              child: Center(
+                                                child: const Text(
+                                                  'yes',
+                                                  textAlign: TextAlign.center,
+                                                  style: TextStyle(
+                                                    color: Color(0xFFFFFFFF),
+                                                    fontSize: 20,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          SizedBox(
+                                              width: ScreenUtils.width * 0.1),
+                                          // Send as normal message (No button)
+                                          GestureDetector(
+                                            onTap: () {
+                                              controller.sendNormalMessage(
+                                                _importantMessageController.text
+                                                    .trim(),
+                                              );
+                                              setState(() {
+                                                _showImportantMessage = false;
+                                                _importantMessageController
+                                                    .clear();
+                                                _showConfirmationOptions =
+                                                    false;
+                                              });
+                                              controller.disableBlurEffect();
+                                            },
+                                            child: Container(
+                                              height: 52,
+                                              width: ScreenUtils.width * 0.2,
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      vertical: 8,
+                                                      horizontal: 12),
+                                              decoration: BoxDecoration(
+                                                color: Color(0xFFFFFFFF),
+                                                borderRadius: BorderRadius.only(
+                                                  topLeft: Radius.circular(0),
+                                                  bottomLeft:
+                                                      Radius.circular(20),
+                                                  topRight: Radius.circular(20),
+                                                  bottomRight:
+                                                      Radius.circular(20),
+                                                ),
+                                              ),
+                                              child: Center(
+                                                child: const Text(
+                                                  'no',
+                                                  textAlign: TextAlign.center,
+                                                  style: TextStyle(
+                                                    color: Color(0xFFFFC746),
+                                                    fontSize: 20,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+            // Search Overlay for News Articles
+            if (_showSearchOverlay)
+              Positioned.fill(
+                child: Stack(
+                  children: [
+                    // Blur overlay for entire background
+                    Positioned.fill(
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 8.0, sigmaY: 8.0),
+                        child: Container(
+                          color: Colors.black.withValues(alpha: 0.3),
+                        ),
+                      ),
+                    ),
+                    // Search Overlay Content
+                    Positioned.fill(
+                      child: Stack(
+                        children: [
+                          // Full screen gesture detector to dismiss on outside tap
+                          Positioned(
+                            top: 70,
+                            right: 65,
+                            child: Container(
+                              width: ScreenUtils.width * 0.12,
+                              height: ScreenUtils.height * 0.05,
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                              ),
+                              child: CustomPaint(
+                                painter: _DottedCirclePainter(),
+                                child: const Center(
+                                  child: Icon(
+                                    Icons.add,
+                                    size: 20,
+                                    color: Color(0xFF714FC0),
                                   ),
-                                  SizedBox(height: 20),
-                                  // Confirmation options below text field
-                                  if (_showConfirmationOptions)
+                                ),
+                              ),
+                            ),
+                          ),
+                          Positioned.fill(
+                            child: GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _showSearchOverlay = false;
+                                  _searchController.clear();
+                                });
+                              },
+                              behavior: HitTestBehavior.translucent,
+                            ),
+                          ),
+                          // Search popup content
+                          Positioned(
+                            top: 100,
+                            left: 20,
+                            right: 20,
+                            child: GestureDetector(
+                              onTap: () {},
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  // color: const Color(0xFFD9D9D9),
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    // Header
                                     Container(
-                                      width: ScreenUtils.width * 0.7,
-                                      padding: EdgeInsets.symmetric(
-                                          horizontal: 20, vertical: 10),
-                                      decoration: BoxDecoration(
+                                      height: 60,
+                                      width: double.infinity,
+                                      margin: EdgeInsets.only(
+                                          left: 25, right: 24, top: 16),
+                                      padding: const EdgeInsets.all(16),
+                                      decoration: const BoxDecoration(
+                                        color: Color(0xFFF7F7F7),
                                         borderRadius: BorderRadius.only(
                                           topLeft: Radius.circular(16),
                                           topRight: Radius.circular(16),
                                         ),
-                                        color: Color(0xFFFFFFFF),
                                       ),
-                                      child: Align(
-                                        alignment: Alignment.center,
+                                      child: Center(
                                         child: const Text(
-                                          'not a regular update ?\nneed community attention ?',
+                                          'highlighted content will be shared',
                                           style: TextStyle(
-                                              fontSize: 15,
-                                              color: Color(0xFF3E9292),
-                                              fontWeight: FontWeight.w300),
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w400,
+                                            color: Color(0xFF172B75),
+                                          ),
                                         ),
                                       ),
                                     ),
-                                  SizedBox(height: 20),
-                                  if (_showConfirmationOptions)
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        // Send as important message (Yes button)
-                                        GestureDetector(
-                                          onTap: () {
-                                            controller.sendImportantMessage(
-                                              _importantMessageController.text
-                                                  .trim(),
-                                            );
-                                            setState(() {
-                                              _showImportantMessage = false;
-                                              _importantMessageController
-                                                  .clear();
-                                              _showConfirmationOptions = false;
-                                            });
-                                            controller.disableBlurEffect();
-                                          },
-                                          child: Container(
-                                            height: 52,
-                                            width: ScreenUtils.width * 0.2,
-                                            padding: const EdgeInsets.symmetric(
-                                                vertical: 8, horizontal: 12),
-                                            decoration: BoxDecoration(
-                                              color: Color(0xFFFFC746),
-                                              borderRadius: BorderRadius.only(
-                                                topLeft: Radius.circular(20),
-                                                bottomLeft: Radius.circular(20),
-                                                topRight: Radius.circular(0),
-                                                bottomRight:
-                                                    Radius.circular(20),
-                                              ),
-                                            ),
-                                            child: Center(
-                                              child: const Text(
-                                                'Yes',
-                                                textAlign: TextAlign.center,
-                                                style: TextStyle(
-                                                  color: Color(0xFFFFFFFF),
-                                                  fontSize: 20,
-                                                  fontWeight: FontWeight.w500,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
+                                    SizedBox(height: 5),
+                                    // Search Input
+                                    Container(
+                                      margin: EdgeInsets.only(
+                                        left: 25,
+                                        right: 24,
+                                      ),
+                                      padding: const EdgeInsets.all(5),
+                                      decoration: const BoxDecoration(
+                                        color: Color(0xFFD9D9D9),
+                                        borderRadius: BorderRadius.only(
+                                          topLeft: Radius.circular(16),
+                                          topRight: Radius.circular(16),
                                         ),
-                                        SizedBox(
-                                            width: ScreenUtils.width * 0.1),
-                                        // Send as normal message (No button)
-                                        GestureDetector(
-                                          onTap: () {
-                                            controller.sendNormalMessage(
-                                              _importantMessageController.text
-                                                  .trim(),
-                                            );
-                                            setState(() {
-                                              _showImportantMessage = false;
-                                              _importantMessageController
-                                                  .clear();
-                                              _showConfirmationOptions = false;
-                                            });
-                                            controller.disableBlurEffect();
-                                          },
-                                          child: Container(
-                                            height: 52,
-                                            width: ScreenUtils.width * 0.2,
-                                            padding: const EdgeInsets.symmetric(
-                                                vertical: 8, horizontal: 12),
-                                            decoration: BoxDecoration(
-                                              color: Color(0xFF172B75),
-                                              borderRadius: BorderRadius.only(
-                                                topLeft: Radius.circular(0),
-                                                bottomLeft: Radius.circular(20),
-                                                topRight: Radius.circular(20),
-                                                bottomRight:
-                                                    Radius.circular(20),
-                                              ),
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          TextField(
+                                            controller: _searchController,
+                                            autofocus: true,
+                                            decoration: InputDecoration(
+                                              hintText:
+                                                  'Try searching the relevant keyword',
+                                              hintStyle: const TextStyle(
+                                                  color: Color(0xFF797C7B),
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w300),
+                                              prefixIcon: Image.asset(
+                                                  KImages.searchIcon),
+                                              border: InputBorder.none,
+                                              contentPadding:
+                                                  EdgeInsets.symmetric(
+                                                      horizontal: 20,
+                                                      vertical: 15),
                                             ),
-                                            child: Center(
-                                              child: const Text(
-                                                'No',
-                                                textAlign: TextAlign.center,
-                                                style: TextStyle(
-                                                  color: Color(0xFFFFFFFF),
-                                                  fontSize: 20,
-                                                  fontWeight: FontWeight.w500,
-                                                ),
-                                              ),
-                                            ),
+                                            onChanged: (value) {
+                                              setState(() {});
+                                            },
+                                            onSubmitted: (_) =>
+                                                _performSearch(),
                                           ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
 
-          // Search Overlay for News Articles
-          if (_showSearchOverlay)
-            Positioned.fill(
-              child: Stack(
-                children: [
-                  // Blur overlay for entire background
-                  Positioned.fill(
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 8.0, sigmaY: 8.0),
-                      child: Container(
-                        color: Colors.black.withValues(alpha: 0.3),
-                      ),
-                    ),
-                  ),
-                  // Search Overlay Content
-                  Positioned.fill(
-                    child: Stack(
-                      children: [
-                        // Full screen gesture detector to dismiss on outside tap
-                        Positioned(
-                          top: 50,
-                          right: 65,
-                          child: Container(
-                            width: 50,
-                            height: 50,
-                            decoration: const BoxDecoration(
-                              shape: BoxShape.circle,
-                            ),
-                            child: CustomPaint(
-                              painter: _DottedCirclePainter(),
-                              child: const Center(
-                                child: Icon(
-                                  Icons.add,
-                                  size: 20,
-                                  color: Color(0xFF714FC0),
+                                    // Search Results
+                                    if (_searchController.text.isNotEmpty)
+                                      _buildSearchResults()
+                                    else
+                                      SizedBox()
+                                  ],
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                        Positioned.fill(
-                          child: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _showSearchOverlay = false;
-                                _searchController.clear();
-                              });
-                            },
-                            behavior: HitTestBehavior.translucent,
-                          ),
-                        ),
-                        // Search popup content
-                        Positioned(
-                          top: 100,
-                          left: 20,
-                          right: 20,
-                          child: GestureDetector(
-                            onTap: () {
-                              // Prevent taps on popup from dismissing it
-                            },
-                            child: Container(
-                              decoration: BoxDecoration(
-                                // color: const Color(0xFFD9D9D9),
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  // Header
-                                  Container(
-                                    height: 60,
-                                    width: double.infinity,
-                                    padding: const EdgeInsets.all(16),
-                                    decoration: const BoxDecoration(
-                                      color: Color(0xFFF7F7F7),
-                                      borderRadius: BorderRadius.only(
-                                        topLeft: Radius.circular(16),
-                                        topRight: Radius.circular(16),
-                                      ),
-                                    ),
-                                    child: Center(
-                                      child: const Text(
-                                        'highlighted content will be shared',
-                                        style: TextStyle(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w400,
-                                          color: Color(0xFF172B75),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(height: 10),
-                                  // Search Input
-                                  Container(
-                                    padding: const EdgeInsets.all(5),
-                                    decoration: const BoxDecoration(
-                                      color: Color(0xFFD9D9D9),
-                                      borderRadius: BorderRadius.only(
-                                        topLeft: Radius.circular(16),
-                                        topRight: Radius.circular(16),
-                                      ),
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        TextField(
-                                          controller: _searchController,
-                                          autofocus: true,
-                                          decoration: InputDecoration(
-                                            hintText:
-                                                'Try searching the relevant keyword',
-                                            hintStyle: const TextStyle(
-                                                color: Color(0xFF797C7B),
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.w300),
-                                            prefixIcon:
-                                                Image.asset(KImages.searchIcon),
-                                            border: InputBorder.none,
-                                            contentPadding:
-                                                EdgeInsets.symmetric(
-                                                    horizontal: 20,
-                                                    vertical: 15),
-                                          ),
-                                          onChanged: (value) {
-                                            setState(() {});
-                                          },
-                                          onSubmitted: (_) => _performSearch(),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-
-                                  // Search Results
-                                  if (_searchController.text.isNotEmpty)
-                                    _buildSearchResults()
-                                  else
-                                    SizedBox()
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-        ],
-      ),
-    );
+          ],
+        ));
   }
 
   int _calculateMaxLines(String text) {
@@ -691,6 +779,9 @@ class _MessageScreenState extends State<MessageScreen> {
     // Set minimum and maximum bounds
     if (actualLines < 2) return 2;
     if (actualLines > 6) return 6;
+    if (actualLines > 8) return 8;
+    if (actualLines > 10) return 10;
+    if (actualLines > 12) return 12;
     return actualLines;
   }
 
@@ -803,6 +894,7 @@ class _MessageScreenState extends State<MessageScreen> {
                 KImages.profile2Icon,
                 height: 17,
                 width: 12,
+                color: Color(0xFF172B75),
               ),
             )
           else
@@ -859,115 +951,129 @@ class _MessageScreenState extends State<MessageScreen> {
                                     child: BackdropFilter(
                                       filter: ImageFilter.blur(
                                           sigmaX: 6, sigmaY: 6),
-                                      child: Container(
-                                        color: Colors.transparent,
-                                      ),
+                                      child: Container(),
                                     ),
                                   ),
                                   // The filter menu
                                   Positioned(
                                     left: 100,
                                     top: position.top,
-                                    child: Material(
-                                      color: Colors.transparent,
-                                      child: Container(
-                                        height: ScreenUtils.height * 0.38,
-                                        width: ScreenUtils.width * 0.4,
-                                        decoration: BoxDecoration(
-                                          color: Colors.transparent
-                                              .withOpacity(0.4),
-                                          borderRadius:
-                                              BorderRadius.circular(30),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      children: [
+                                        Material(
+                                          child: Text(
+                                            "REPORT as..",
+                                            style: TextStyle(
+                                                fontSize: 15,
+                                                color: Color(0xFF172B75),
+                                                fontWeight: FontWeight.w500),
+                                          ),
                                         ),
-                                        padding: EdgeInsets.only(left: 30),
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            _buildFilterChip(
-                                                context,
-                                                "irrelevant",
-                                                controller
-                                                        .selectedFilter.value ==
-                                                    "irrelevant", () {
-                                              controller.selectedFilter.value =
-                                                  "irrelevant";
-                                              Navigator.of(context).pop();
-                                            }),
-                                            _buildFilterChip(
-                                                context,
-                                                "advertising",
-                                                controller
-                                                        .selectedFilter.value ==
-                                                    "advertising", () {
-                                              controller.selectedFilter.value =
-                                                  "advertising";
-                                              Navigator.of(context).pop();
-                                            }),
-                                            _buildFilterChip(
-                                                context,
-                                                "selling",
-                                                controller
-                                                        .selectedFilter.value ==
-                                                    "selling", () {
-                                              controller.selectedFilter.value =
-                                                  "selling";
-                                              Navigator.of(context).pop();
-                                            }),
-                                            _buildFilterChip(
-                                                context,
-                                                "suspicious",
-                                                controller
-                                                        .selectedFilter.value ==
-                                                    "suspicious", () {
-                                              controller.selectedFilter.value =
-                                                  "suspicious";
-                                              Navigator.of(context).pop();
-                                            }),
-                                            _buildFilterChip(
-                                                context,
-                                                "offensive",
-                                                controller
-                                                        .selectedFilter.value ==
-                                                    "offensive", () {
-                                              controller.selectedFilter.value =
-                                                  "offensive";
-                                              Navigator.of(context).pop();
-                                            }),
-                                            _buildFilterChip(
-                                                context,
-                                                "abusive",
-                                                controller
-                                                        .selectedFilter.value ==
-                                                    "abusive", () {
-                                              controller.selectedFilter.value =
-                                                  "abusive";
-                                              Navigator.of(context).pop();
-                                            }),
-                                            _buildFilterChip(
-                                                context,
-                                                "false",
-                                                controller
-                                                        .selectedFilter.value ==
-                                                    "false", () {
-                                              controller.selectedFilter.value =
-                                                  "false";
-                                              Navigator.of(context).pop();
-                                            }),
-                                            _buildFilterChip(
-                                                context,
-                                                "hate",
-                                                controller
-                                                        .selectedFilter.value ==
-                                                    "hate", () {
-                                              controller.selectedFilter.value =
-                                                  "hate";
-                                              Navigator.of(context).pop();
-                                            }),
-                                          ],
+                                        Material(
+                                          color: Colors.transparent,
+                                          child: Container(
+                                            height: ScreenUtils.height * 0.32,
+                                            width: ScreenUtils.width * 0.35,
+                                            decoration: BoxDecoration(
+                                              color: Color(0xFF87706A)
+                                                  .withOpacity(0.46),
+                                              borderRadius:
+                                                  BorderRadius.circular(30),
+                                            ),
+                                            padding: EdgeInsets.only(
+                                                left: 30, top: 9),
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                _buildFilterChip(
+                                                    context,
+                                                    "irrelevant",
+                                                    controller.selectedFilter
+                                                            .value ==
+                                                        "irrelevant", () {
+                                                  controller.selectedFilter
+                                                      .value = "irrelevant";
+                                                  Navigator.of(context).pop();
+                                                }),
+                                                _buildFilterChip(
+                                                    context,
+                                                    "advertising",
+                                                    controller.selectedFilter
+                                                            .value ==
+                                                        "advertising", () {
+                                                  controller.selectedFilter
+                                                      .value = "advertising";
+                                                  Navigator.of(context).pop();
+                                                }),
+                                                _buildFilterChip(
+                                                    context,
+                                                    "selling",
+                                                    controller.selectedFilter
+                                                            .value ==
+                                                        "selling", () {
+                                                  controller.selectedFilter
+                                                      .value = "selling";
+                                                  Navigator.of(context).pop();
+                                                }),
+                                                _buildFilterChip(
+                                                    context,
+                                                    "suspicious",
+                                                    controller.selectedFilter
+                                                            .value ==
+                                                        "suspicious", () {
+                                                  controller.selectedFilter
+                                                      .value = "suspicious";
+                                                  Navigator.of(context).pop();
+                                                }),
+                                                _buildFilterChip(
+                                                    context,
+                                                    "offensive",
+                                                    controller.selectedFilter
+                                                            .value ==
+                                                        "offensive", () {
+                                                  controller.selectedFilter
+                                                      .value = "offensive";
+                                                  Navigator.of(context).pop();
+                                                }),
+                                                _buildFilterChip(
+                                                    context,
+                                                    "abusive",
+                                                    controller.selectedFilter
+                                                            .value ==
+                                                        "abusive", () {
+                                                  controller.selectedFilter
+                                                      .value = "abusive";
+                                                  Navigator.of(context).pop();
+                                                }),
+                                                _buildFilterChip(
+                                                    context,
+                                                    "false",
+                                                    controller.selectedFilter
+                                                            .value ==
+                                                        "false", () {
+                                                  controller.selectedFilter
+                                                      .value = "false";
+                                                  Navigator.of(context).pop();
+                                                }),
+                                                _buildFilterChip(
+                                                    context,
+                                                    "hate",
+                                                    controller.selectedFilter
+                                                            .value ==
+                                                        "hate", () {
+                                                  controller.selectedFilter
+                                                      .value = "hate";
+                                                  Navigator.of(context).pop();
+                                                }),
+                                              ],
+                                            ),
+                                          ),
                                         ),
-                                      ),
+                                      ],
                                     ),
                                   ),
                                 ],
@@ -1045,6 +1151,7 @@ class _MessageScreenState extends State<MessageScreen> {
                   Padding(
                     padding: const EdgeInsets.only(left: 16.0),
                     child: Container(
+                      margin: EdgeInsets.only(right: 46),
                       padding: const EdgeInsets.symmetric(
                           horizontal: 16, vertical: 12),
                       decoration: const BoxDecoration(
@@ -1119,6 +1226,7 @@ class _MessageScreenState extends State<MessageScreen> {
           ),
         ),
         Container(
+          margin: EdgeInsets.only(right: 76),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
             color: Color(0xFFEF2D56).withOpacity(0.1),
@@ -1190,10 +1298,10 @@ class _MessageScreenState extends State<MessageScreen> {
         child: Text(
           label,
           style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w300,
-            fontSize: ScreenUtils.x(3.5),
-          ),
+              color: Colors.white,
+              fontWeight: FontWeight.w300,
+              fontSize: ScreenUtils.x(3.5),
+              height: 1),
         ),
       ),
     );
@@ -1307,6 +1415,7 @@ class _MessageScreenState extends State<MessageScreen> {
               _buildOwnSharedArticle(message, index)
             else
               Container(
+                margin: EdgeInsets.only(left: 154),
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
@@ -1418,9 +1527,9 @@ class _MessageScreenState extends State<MessageScreen> {
             color: Color(0xFFEF2D56).withOpacity(0.5),
             borderRadius: BorderRadius.only(
               topLeft: Radius.circular(0),
-              topRight: Radius.circular(20),
-              bottomLeft: Radius.circular(20),
-              bottomRight: Radius.circular(20),
+              topRight: Radius.circular(16),
+              bottomLeft: Radius.circular(16),
+              bottomRight: Radius.circular(16),
             ),
           ),
           child: Text(
@@ -1559,7 +1668,7 @@ class _MessageScreenState extends State<MessageScreen> {
 
   Widget _buildMessageInput() {
     return Container(
-      padding: const EdgeInsets.only(left: 10, bottom: 0, top: 10, right: 10),
+      padding: const EdgeInsets.only(left: 10, bottom: 20, top: 10, right: 10),
       child: Row(
         children: [
           GestureDetector(
@@ -1584,34 +1693,47 @@ class _MessageScreenState extends State<MessageScreen> {
               ),
               child: TextField(
                 controller: controller.messageController,
-                style: const TextStyle(color: Colors.white),
+                style: const TextStyle(color: Colors.black),
+                maxLines: null,
+                textInputAction: TextInputAction.newline,
                 decoration: InputDecoration(
                   hintText: "Write your message",
                   hintStyle: const TextStyle(color: Color(0xFF9E9E9E)),
                   border: InputBorder.none,
                   suffixIcon: GestureDetector(
-                    onTap: controller.sendMessage,
+                    onTap: controller.messageController.text.trim().isEmpty
+                        ? null
+                        : controller.sendMessage,
                     child: Container(
                       margin: const EdgeInsets.all(8),
-                      width: 34,
-                      height: 34,
+                      width: 40,
+                      height: 40,
                       decoration: BoxDecoration(
                         color: Colors.transparent,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: Color(0xFFFFA000),
+                          color:
+                              controller.messageController.text.trim().isEmpty
+                                  ? Color(0xFF172B75)
+                                  : const Color(0xFFFFA000),
                           width: 1,
                         ),
                       ),
-                      child: const Icon(
-                        Iconsax.arrow_up_3,
-                        color: Color(0xFFFFA000),
-                        size: 20,
+                      child: Align(
+                        alignment: Alignment.center,
+                        child: Icon(
+                          Iconsax.arrow_up_3,
+                          color:
+                              controller.messageController.text.trim().isEmpty
+                                  ? Color(0xFF172B75)
+                                  : const Color(0xFFFFA000),
+                          size: 24, // Changed from 20 to 24
+                        ),
                       ),
                     ),
                   ),
                 ),
-                onChanged: (value) {},
+                onChanged: (value) => setState(() {}),
               ),
             ),
           ),
@@ -1622,7 +1744,7 @@ class _MessageScreenState extends State<MessageScreen> {
 
   Widget _buildImportantMessage(Map<String, dynamic> message, int index) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16, right: 20),
+      margin: const EdgeInsets.only(bottom: 16, right: 46),
       decoration: BoxDecoration(
         color: const Color(0xFFFFFFFF), // Yellow background like in the image
         borderRadius: BorderRadius.circular(16),
@@ -1666,9 +1788,10 @@ class _MessageScreenState extends State<MessageScreen> {
             child: Text(
               message['message'] ?? '',
               style: const TextStyle(
-                color: Color(0xFF1A1A1A), // Black text like in the image
-                fontSize: 16,
-                height: 1.4,
+                color: Color(0xFF4A4A4A), // Black text like in the image
+                fontSize: 12,
+                height: 1,
+                fontWeight: FontWeight.w400,
               ),
               softWrap: true,
               overflow: TextOverflow.visible,
@@ -1681,7 +1804,7 @@ class _MessageScreenState extends State<MessageScreen> {
 
   Widget _buildHighlightedContent(Map<String, dynamic> message, int index) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16, right: 20),
+      margin: const EdgeInsets.only(bottom: 16, right: 46),
       decoration: BoxDecoration(
         color: const Color(0xFFFFFFFF),
         borderRadius: BorderRadius.circular(16),
@@ -1706,7 +1829,7 @@ class _MessageScreenState extends State<MessageScreen> {
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 18,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w400,
                 ),
               ),
             ),
@@ -1733,9 +1856,8 @@ class _MessageScreenState extends State<MessageScreen> {
                   message['highlightedTitle'] ?? '',
                   style: const TextStyle(
                     color: Color(0xFF172B75),
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    height: 1.3,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
                   ),
                   softWrap: true,
                   overflow: TextOverflow.visible,
@@ -1746,8 +1868,9 @@ class _MessageScreenState extends State<MessageScreen> {
                   message['highlightedSummary'] ?? '',
                   style: const TextStyle(
                     color: Color(0xFF4A4A4A),
-                    fontSize: 14,
-                    height: 1.4,
+                    fontWeight: FontWeight.w400,
+                    fontSize: 12,
+                    height: 1,
                   ),
                   softWrap: true,
                   overflow: TextOverflow.visible,
@@ -1806,6 +1929,7 @@ class _MessageScreenState extends State<MessageScreen> {
 
     if (filteredResults.isEmpty) {
       return Container(
+        margin: EdgeInsets.only(left: 25, right: 24),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: const Color(0xFFF5F5F5),
@@ -1837,12 +1961,13 @@ class _MessageScreenState extends State<MessageScreen> {
     }
 
     return Container(
+      margin: EdgeInsets.only(left: 25, right: 24),
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: const Color(0xFFF5F5F5),
+        color: const Color(0xFFFFFFFF),
         borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(12),
-          bottomRight: Radius.circular(12),
+          bottomLeft: Radius.circular(5),
+          bottomRight: Radius.circular(5),
         ),
       ),
       child: Column(
@@ -1852,9 +1977,10 @@ class _MessageScreenState extends State<MessageScreen> {
               onTap: () => _shareContent(result['title']!),
               child: Container(
                 margin: const EdgeInsets.only(bottom: 12),
-                padding: const EdgeInsets.all(05),
+                padding: const EdgeInsets.only(
+                    left: 28, top: 5, bottom: 5, right: 28),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF5F5F5),
+                  color: const Color(0xFFFFFFFF),
                   borderRadius: BorderRadius.only(
                     bottomLeft: Radius.circular(12),
                     bottomRight: Radius.circular(12),
@@ -1894,19 +2020,34 @@ class _MessageScreenState extends State<MessageScreen> {
     while (true) {
       final int index = lowerText.indexOf(lowerHighlight, start);
       if (index == -1) {
-        spans.add(TextSpan(text: text.substring(start)));
+        spans.add(TextSpan(
+          text: text.substring(start),
+          style: TextStyle(
+            color: Color(0xFF797C7B),
+            fontSize: 14,
+            fontWeight: FontWeight.w300,
+          ),
+        ));
         break;
       }
 
       if (index > start) {
-        spans.add(TextSpan(text: text.substring(start, index)));
+        spans.add(TextSpan(
+          text: text.substring(start, index),
+          style: TextStyle(
+            color: Color(0xFF797C7B),
+            fontSize: 14,
+            fontWeight: FontWeight.w300,
+          ),
+        ));
       }
 
       spans.add(TextSpan(
         text: text.substring(index, index + highlight.length),
-        style: const TextStyle(
+        style: TextStyle(
           color: Color(0xFF714FC0),
-          fontWeight: FontWeight.w600,
+          fontSize: 14,
+          fontWeight: FontWeight.w400,
         ),
       ));
 
@@ -1953,6 +2094,32 @@ class _MessageScreenState extends State<MessageScreen> {
       // 2. Display results
       // 3. Allow users to select and share articles
     }
+  }
+
+  // Add this method to calculate dynamic height in steps
+  double _calculateDynamicHeight(String text) {
+    if (text.isEmpty) return ScreenUtils.height * 0.08;
+
+    // Count lines and characters
+    int lines = text.split('\n').length;
+    int characters = text.length;
+
+    // Base height
+    double baseHeight = ScreenUtils.height * 0.08;
+
+    // Add height based on lines (small steps)
+    if (lines > 1) {
+      baseHeight += (lines - 1) * 20.0; // 20px per additional line
+    }
+
+    // Add height based on characters (very small steps)
+    if (characters > 50) {
+      baseHeight += (characters - 50) * 0.5; // 0.5px per character after 50
+    }
+
+    // Cap the maximum height
+    double maxHeight = ScreenUtils.height * 0.6;
+    return baseHeight.clamp(ScreenUtils.height * 0.05, maxHeight);
   }
 }
 

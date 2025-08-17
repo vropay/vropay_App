@@ -23,6 +23,8 @@ class WorldAndCultureCommunityScreen
       body: SingleChildScrollView(
         child: Column(
           children: [
+            SizedBox(height: ScreenUtils.height * 0.03),
+
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -59,14 +61,14 @@ class WorldAndCultureCommunityScreen
 
             // Categories Grid View
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              padding: const EdgeInsets.symmetric(horizontal: 43.0),
               child: Obx(() => GridView.builder(
                     shrinkWrap: true,
                     physics: NeverScrollableScrollPhysics(),
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
-                      crossAxisSpacing: 15,
-                      mainAxisSpacing: 15,
+                      crossAxisSpacing: 8,
+                      mainAxisSpacing: 29,
                       childAspectRatio: 1.3,
                     ),
                     itemCount: controller.categories.length,
@@ -89,8 +91,11 @@ class WorldAndCultureCommunityScreen
         Get.toNamed(Routes.CONSENT_SCREEN);
       },
       child: Container(
+        height: ScreenUtils.height * 0.2,
+        width: double.infinity,
         decoration: BoxDecoration(
-          color: Color(0xFF3E9292).withOpacity(0.3),
+          color: Color(0xFF3E9292).withOpacity(0.1),
+          borderRadius: BorderRadius.circular(5),
         ),
         child: Center(
           child: Column(
@@ -100,7 +105,7 @@ class WorldAndCultureCommunityScreen
               Text(
                 category,
                 style: TextStyle(
-                  fontSize: ScreenUtils.x(6),
+                  fontSize: 25,
                   fontWeight: FontWeight.w500,
                   color: _getCategoryColor(index),
                 ),
