@@ -221,115 +221,119 @@ class UserDetail extends GetView<HomeController> {
     return Obx(() {
       final selected = controller.selectedRole.value;
 
-      return SizedBox(
-        height: ScreenUtils.height * 0.06,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Image.asset(
-              'assets/vectors/profession_dropdown.png',
-              fit: BoxFit.fill,
-              height: ScreenUtils.height * 0.06,
-            ),
-            PopupMenuButton<String>(
-              offset: Offset(
-                  6, ScreenUtils.height * 0.06), // Opens exactly at bottom
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-              elevation: 0,
-              color: const Color(0xFFDEEAF1),
-              child: Container(
+      return Material(
+        color: Colors.transparent,
+        child: SizedBox(
+          height: ScreenUtils.height * 0.06,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Image.asset(
+                'assets/vectors/profession_dropdown.png',
+                fit: BoxFit.fill,
                 height: ScreenUtils.height * 0.06,
-                width: double.infinity,
-                padding: const EdgeInsets.only(
-                    left: 25, top: 5, bottom: 5, right: 10),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    if (selected.isNotEmpty) ...[
-                      Row(
+              ),
+              PopupMenuButton<String>(
+                offset: Offset(
+                    6, ScreenUtils.height * 0.06), // Opens exactly at bottom
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                elevation: 0,
+                color: const Color(0xFFDEEAF1),
+                child: Container(
+                  height: ScreenUtils.height * 0.06,
+                  width: double.infinity,
+                  padding: const EdgeInsets.only(
+                      left: 25, top: 5, bottom: 5, right: 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      if (selected.isNotEmpty) ...[
+                        Row(
+                          children: [
+                            Image.asset(
+                              roles.firstWhere((role) =>
+                                  role['value'] == selected)['icon'] as String,
+                              width: 24,
+                              height: 24,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              selected,
+                              style: TextStyle(
+                                color: roles.firstWhere((role) =>
+                                        role['value'] == selected)['color']
+                                    as Color,
+                                fontSize: roles.firstWhere((role) =>
+                                        role['value'] == selected)['size']
+                                    as double,
+                                fontFamily: GoogleFonts.poppins().fontFamily,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ] else ...[
+                        Text(
+                          "you're a",
+                          style: TextStyle(
+                              color: Color(0xFF172B75),
+                              fontSize: 17,
+                              fontWeight: FontWeight.w400),
+                        ),
+                      ],
+                      Icon(
+                        Icons.keyboard_arrow_down,
+                        color: Color(0xFF1C1C4D),
+                        size: 28,
+                      ),
+                    ],
+                  ),
+                ),
+                itemBuilder: (context) => roles.map((role) {
+                  final isSelected = role['value'] == selected;
+                  return PopupMenuItem<String>(
+                    value: role['value'] as String,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? const Color(0xFFE5EBFF)
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 8, horizontal: 4),
+                      child: Row(
                         children: [
                           Image.asset(
-                            roles.firstWhere(
-                                    (role) => role['value'] == selected)['icon']
-                                as String,
+                            role['icon'] as String,
                             width: 24,
                             height: 24,
                           ),
-                          const SizedBox(width: 8),
-                          Text(
-                            selected,
-                            style: TextStyle(
-                              color: roles.firstWhere((role) =>
-                                  role['value'] == selected)['color'] as Color,
-                              fontSize: roles.firstWhere((role) =>
-                                  role['value'] == selected)['size'] as double,
-                              fontFamily: GoogleFonts.poppins().fontFamily,
+                          SizedBox(width: ScreenUtils.width * 0.01),
+                          Flexible(
+                            child: Text(
+                              role['value'] as String,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontWeight: FontWeight.w400,
+                                color: role['color'] as Color,
+                                fontSize: role['size'] as double,
+                                fontFamily: GoogleFonts.poppins().fontFamily,
+                              ),
                             ),
                           ),
                         ],
                       ),
-                    ] else ...[
-                      Text(
-                        "you're a",
-                        style: TextStyle(
-                            color: Color(0xFF172B75),
-                            fontSize: 17,
-                            fontWeight: FontWeight.w400),
-                      ),
-                    ],
-                    Icon(
-                      Icons.keyboard_arrow_down,
-                      color: Color(0xFF1C1C4D),
-                      size: 28,
                     ),
-                  ],
-                ),
+                  );
+                }).toList(),
+                onSelected: (value) {
+                  controller.selectedRole.value = value;
+                },
               ),
-              itemBuilder: (context) => roles.map((role) {
-                final isSelected = role['value'] == selected;
-                return PopupMenuItem<String>(
-                  value: role['value'] as String,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? const Color(0xFFE5EBFF)
-                          : Colors.transparent,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    padding:
-                        const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-                    child: Row(
-                      children: [
-                        Image.asset(
-                          role['icon'] as String,
-                          width: 24,
-                          height: 24,
-                        ),
-                        SizedBox(width: ScreenUtils.width * 0.01),
-                        Flexible(
-                          child: Text(
-                            role['value'] as String,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontWeight: FontWeight.w400,
-                              color: role['color'] as Color,
-                              fontSize: role['size'] as double,
-                              fontFamily: GoogleFonts.poppins().fontFamily,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              }).toList(),
-              onSelected: (value) {
-                controller.selectedRole.value = value;
-              },
-            ),
-          ],
+            ],
+          ),
         ),
       );
     });
