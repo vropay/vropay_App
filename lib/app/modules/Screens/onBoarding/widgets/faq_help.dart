@@ -9,15 +9,17 @@ class FaqHelpText extends StatelessWidget {
     return RichText(
       text: TextSpan(
         text: 'Need help? ',
-        style: const TextStyle(color: Colors.grey, fontSize: 14),
+        style: const TextStyle(
+            color: Color(0xFF777777),
+            fontSize: 9.4,
+            fontWeight: FontWeight.w400),
         children: [
           TextSpan(
             text: '[FAQs]',
             style: const TextStyle(
-              color: Color(0xFF45548F),
-              fontWeight: FontWeight.w500,
-              fontSize: 16
-            ),
+                color: Color(0xFF45548F),
+                fontWeight: FontWeight.w400,
+                fontSize: 9.4),
             recognizer: TapGestureRecognizer()
               ..onTap = () {
                 // You can replace this with your own custom dialog

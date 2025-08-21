@@ -29,7 +29,6 @@ class DropdownPreference extends StatelessWidget {
         Offset.zero & overlay.size);
 
     OverlayEntry? overlayEntry;
-
     overlayEntry = OverlayEntry(
       builder: (context) => Material(
         color: Colors.transparent,

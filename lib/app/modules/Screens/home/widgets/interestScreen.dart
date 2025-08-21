@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:vropay_final/Utilities/screen_utils.dart';
 import '../../../../../Components/back_icon.dart';
 import 'communityAccess.dart';
 import 'difficultyScreen.dart';
@@ -20,41 +22,46 @@ class InterestsScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const Align(
-                  alignment: Alignment.centerLeft,
-                  child: BackIcon(),
+                SizedBox(height: ScreenUtils.height * 0.02),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(top: 20),
+                      child: const Align(
+                        alignment: Alignment.topCenter,
+                        child: BackIcon(),
+                      ),
+                    ),
+                    SizedBox(width: ScreenUtils.width * 0.01),
+                    Center(
+                      child: Image(
+                        image: const AssetImage('assets/images/Interest.png'),
+                        height: ScreenUtils.height * 0.155,
+                        width: ScreenUtils.width * 0.74,
+                      ),
+                    ),
+                  ],
                 ),
-
                 const SizedBox(height: 10),
-
-                const Center(
-                  child: Image(
-                    image: AssetImage('assets/images/Interest.png'),
-                    height: 120,
-                    width: 146,
-                  ),
-                ),
-
-                const SizedBox(height: 10),
-
-                const Text(
+                Text(
                   "Follow your Interests",
                   style: TextStyle(
                     fontSize: 23,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w400,
                     color: Color(0xFF0066FF),
+                    fontFamily: GoogleFonts.poppins().fontFamily,
                   ),
                   textAlign: TextAlign.center,
                 ),
-
-                const SizedBox(height: 20),
-
+                SizedBox(height: ScreenUtils.height * 0.02),
                 Obx(() {
                   return Wrap(
                     spacing: 15,
                     runSpacing: 15,
                     children: controller.interests.map((topic) {
-                      final isSelected = controller.selectedInterests.contains(topic);
+                      final isSelected =
+                          controller.selectedInterests.contains(topic);
                       return ChoiceChip(
                         showCheckmark: false,
                         label: Text(topic),
@@ -75,18 +82,16 @@ class InterestsScreen extends StatelessWidget {
                     }).toList(),
                   );
                 }),
-
-            const Text(
-              "Choose min 1 or max all",
-              style: TextStyle(
-                color: Color(0xFF0066FF),
-                fontSize: 15,
-                fontWeight: FontWeight.w300,
-              ),
-            ),
-
-              const SizedBox(height: 20),
-
+                Text(
+                  "Choose min 1 or max all",
+                  style: TextStyle(
+                    color: const Color(0xFF0066FF),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w400,
+                    fontFamily: GoogleFonts.poppins().fontFamily,
+                  ),
+                ),
+                const SizedBox(height: 20),
                 SizedBox(
                   width: double.infinity,
                   height: 50,
@@ -148,7 +153,6 @@ class InterestsScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 20),
               ],
             ),

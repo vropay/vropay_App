@@ -579,7 +579,7 @@ class NewsScreen extends GetView<NewsController> {
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
+        mainAxisSpacing: 3,
         childAspectRatio: 1.2,
       ),
       itemCount: newsList.length,
@@ -599,7 +599,7 @@ class NewsScreen extends GetView<NewsController> {
       child: Container(
         height: ScreenUtils.height * 0.07,
         width: double.infinity,
-        margin: const EdgeInsets.only(bottom: 2, left: 20, right: 21),
+        margin: const EdgeInsets.only(bottom: 2, left: 20, right: 10),
         padding: EdgeInsets.zero,
         decoration: BoxDecoration(
           color: Color(0xFFF7F7F7),

@@ -10,6 +10,8 @@ import '../controllers/otp_screen_controller.dart';
 class OtpScreenView extends StatelessWidget {
   final OTPController _otpController = Get.find<OTPController>();
 
+  OtpScreenView({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

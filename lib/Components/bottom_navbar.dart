@@ -87,11 +87,15 @@ class CustomBottomNavBar extends StatelessWidget {
                             top: 14,
                             right: 14,
                             child: Container(
-                              width: 8,
-                              height: 8,
+                              width: 10,
+                              height: 10,
                               decoration: BoxDecoration(
                                 color: Colors.red,
                                 shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Color(0xFFC4C7D5),
+                                  width: 2,
+                                ),
                               ),
                             ),
                           ),
@@ -105,6 +109,10 @@ class CustomBottomNavBar extends StatelessWidget {
                               decoration: BoxDecoration(
                                 color: Colors.red,
                                 shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Color(0xFFC4C7D5),
+                                  width: 2,
+                                ),
                               ),
                             ),
                           ),
@@ -118,6 +126,10 @@ class CustomBottomNavBar extends StatelessWidget {
                               decoration: BoxDecoration(
                                 color: Colors.red,
                                 shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Color(0xFFC4C7D5),
+                                  width: 2,
+                                ),
                               ),
                             ),
                           ),

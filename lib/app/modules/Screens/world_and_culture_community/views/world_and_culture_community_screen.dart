@@ -91,8 +91,8 @@ class WorldAndCultureCommunityScreen
         Get.toNamed(Routes.CONSENT_SCREEN);
       },
       child: Container(
-        height: ScreenUtils.height * 0.2,
-        width: double.infinity,
+        height: ScreenUtils.height * 0.5,
+        width: ScreenUtils.width * 0.4,
         decoration: BoxDecoration(
           color: Color(0xFF3E9292).withOpacity(0.1),
           borderRadius: BorderRadius.circular(5),

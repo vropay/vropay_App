@@ -351,7 +351,7 @@ class _MessageScreenState extends State<MessageScreen> {
                                     // Message Input Field with Send Button Inside
                                     Container(
                                       constraints: BoxConstraints(
-                                        minHeight: ScreenUtils.height * 0.08,
+                                        minHeight: ScreenUtils.height * 0.02,
                                         maxHeight: ScreenUtils.height * 0.7,
                                       ),
                                       padding: const EdgeInsets.all(16),
@@ -388,7 +388,7 @@ class _MessageScreenState extends State<MessageScreen> {
                                               hintText:
                                                   "Write your message\n upto 100 words",
                                               hintStyle: TextStyle(
-                                                  fontSize: 8,
+                                                  fontSize: 12,
                                                   fontWeight: FontWeight.w400),
                                               border: InputBorder.none,
                                               contentPadding:
@@ -1218,7 +1218,7 @@ class _MessageScreenState extends State<MessageScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.only(left: 0.0, bottom: 10),
+          padding: const EdgeInsets.only(left: 40.0, bottom: 10),
           child: Text(
             'shared article',
             style: TextStyle(
@@ -1226,7 +1226,7 @@ class _MessageScreenState extends State<MessageScreen> {
           ),
         ),
         Container(
-          margin: EdgeInsets.only(right: 76),
+          margin: EdgeInsets.only(right: 76, left: 23),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
             color: Color(0xFFEF2D56).withOpacity(0.1),
@@ -1609,8 +1609,8 @@ class _MessageScreenState extends State<MessageScreen> {
             text,
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
+              fontSize: 13,
+              fontWeight: FontWeight.w400,
             ),
             textAlign: TextAlign.center,
             maxLines: 1,
@@ -1632,7 +1632,7 @@ class _MessageScreenState extends State<MessageScreen> {
               _buildQuickReplyButton('yup', Color(0xFF0B85A5)),
               _buildQuickReplyButton('facts', Color(0xFFDE99AC)),
               _buildQuickReplyButton('same', Color(0xFFF9A068)),
-              _buildQuickReplyButton('exactly', Color(0xFF6B5D7A)),
+              _buildQuickReplyButton('ofc', Color(0xFF6B5D7A)),
               _buildQuickReplyButton('true', Color(0xFF5C4A9B)),
               _buildQuickReplyButton('words', Color(0xFFCF455F)),
             ],
@@ -1658,7 +1658,7 @@ class _MessageScreenState extends State<MessageScreen> {
               _buildQuickReplyButton('damn', Color(0xFF2D80CD)),
               _buildQuickReplyButton('oof', Color(0xFFDF8B97)),
               _buildQuickReplyButton('aye', Color(0xFF61C197)),
-              _buildQuickReplyButton('WOW', Color(0xFFDA7D53)),
+              _buildQuickReplyButton('wow', Color(0xFFDA7D53)),
             ],
           ),
         ],

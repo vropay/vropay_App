@@ -10,7 +10,7 @@ class SocialButton extends StatelessWidget {
   final double height;
 
   const SocialButton({
-    Key? key,
+    super.key,
     required this.text,
     required this.iconPath,
     this.borderColor = Colors.black,
@@ -18,7 +18,7 @@ class SocialButton extends StatelessWidget {
     this.width = 343, // Default full width
     this.height = 56,
     required this.onPressed,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +36,11 @@ class SocialButton extends StatelessWidget {
           children: [
             Image.asset(iconPath, height: 20),
             const SizedBox(width: 10),
-            Text(text, style: TextStyle(color: textColor)),
+            Text(text,
+                style: TextStyle(
+                    color: textColor,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500)),
           ],
         ),
       ),

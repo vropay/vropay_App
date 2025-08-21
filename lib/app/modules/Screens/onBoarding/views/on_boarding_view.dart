@@ -1,29 +1,21 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:vropay_final/Utilities/screen_utils.dart';
+import 'package:vropay_final/app/modules/Screens/home/views/home_view.dart';
 import 'package:vropay_final/app/modules/Screens/profile/views/profile_view.dart';
+import 'package:vropay_final/app/modules/Screens/signUp/widgets/socialButtons.dart';
+import 'package:vropay_final/app/routes/app_pages.dart';
 import '../../../../../Components/constant_buttons.dart';
 import '../../../../../Utilities/constants/Colors.dart';
 import '../../../../../Utilities/constants/KImages.dart';
 import '../controllers/on_boarding_controller.dart';
 import '../widgets/faq_help.dart';
 
-class OnBoardingView extends StatefulWidget {
+class OnBoardingView extends GetView<OnBoardingController> {
   const OnBoardingView({super.key});
-
-  @override
-  _OnBoardingViewState createState() => _OnBoardingViewState();
-}
-
-class _OnBoardingViewState extends State<OnBoardingView> {
-  final OnBoardingController _controller = Get.put(OnBoardingController());
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,34 +24,36 @@ class _OnBoardingViewState extends State<OnBoardingView> {
       body: SafeArea(
         child: Column(
           children: [
-            // Skip Button
-            Padding(
-              padding: const EdgeInsets.all(0.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: () {
-                      Get.offAll(
-                          () => ProfileView()); // This now goes to home screen
-                    },
-                    child: Text(
-                      'Skip',
-                      style: TextStyle(
-                        color: KConstColors.onBoardingSubHeading,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
+            // Skip Button - Only show on first page
+            Obx(() => controller.currentPage.value == 0
+                ? Padding(
+                    padding: const EdgeInsets.all(0.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          onPressed: () {
+                            Get.offAllNamed(Routes.PROFILE);
+                          },
+                          child: Text(
+                            'Skip',
+                            style: TextStyle(
+                              color: KConstColors.onBoardingSubHeading,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                ],
-              ),
-            ),
+                  )
+                : const SizedBox.shrink()),
             Expanded(
               child: PageView(
-                controller: _controller.pageController,
-                onPageChanged: _controller.onPageChanged,
-                physics: const BouncingScrollPhysics(),
+                controller: controller.pageController,
+                onPageChanged: controller.onPageChanged,
+                // Disable user swiping - only allow programmatic navigation
+                physics: const NeverScrollableScrollPhysics(),
                 children: [
                   _buildOnboardingPage(
                     image: KImages.onBoardingScreen,
@@ -68,154 +62,95 @@ class _OnBoardingViewState extends State<OnBoardingView> {
                     subtitle: "—ready to level up your skills?",
                     showFaq: true,
                   ),
-                  _buildOnboardingPage(
-                    image: KImages.onBoardingScreen,
-                    title: "Connect with\nLike-minded\nProfessionals",
-                    subtitle: "—build your network and grow together?",
-                    showFaq: false,
-                  ),
-                  _buildOnboardingPage(
-                    image: KImages.onBoardingScreen,
-                    title: "Learn from\nIndustry Experts\n& Mentors",
-                    subtitle: "—gain insights from the best in the field?",
-                    showFaq: false,
-                  ),
-                  _buildOnboardingPage(
-                    image: KImages.onBoardingScreen,
-                    title: "Track Your\nProgress & Achievements",
-                    subtitle: "—measure your growth and celebrate success?",
-                    showFaq: false,
-                  ),
+                  Obx(() => controller.currentPage.value == 1
+                      ? (controller.showPhoneVerification.value
+                          ? _buildPhoneVerification()
+                          : _buildSignUpPage())
+                      : _buildOnboardingPage(
+                          image: KImages.onBoardingScreen,
+                          title:
+                              "Smart tools\nReal-time insights\n&\nLimitless possibilities",
+                          subtitle: "—ready to level up your skills?",
+                          showFaq: true,
+                        )),
+                  _buildOtpScreen(),
                 ],
               ),
             ),
-            // Progress Indicator
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Obx(() {
-                    // Get dynamic sizes based on current page
-                    double dotHeight =
-                        _getDotHeight(_controller.currentPage.value);
-                    double dotWidth =
-                        _getDotWidth(_controller.currentPage.value);
-
-                    return Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(4, (index) {
-                        bool isSelected =
-                            index == _controller.currentPage.value;
-                        return Container(
-                          margin: EdgeInsets.symmetric(horizontal: 4.0),
-                          child: AnimatedContainer(
-                            duration: Duration(milliseconds: 300),
-                            curve: Curves.easeInOut,
-                            width: isSelected ? 9 : 30.0,
-                            height: 4,
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? Color(0xFF172B75)
-                                  : Color(0xFFD0D0D0),
-                              borderRadius: BorderRadius.circular(
-                                isSelected
-                                    ? dotHeight / 2
-                                    : 2.0, // Circle for selected, rounded rectangle for unselected
-                              ),
-                            ),
-                          ),
-                        );
-                      }),
-                    );
-                  }),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
             // Action Button
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: Obx(
-                () => CommonButton(
-                  onPressed: _controller.currentPage.value == 3
-                      ? _controller.goToSignup
-                      : _controller.goToNextPage,
-                  child: _controller.currentPage.value == 3
-                      ? Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            const Icon(Icons.arrow_forward_ios,
-                                color: KConstColors.colorPrimary, size: 20),
-                            Transform.translate(
-                              offset: const Offset(-6, 0),
-                              child: const Icon(Icons.arrow_forward_ios,
-                                  color: KConstColors.colorPrimary, size: 20),
-                            ),
-                            Transform.translate(
-                              offset: const Offset(-12, 0),
-                              child: const Icon(Icons.arrow_forward_ios,
-                                  color: KConstColors.colorPrimary, size: 20),
-                            ),
-                            SizedBox(width: ScreenUtils.width * 0.08),
-                            const Text(
-                              "Let's Sign Up",
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: KConstColors.colorPrimary,
-                              ),
-                            ),
-                          ],
-                        )
-                      : Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text(
-                              "Next",
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            const Icon(Icons.arrow_forward,
-                                color: Colors.white, size: 20),
-                          ],
+            Obx(
+              () => controller.currentPage.value == 0
+                  ? Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 30.0),
+                          child: CommonButton(
+                              onPressed: controller.goToNextPage,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  const Icon(Icons.arrow_forward_ios,
+                                      color: KConstColors.colorPrimary,
+                                      size: 20),
+                                  Transform.translate(
+                                    offset: const Offset(-6, 0),
+                                    child: const Icon(Icons.arrow_forward_ios,
+                                        color: KConstColors.colorPrimary,
+                                        size: 20),
+                                  ),
+                                  Transform.translate(
+                                    offset: const Offset(-12, 0),
+                                    child: const Icon(Icons.arrow_forward_ios,
+                                        color: KConstColors.colorPrimary,
+                                        size: 20),
+                                  ),
+                                  SizedBox(width: ScreenUtils.width * 0.08),
+                                  const Text(
+                                    "Let's Sign Up",
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: KConstColors.colorPrimary,
+                                    ),
+                                  ),
+                                ],
+                              )),
                         ),
-                ),
-              ),
+                        const SizedBox(height: 20),
+                        // Sign In Link
+
+                        RichText(
+                          textAlign: TextAlign.center,
+                          text: TextSpan(
+                            children: [
+                              const TextSpan(
+                                text: "have an account? ",
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w400,
+                                  color: KConstColors.onBoardingSubTitle,
+                                ),
+                              ),
+                              TextSpan(
+                                text: "\nSIGN IN",
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w400,
+                                  fontSize: 15,
+                                  color: KConstColors.onBoardingSubHeading,
+                                ),
+                                recognizer: TapGestureRecognizer()
+                                  ..onTap = () {
+                                    controller.goToSignIn();
+                                  },
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                      ],
+                    )
+                  : const SizedBox.shrink(),
             ),
-            const SizedBox(height: 20),
-            // Sign In Link
-            RichText(
-              text: TextSpan(
-                children: [
-                  const TextSpan(
-                    text: "have an account? ",
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
-                      color: KConstColors.onBoardingSubTitle,
-                    ),
-                  ),
-                  TextSpan(
-                    text: "SIGN IN",
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w400,
-                      fontSize: 15,
-                      color: KConstColors.onBoardingSubHeading,
-                    ),
-                    recognizer: TapGestureRecognizer()
-                      ..onTap = () {
-                        _controller.goToSignIn();
-                      },
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
           ],
         ),
       ),
@@ -278,6 +213,20 @@ class _OnBoardingViewState extends State<OnBoardingView> {
                 const SizedBox(height: 20),
                 FaqHelpText(),
               ],
+
+              // Add page indicator for pages
+              if (showFaq) ...[
+                SizedBox(height: ScreenUtils.height * 0.015),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildProgressDot(true),
+                    _buildProgressDot(false),
+                    _buildProgressDot(false),
+                    _buildProgressDot(false),
+                  ],
+                ),
+              ]
             ],
           ),
         ),
@@ -314,5 +263,611 @@ class _OnBoardingViewState extends State<OnBoardingView> {
       default:
         return 30.0; // Default width
     }
+  }
+
+  Widget _buildSignUpPage() {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 30),
+                child: Align(
+                  alignment: Alignment.topLeft,
+                  child: IconButton(
+                    icon: Icon(Icons.arrow_back_ios),
+                    onPressed: () {
+                      Get.back();
+                    },
+                  ),
+                ),
+              ),
+              Image.asset(
+                KImages.authImage,
+                height: 276.5,
+                width: 276.5,
+              ),
+              SizedBox(
+                height: ScreenUtils.height * 0.024,
+              ),
+
+              // Social Login Buttons
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 26),
+                child: SocialButton(
+                  text: "Continue with Google",
+                  textColor: Color(0xFf172B75),
+                  borderColor: Color(0xFf172B75),
+                  iconPath: KImages.googleIcon,
+                  onPressed: () {},
+                ),
+              ),
+              SizedBox(
+                height: ScreenUtils.height * 0.021,
+              ),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 26),
+                child: SocialButton(
+                  text: "Continue with Apple",
+                  iconPath: KImages.appleIcon,
+                  textColor: Colors.grey[900]!,
+                  borderColor: Colors.grey[300]!,
+                  onPressed: () {},
+                ),
+              ),
+
+              SizedBox(
+                height: ScreenUtils.height * 0.01,
+              ),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 59),
+                child: Row(
+                  children: [
+                    Expanded(
+                        child: Divider(
+                      endIndent: 8,
+                      color: Color(0xFFD9D9D9),
+                    )),
+                    Text("or",
+                        style: TextStyle(
+                            fontSize: 14,
+                            color: Color(0xFF9A9A9A),
+                            fontFamily: GoogleFonts.poppins().fontFamily)),
+                    Expanded(
+                        child: Divider(
+                      indent: 8,
+                      color: Color(0xFFD9D9D9),
+                    ))
+                  ],
+                ),
+              ),
+              SizedBox(
+                height: ScreenUtils.height * 0.01,
+              ),
+
+              // Email Input
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 26),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    SizedBox(
+                      width: 343,
+                      height: 56,
+                      child: TextField(
+                        controller: controller.emailController,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                            color: Color(0xFF172B75)),
+                        onChanged: (value) {
+                          controller
+                              .validateInput(); // <- This updates isEmailEmpty
+                        }, // Centers the input text
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(
+                                Radius.circular(30)), // Rounded border
+                            borderSide: BorderSide(
+                              color: Colors.grey[300]!,
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(30)),
+                            borderSide: BorderSide(color: Colors.grey[300]!),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(30)),
+                            borderSide:
+                                BorderSide(color: Colors.grey[300]!, width: 1),
+                          ),
+                          contentPadding: EdgeInsets.symmetric(vertical: 18),
+                          labelText: "", // Hide the default label
+                        ),
+                      ),
+                    ),
+                    Obx(() {
+                      return controller.isEmailEmpty.value
+                          ? Center(
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.email_outlined,
+                                      color: Color(0xFF9E9E9E), size: 20),
+                                  SizedBox(width: 10),
+                                  Text(
+                                    "Email ID",
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        color: Color(0xFF9E9E9E),
+                                        fontFamily:
+                                            GoogleFonts.poppins().fontFamily,
+                                        fontWeight: FontWeight.w400),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : SizedBox.shrink(); // Hide icon and text when typing
+                    }),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Text.rich(
+                  TextSpan(
+                    text: "By continuing, you agree to VRopay’s\n",
+                    style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w300,
+                        color: Color(0xFF777777)),
+                    children: [
+                      TextSpan(
+                        text: "Terms of Service",
+                        style: const TextStyle(
+                            color: Color(0xFF45548F),
+                            fontSize: 10,
+                            fontWeight: FontWeight.w300,
+                            decoration: TextDecoration.underline),
+                      ),
+                      const TextSpan(
+                        text: " and ",
+                        style: const TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w300,
+                            color: Color(0xFF777777)),
+                      ),
+                      TextSpan(
+                        text: "Privacy Policy",
+                        style: const TextStyle(
+                            color: Color(0xFF45548F),
+                            decoration: TextDecoration.underline),
+                      ),
+                    ],
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              SizedBox(
+                height: ScreenUtils.height * 0.015,
+              ),
+              FaqHelpText(),
+              SizedBox(
+                height: ScreenUtils.height * 0.017,
+              ),
+              // Page Indicator
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _buildProgressDot(false),
+                  _buildProgressDot(true),
+                  _buildProgressDot(false),
+                  _buildProgressDot(false)
+                ],
+              ),
+              SizedBox(
+                height: ScreenUtils.height * 0.015,
+              ),
+
+              // let's sign up button
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 30),
+                child: CommonButton(
+                    text: "Let's Sign up",
+                    onPressed: () {
+                      // Set the email from the email controller
+                      controller.userEmail.value =
+                          controller.emailController.text.trim();
+
+                      // Set isPhoneOtp to false since this is email OTP
+                      controller.isPhoneOtp.value = false;
+                      // Navigate to OTP screen
+                      controller.currentPage.value = 2;
+                      controller.pageController.animateToPage(2,
+                          duration: Duration(milliseconds: 300),
+                          curve: Curves.easeInOut);
+                    }),
+              ),
+              SizedBox(
+                height: ScreenUtils.height * 0.02,
+              ),
+
+              // Sign In Navigation
+              GestureDetector(
+                onTap: () {
+                  controller.showPhoneVerification.value = true;
+                },
+                child: RichText(
+                  textAlign: TextAlign.center,
+                  text: TextSpan(
+                    text: "have an account?\n",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      color: KConstColors.onBoardingSubTitle,
+                    ),
+                    children: [
+                      TextSpan(
+                        text: "SIGN IN",
+                        style: const TextStyle(
+                            color: Color(0xFF172B75),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w400),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(
+                height: ScreenUtils.height * 0.02,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProgressDot(bool isActive) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 5),
+      width: isActive ? 9 : 30,
+      height: 4,
+      decoration: BoxDecoration(
+        color: isActive ? Color(0xFF172B75) : Color(0xFFD0D0D0),
+        borderRadius: BorderRadius.circular(19),
+      ),
+    );
+  }
+
+  Widget _buildPhoneVerification() {
+    return Scaffold(
+      backgroundColor: KConstColors.colorPrimary,
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(left: 30),
+              child: Align(
+                alignment: Alignment.topLeft,
+                child: IconButton(
+                  icon: Icon(Icons.arrow_back_ios,
+                      color: KConstColors.colorSecondary),
+                  onPressed: () => Get.back(),
+                ),
+              ),
+            ),
+            Image.asset(KImages.authImage, height: 276.5, width: 276.5),
+            SizedBox(height: ScreenUtils.height * 0.056),
+            Text(
+              "Phone Number",
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF454545),
+                fontFamily: GoogleFonts.poppins().fontFamily,
+              ),
+            ),
+            SizedBox(height: ScreenUtils.height * 0.02),
+            Center(
+              child: SizedBox(
+                width: ScreenUtils.width * 0.8,
+                height: ScreenUtils.height * 0.06,
+                child: TextField(
+                  controller: controller.phoneController,
+                  keyboardType: TextInputType.phone,
+                  maxLength: 10,
+                  decoration: InputDecoration(
+                    prefixIcon: Padding(
+                      padding: EdgeInsets.only(left: 70, top: 14, bottom: 14),
+                      child: Image.asset(KImages.phoneIconImage,
+                          width: 28, height: 28),
+                    ),
+                    hintText: "00000 00000",
+                    hintStyle: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      color: Color(0xFF9E9E9E),
+                      fontFamily: GoogleFonts.poppins().fontFamily,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                    counterText: "",
+                  ),
+                  onChanged: (value) {
+                    controller.isValidPhone.value = value.length == 10 &&
+                        RegExp(r'^[0-9]+$').hasMatch(value);
+                  },
+                ),
+              ),
+            ),
+            SizedBox(height: ScreenUtils.height * 0.01),
+            Text("Enter your mobile number to send OTP",
+                style: TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFFC1C0C0),
+                    fontWeight: FontWeight.w400)),
+            SizedBox(height: ScreenUtils.height * 0.086),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Text.rich(
+                TextSpan(
+                  text: "By continuing, you agree to VRopay’s\n",
+                  style: TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF777777),
+                      fontFamily: GoogleFonts.poppins().fontFamily,
+                      fontWeight: FontWeight.w300),
+                  children: [
+                    TextSpan(
+                      text: "Terms of Service",
+                      style: TextStyle(
+                          color: Color(0xFF45548F),
+                          fontSize: 10,
+                          fontWeight: FontWeight.w300,
+                          fontFamily: GoogleFonts.poppins().fontFamily,
+                          decoration: TextDecoration.underline),
+                    ),
+                    const TextSpan(text: " and "),
+                    TextSpan(
+                      text: "Privacy Policy",
+                      style: TextStyle(
+                          color: Color(0xFF45548F),
+                          fontSize: 10,
+                          fontWeight: FontWeight.w300,
+                          fontFamily: GoogleFonts.poppins().fontFamily,
+                          decoration: TextDecoration.underline),
+                    ),
+                  ],
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            SizedBox(
+              height: ScreenUtils.height * 0.015,
+            ),
+            FaqHelpText(),
+            SizedBox(
+              height: ScreenUtils.height * 0.017,
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _buildProgressDot(false),
+                _buildProgressDot(true),
+                _buildProgressDot(false),
+                _buildProgressDot(false),
+              ],
+            ),
+            SizedBox(height: ScreenUtils.height * 0.024),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 30),
+              child: CommonButton(
+                  text: "Send OTP",
+                  onPressed: () {
+                    controller.isPhoneOtp.value = true;
+                    controller.sendOtpToPhone();
+                    controller.goToNextPage();
+                  }),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOtpScreen() {
+    return Scaffold(
+      backgroundColor: KConstColors.colorPrimary,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Align(
+                  alignment: Alignment.topLeft,
+                  child: IconButton(
+                    icon: Icon(
+                      Icons.arrow_back_ios,
+                      color: Colors.black,
+                      size: 20,
+                    ),
+                    onPressed: () {
+                      // Go back to the sign-up page
+                      controller.currentPage.value = 1;
+                      controller.pageController.animateToPage(1,
+                          duration: Duration(milliseconds: 300),
+                          curve: Curves.easeInOut);
+                    },
+                  ),
+                ),
+                Image.asset(KImages.otpScreenImage, height: 265, width: 315),
+
+                SizedBox(height: ScreenUtils.height * 0.05),
+
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: PinCodeTextField(
+                    length: 5,
+                    controller: controller.otpFieldController,
+                    onChanged: (value) => controller.updateOtp(value),
+                    keyboardType: TextInputType.number,
+                    appContext: Get.context!,
+                    // Add error handling for disposed controller
+                    onCompleted: (value) {
+                      if (controller.otpFieldController.hasListeners) {
+                        controller.updateOtp(value);
+                      }
+                    },
+                    textStyle:
+                        TextStyle(fontSize: 18, color: Color(0xFF172B75)),
+                    pinTheme: PinTheme(
+                      shape: PinCodeFieldShape.box,
+                      borderRadius: BorderRadius.circular(10),
+                      fieldHeight: 59,
+                      fieldWidth: 49,
+                      activeColor: Color(0xFFCBDAFF),
+                      inactiveColor: Color(0xFFDFDFDF),
+                      selectedColor: Color(0xFFCBDAFF),
+                    ),
+                  ),
+                ),
+
+                // Show Email or Phone based on OTP type
+                Row(
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.only(left: 20, right: 5),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          "Enter 5 digit OTP sent to",
+                          style: TextStyle(
+                              color: Color(0xFF454545),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w300,
+                              fontFamily: GoogleFonts.poppins().fontFamily),
+                        ),
+                      ),
+                    ),
+                    Flexible(
+                      child: Obx(() => Text(
+                            controller.isPhoneOtp.value
+                                ? controller.userPhone
+                                    .value // Displays phone if OTP is for phone
+                                : controller.userEmail
+                                    .value, // Displays email if OTP is for email
+                            style: TextStyle(
+                              color: Color(0xFF454545),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              fontFamily: GoogleFonts.poppins().fontFamily,
+                            ),
+                            softWrap: true,
+                            overflow: TextOverflow.ellipsis,
+                          )),
+                    ),
+                  ],
+                ),
+                SizedBox(height: ScreenUtils.height * 0.01),
+                // Resend OTP
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () => controller.resendOtp(),
+                    child: Text(
+                      "Resend OTP?",
+                      style: TextStyle(
+                          color: Color(0xFF4263E0),
+                          fontWeight: FontWeight.w600,
+                          decoration: TextDecoration.underline,
+                          fontFamily: GoogleFonts.poppins().fontFamily),
+                    ),
+                  ),
+                ),
+
+                SizedBox(height: ScreenUtils.height * 0.053),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Text.rich(
+                    TextSpan(
+                      text: "By continuing, you agree to VRopay's\n",
+                      style: TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF777777),
+                          fontFamily: GoogleFonts.poppins().fontFamily,
+                          fontWeight: FontWeight.w300),
+                      children: [
+                        TextSpan(
+                          text: "Terms of Service",
+                          style: TextStyle(
+                              color: const Color(0xFF45548F),
+                              fontSize: 10,
+                              fontWeight: FontWeight.w300,
+                              fontFamily: GoogleFonts.poppins().fontFamily,
+                              decoration: TextDecoration.underline),
+                        ),
+                        const TextSpan(text: " and "),
+                        TextSpan(
+                          text: "Privacy Policy",
+                          style: TextStyle(
+                              color: Color(0xFF45548F),
+                              fontSize: 10,
+                              fontWeight: FontWeight.w300,
+                              fontFamily: GoogleFonts.poppins().fontFamily,
+                              decoration: TextDecoration.underline),
+                        ),
+                      ],
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                SizedBox(
+                  height: ScreenUtils.height * 0.01,
+                ),
+                FaqHelpText(),
+                SizedBox(
+                  height: ScreenUtils.height * 0.03,
+                ),
+                // Progress Indicator
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildProgressDot(false),
+                    _buildProgressDot(false),
+                    _buildProgressDot(true),
+                    _buildProgressDot(false),
+                  ],
+                ),
+                SizedBox(height: ScreenUtils.height * 0.03),
+
+                // Verify Button
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 25),
+                  child: CommonButton(
+                      text: "Verify OTP",
+                      onPressed: () {
+                        Get.to(() => HomeView());
+                      }),
+                )
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

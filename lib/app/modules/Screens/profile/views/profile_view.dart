@@ -81,7 +81,7 @@ class ProfileView extends StatelessWidget {
                 ),
               ],
             ),
-            
+            SizedBox(height: ScreenUtils.height * 0.04),
           ],
         ),
       ),
@@ -281,7 +281,8 @@ class _ProfileSection extends StatelessWidget {
                       Text(
                         'Mob no',
                         style: TextStyle(
-                          fontWeight: FontWeight.w400,
+                          fontWeight:
+                              isEditMode ? FontWeight.w400 : FontWeight.w500,
                           color: Color(0xFF172B75),
                         ),
                       ),
@@ -353,7 +354,8 @@ class _ProfileSection extends StatelessWidget {
                       Text(
                         'Email id',
                         style: TextStyle(
-                          fontWeight: FontWeight.w400,
+                          fontWeight:
+                              isEditMode ? FontWeight.w400 : FontWeight.w500,
                           color: Color(0xFF172B75),
                         ),
                       ),
@@ -443,7 +445,7 @@ class _ProfileSection extends StatelessWidget {
                               Text(
                                 'Gender',
                                 style: TextStyle(
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight: FontWeight.w600,
                                   color: Color(0xFF172B75),
                                 ),
                               ),
