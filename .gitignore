@@ -43,5 +43,7 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
-"android/java_pid2484.hprof" 
-"*.hprof" 
+
+# Java heap dumps and profiling files
+*.hprof
+java_pid*.hprof 
