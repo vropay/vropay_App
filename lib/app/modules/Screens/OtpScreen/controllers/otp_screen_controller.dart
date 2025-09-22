@@ -1,30 +1,73 @@
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:vropay_final/Utilities/constants/Colors.dart';
-
-import '../../../../../Utilities/snackbar_helper.dart';
+import 'package:vropay_final/Utilities/snackbar_helper.dart';
+import 'package:vropay_final/app/core/services/auth_service.dart';
+import 'package:vropay_final/app/routes/app_pages.dart';
 
 class OTPController extends GetxController {
+  final AuthService _authService = Get.find<AuthService>();
+
   var userEmail = ''.obs;
   var userPhone = ''.obs;
   var otpCode = ''.obs;
   var isEmailVerified = false.obs;
   var isPhoneOtp = false.obs;
+  var isLoading = false.obs;
+  var errorMessage = ''.obs;
 
   final TextEditingController emailController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController otpFieldController = TextEditingController();
 
+  @override
+  void onInit() {
+    super.onInit();
+    // Get email from previous screen
+    final args = Get.arguments as Map<String, dynamic>;
+    if (args != null && args['email'] != null) {
+      userEmail.value = args['email'];
+      emailController.text = args['email'];
+    }
+  }
+
   /// Send OTP to Email
-  void sendOtpToEmail() {
-    if (emailController.text.isNotEmpty && emailController.text.contains("@")) {
-      userEmail.value = emailController.text;
-      isPhoneOtp.value = false; // It's email OTP
-      setSnackBar("OTP Sent", "OTP has been sent to ${userEmail.value}.", position: SnackPosition.BOTTOM, backgroundColor: KConstColors.snackbarSecondary);
-    } else {
-      setSnackBar("Error", "Please enter a valid email address",
-        position: SnackPosition.BOTTOM, backgroundColor: KConstColors.errorSnackbar,
-      );
+  Future<void> sendOtpToEmail() async {
+    try {
+      isLoading.value = true;
+      errorMessage.value = '';
+      if (emailController.text.isNotEmpty &&
+          emailController.text.contains("@")) {
+        userEmail.value = emailController.text;
+        isPhoneOtp.value = false; // It's email OTP
+
+        // Call API to send OTP
+        final response = await _authService.signUpWithEmail(
+            email: userEmail.value, name: 'User');
+
+        if (response.success) {
+          setSnackBar("OTP Sent", "OTP has been sent to ${userEmail.value}.",
+              position: SnackPosition.BOTTOM,
+              backgroundColor: KConstColors.snackbarSecondary);
+        } else {
+          setSnackBar("Error", response.message ?? "Failed to send OTP",
+              position: SnackPosition.BOTTOM,
+              backgroundColor: KConstColors.errorSnackbar);
+        }
+      } else {
+        setSnackBar(
+          "Error",
+          "Please enter a valid email address",
+          position: SnackPosition.BOTTOM,
+          backgroundColor: KConstColors.errorSnackbar,
+        );
+      }
+    } catch (e) {
+      setSnackBar('Error', "Failed to send OTP: ${e.toString()}",
+          position: SnackPosition.BOTTOM,
+          backgroundColor: KConstColors.errorSnackbar);
+    } finally {
+      isLoading.value = false;
     }
   }
 
@@ -34,34 +77,68 @@ class OTPController extends GetxController {
       userPhone.value = phoneController.text;
       isPhoneOtp.value = true;
       Get.snackbar("OTP Sent", "OTP has been sent to ${userPhone.value}.",
-          snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.blue, colorText: Colors.white);
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.blue,
+          colorText: Colors.white);
     } else {
       Get.snackbar("Error", "Please enter a valid phone number.",
-          snackPosition: SnackPosition.BOTTOM, backgroundColor:KConstColors.errorSnackbar, colorText: Colors.white);
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: KConstColors.errorSnackbar,
+          colorText: Colors.white);
     }
   }
 
-  void verifyEmailOtp() {
-    if (otpCode.value.trim() == "12345") {
-      isEmailVerified.value = true;
-      otpFieldController.clear();
-      otpCode.value = '';
-      Get.snackbar("Success", "Email OTP Verified!",
+  Future<void> verifyEmailOtp() async {
+    try {
+      isLoading.value = true;
+      errorMessage.value = '';
+
+      if (otpCode.value.trim().isEmpty) {
+        Get.snackbar("Success", "Email OTP Verified!",
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: KConstColors.errorSnackbar,
+            colorText: Colors.white);
+        return;
+      }
+
+      // Call API to verify OTP
+      final response = await _authService.verifyOtp(
+          email: userEmail.value, otp: otpCode.value.trim());
+
+      if (response.success) {
+        isEmailVerified.value = true;
+        otpFieldController.clear();
+        otpCode.value = '';
+
+        Get.snackbar(
+          "Success",
+          "Email OTP Verified!",
           snackPosition: SnackPosition.TOP,
           backgroundColor: KConstColors.successSnackbar,
-          colorText: Colors.white);
+          colorText: Colors.white,
+        );
 
-      // Prepare for phone OTP
-      isPhoneOtp.value = true;
-      otpCode.value = '';
-      otpFieldController.clear();
-      userPhone.value = phoneController.text;
-      Get.toNamed('/phone-verification');
-    } else {
-      Get.snackbar("Error", "Invalid Email OTP!",
+        // Navigate to home screen
+        Get.offAllNamed(Routes.HOME);
+      } else {
+        Get.snackbar(
+          "Error",
+          response.message ?? "Invalid OTP!",
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: KConstColors.errorSnackbar,
-          colorText: KConstColors.colorPrimary);
+          colorText: Colors.white,
+        );
+      }
+    } catch (e) {
+      Get.snackbar(
+        "Error",
+        "Failed to verify OTP: ${e.toString()}",
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: KConstColors.errorSnackbar,
+        colorText: Colors.white,
+      );
+    } finally {
+      isLoading.value = false;
     }
   }
 
@@ -81,13 +158,14 @@ class OTPController extends GetxController {
   }
 
   /// Resend OTP for Email or Phone
-  void resendOtp() {
+  Future<void> resendOtp() async {
     if (!isPhoneOtp.value) {
-      Get.snackbar("OTP Sent", "A new OTP has been sent to your email.",
-          snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.blue, colorText: Colors.white);
+      await sendOtpToEmail();
     } else {
       Get.snackbar("OTP Sent", "A new OTP has been sent to your phone number.",
-          snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.blue, colorText: Colors.white);
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.blue,
+          colorText: Colors.white);
     }
   }
 
@@ -95,6 +173,7 @@ class OTPController extends GetxController {
   void updateOtp(String value) {
     otpCode.value = value;
   }
+
   @override
   void onClose() {
     emailController.dispose();

@@ -299,7 +299,7 @@ class _ProfileSection extends StatelessWidget {
                           : Padding(
                               padding: const EdgeInsets.only(right: 48),
                               child: Text(
-                                controller.phoneController.text,
+                                controller.mobileController.text,
                                 textAlign: TextAlign.left,
                                 style: TextStyle(
                                   fontSize: 14,

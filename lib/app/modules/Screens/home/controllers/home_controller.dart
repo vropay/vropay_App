@@ -1,88 +1,102 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:vropay_final/app/core/services/auth_service.dart';
+import 'package:vropay_final/app/core/services/forum_service.dart';
+import 'package:vropay_final/app/core/services/knowledge_service.dart';
+import 'package:vropay_final/app/routes/app_pages.dart';
 
 class HomeController extends GetxController {
-  var currentIndex = 0.obs;
-  var currentStep = 1.obs;
-  RxString selectedRole = ''.obs;
-  var selectedLevel = ''.obs;
+  final AuthService _authService = Get.find<AuthService>();
+  final KnowledgeService _knowledgeService = Get.find<KnowledgeService>();
+  final ForumService _forumService = Get.find<ForumService>();
 
-  final TextEditingController firstNameController = TextEditingController();
-  final TextEditingController lastNameController = TextEditingController();
-
-  bool isUserDetailValid() {
-    return firstNameController.text.isNotEmpty &&
-        lastNameController.text.isNotEmpty &&
-        selectedRole.value.isNotEmpty;
-  }
-
-  void selectLevel(String level) {
-    selectedLevel.value = level;
-  }
-
-  void nextPage() {
-    if (currentIndex < 4) currentIndex++;
-  }
-
-  void prevPage() {
-    if (currentIndex > 0) currentIndex--;
-  }
-
-  final RxList<String> interests = <String>[].obs;
-  var selectedInterests = <String>{}.obs;
-
-  bool hasSelectedInterests() => selectedInterests.isNotEmpty;
-
-  void toggleInterest(String interest) {
-    if (selectedInterests.contains(interest)) {
-      selectedInterests.remove(interest);
-    } else {
-      selectedInterests.add(interest);
-    }
-  }
-
-  void clearInterests() {
-    selectedInterests.clear();
-  }
-
-  RxnString selectedCommunityAccess = RxnString();
-
-  void updateCommunityAccess(String option) {
-    selectedCommunityAccess.value = option;
-  }
-
-  /// ✅ Add this if you want to reset form values entirely
-  void resetForm() {
-    firstNameController.clear();
-    lastNameController.clear();
-    selectedRole.value = '';
-    selectedLevel.value = '';
-    selectedInterests.clear();
-    selectedCommunityAccess.value = null;
-    currentStep.value = 1;
-  }
+  // Observable variables
+  final RxList<dynamic> featuredTopics = <dynamic>[].obs;
+  final RxList<dynamic> recentContents = <dynamic>[].obs;
+  final RxList<dynamic> forumCategories = <dynamic>[].obs;
+  final RxBool isLoading = false.obs;
 
   @override
   void onInit() {
     super.onInit();
-    interests.value = [
-      "Manifestation", "IPOs", "AI Tools",
-      "Finlearn", "Law", "Health",
-      "Stocks", "Technology", "Books",
-      "Podcast", "Art", "Funding",
-      "History", "News", "Investment",
-      "Fun test", "Visionaries", "Hustle",
-      "Vocab", "Spirituality", "Vedi wise",
-      "Travel", "USA", "Astrology",
-      "Geeta Gyan", "Music", "Startups",
-    ];
+    loadHomeData();
   }
 
-  /// ✅ Properly dispose of controllers
-  @override
-  void onClose() {
-    firstNameController.dispose();
-    lastNameController.dispose();
-    super.onClose();
+  // Load all home data
+  Future<void> loadHomeData() async {
+    try {
+      isLoading.value = true;
+
+      // load multipple data sources in parallel
+      await Future.wait([
+        loadFeaturedTopics(),
+        loadRecentContents(),
+        loadForumCategories(),
+      ]);
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to load home data: ${e.toString()}');
+      print('❌ Load home data error: $e');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  // Load featured topics
+  Future<void> loadFeaturedTopics() async {
+    try {
+      final response = await _knowledgeService.getKnowledgeCenter();
+
+      if (response.success && response.data != null) {
+        featuredTopics.value = response.data!['topics']?.take(3).toList() ?? [];
+        print('✅ Loaded ${featuredTopics.length} featured topics');
+      }
+    } catch (e) {
+      print('❌ Load featured topics error: $e');
+    }
+  }
+
+// Load recent contents
+  Future<void> loadRecentContents() async {
+    try {
+      recentContents.value = [];
+      print(' Loading recent contents');
+    } catch (e) {
+      print('❌ Load recent contents error: $e');
+    }
+  }
+
+  // Load forum categories
+  Future<void> loadForumCategories() async {
+    try {
+      final response = await _forumService.getForumCategories();
+
+      if (response.success && response.data != null) {
+        forumCategories.value =
+            response.data!['categories']?.take(3).toList() ?? [];
+        print('✅ Loaded ${forumCategories.length} forum categories');
+      }
+    } catch (e) {
+      print('❌ Load forum categories error: $e');
+    }
+  }
+
+  // Navigate to knowledge center
+  void navigateToKnowledgeCenter() {
+    Get.toNamed(Routes.KNOWLEDGE_CENTER_SCREEN);
+  }
+
+  // Navigate to community forum
+  void navigateToCommunityForum() {
+    Get.toNamed(Routes.COMMUNITY_FORUM);
+  }
+
+  // Navigate to profile
+  void navigateToProfile() {
+    Get.toNamed(Routes.PROFILE);
+  }
+
+  // Refresh data
+  Future<void> refreshData() async {
+    await loadHomeData();
   }
 }

@@ -3,16 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
+import 'package:vropay_final/Components/constant_buttons.dart';
+import 'package:vropay_final/Utilities/constants/Colors.dart';
+import 'package:vropay_final/Utilities/constants/KImages.dart';
 import 'package:vropay_final/Utilities/screen_utils.dart';
-import 'package:vropay_final/app/modules/Screens/home/views/home_view.dart';
-import 'package:vropay_final/app/modules/Screens/profile/views/profile_view.dart';
+import 'package:vropay_final/app/modules/Screens/onBoarding/controllers/on_boarding_controller.dart';
+import 'package:vropay_final/app/modules/Screens/onBoarding/widgets/faq_help.dart';
 import 'package:vropay_final/app/modules/Screens/signUp/widgets/socialButtons.dart';
 import 'package:vropay_final/app/routes/app_pages.dart';
-import '../../../../../Components/constant_buttons.dart';
-import '../../../../../Utilities/constants/Colors.dart';
-import '../../../../../Utilities/constants/KImages.dart';
-import '../controllers/on_boarding_controller.dart';
-import '../widgets/faq_help.dart';
 
 class OnBoardingView extends GetView<OnBoardingController> {
   const OnBoardingView({super.key});
@@ -24,30 +22,30 @@ class OnBoardingView extends GetView<OnBoardingController> {
       body: SafeArea(
         child: Column(
           children: [
-            // Skip Button - Only show on first page
-            Obx(() => controller.currentPage.value == 0
-                ? Padding(
-                    padding: const EdgeInsets.all(0.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        TextButton(
-                          onPressed: () {
-                            Get.offAllNamed(Routes.PROFILE);
-                          },
-                          child: Text(
-                            'Skip',
-                            style: TextStyle(
-                              color: KConstColors.onBoardingSubHeading,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                : const SizedBox.shrink()),
+            // // Skip Button - Only show on first page
+            // Obx(() => controller.currentPage.value == 0
+            //     ? Padding(
+            //         padding: const EdgeInsets.all(0.0),
+            //         child: Row(
+            //           mainAxisAlignment: MainAxisAlignment.end,
+            //           children: [
+            //             TextButton(
+            //               onPressed: () {
+            //                 Get.offAllNamed(Routes.PROFILE);
+            //               },
+            //               child: Text(
+            //                 'Skip',
+            //                 style: TextStyle(
+            //                   color: KConstColors.onBoardingSubHeading,
+            //                   fontSize: 16,
+            //                   fontWeight: FontWeight.w500,
+            //                 ),
+            //               ),
+            //             ),
+            //           ],
+            //         ),
+            //       )
+            //     : const SizedBox.shrink()),
             Expanded(
               child: PageView(
                 controller: controller.pageController,
@@ -66,12 +64,8 @@ class OnBoardingView extends GetView<OnBoardingController> {
                       ? (controller.showPhoneVerification.value
                           ? _buildPhoneVerification()
                           : _buildSignUpPage())
-                      : _buildOnboardingPage(
-                          image: KImages.onBoardingScreen,
-                          title:
-                              "Smart tools\nReal-time insights\n&\nLimitless possibilities",
-                          subtitle: "—ready to level up your skills?",
-                          showFaq: true,
+                      : Center(
+                          child: CircularProgressIndicator(),
                         )),
                   _buildOtpScreen(),
                 ],
@@ -105,20 +99,26 @@ class OnBoardingView extends GetView<OnBoardingController> {
                                         size: 20),
                                   ),
                                   SizedBox(width: ScreenUtils.width * 0.08),
-                                  const Text(
-                                    "Let's Sign Up",
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: KConstColors.colorPrimary,
+                                  GestureDetector(
+                                    child: const Text(
+                                      "Let's Sign Up",
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: KConstColors.colorPrimary,
+                                      ),
                                     ),
+                                    onTap: () {
+                                      // Call API instead of just navigating
+                                      controller.signUpWithEmail();
+                                    },
                                   ),
                                 ],
                               )),
                         ),
                         const SizedBox(height: 20),
-                        // Sign In Link
 
+                        // Sign In Link
                         RichText(
                           textAlign: TextAlign.center,
                           text: TextSpan(
@@ -297,14 +297,33 @@ class OnBoardingView extends GetView<OnBoardingController> {
               // Social Login Buttons
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 26),
-                child: SocialButton(
-                  text: "Continue with Google",
-                  textColor: Color(0xFf172B75),
-                  borderColor: Color(0xFf172B75),
-                  iconPath: KImages.googleIcon,
-                  onPressed: () {},
+                child: Obx(
+                  () => controller.isLoading.value
+                      ? Container(
+                          height: 56,
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Color(0xFf172B75)),
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              color: Color(0xFf172B75),
+                            ),
+                          ),
+                        )
+                      : SocialButton(
+                          text: "Continue with Google",
+                          textColor: Color(0xFf172B75),
+                          borderColor: Color(0xFf172B75),
+                          iconPath: KImages.googleIcon,
+                          onPressed: () {
+                            // Call Google Auth API
+                            controller.signUpWithGoogle();
+                          },
+                        ),
                 ),
               ),
+
               SizedBox(
                 height: ScreenUtils.height * 0.021,
               ),
@@ -480,23 +499,34 @@ class OnBoardingView extends GetView<OnBoardingController> {
 
               // let's sign up button
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 30),
-                child: CommonButton(
-                    text: "Let's Sign up",
-                    onPressed: () {
-                      // Set the email from the email controller
-                      controller.userEmail.value =
-                          controller.emailController.text.trim();
+                  padding: const EdgeInsets.symmetric(horizontal: 30),
+                  child: Obx(
+                    () => controller.isLoading.value
+                        ? Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                            ),
+                          )
+                        : CommonButton(
+                            text: "Let's Sign up",
+                            onPressed: () {
+                              // Set the email from the email controller
+                              controller.userEmail.value =
+                                  controller.emailController.text.trim();
 
-                      // Set isPhoneOtp to false since this is email OTP
-                      controller.isPhoneOtp.value = false;
-                      // Navigate to OTP screen
-                      controller.currentPage.value = 2;
-                      controller.pageController.animateToPage(2,
-                          duration: Duration(milliseconds: 300),
-                          curve: Curves.easeInOut);
-                    }),
-              ),
+                              // Set isPhoneOtp to false since this is email OTP
+                              controller.isPhoneOtp.value = false;
+                              // Navigate to OTP screen
+                              controller.currentPage.value = 2;
+                              controller.pageController.animateToPage(2,
+                                  duration: Duration(milliseconds: 300),
+                                  curve: Curves.easeInOut);
+                            }),
+                  )),
               SizedBox(
                 height: ScreenUtils.height * 0.02,
               ),
@@ -672,14 +702,28 @@ class OnBoardingView extends GetView<OnBoardingController> {
             SizedBox(height: ScreenUtils.height * 0.024),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 30),
-              child: CommonButton(
-                  text: "Send OTP",
-                  onPressed: () {
-                    controller.isPhoneOtp.value = true;
-                    controller.sendOtpToPhone();
-                    controller.goToNextPage();
-                  }),
-            ),
+              child: Obx(
+                () => controller.isLoading.value
+                    ? Container(
+                        height: 56,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                          ),
+                        ),
+                      )
+                    : CommonButton(
+                        text: "Send OTP",
+                        onPressed: () {
+                          controller.isPhoneOtp.value = true;
+                          controller.sendOtpToPhone();
+                        }),
+              ),
+            )
           ],
         ),
       ),
@@ -860,7 +904,8 @@ class OnBoardingView extends GetView<OnBoardingController> {
                   child: CommonButton(
                       text: "Verify OTP",
                       onPressed: () {
-                        Get.to(() => HomeView());
+                        // Call API to verify OTP
+                        controller.verifyOtp();
                       }),
                 )
               ],

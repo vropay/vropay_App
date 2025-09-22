@@ -19,7 +19,7 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.6.1
+  sdk: ^3.6.0
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -40,6 +40,15 @@ dependencies:
   iconsax: ^0.0.8
   get_cli: ^1.9.1
   google_fonts: ^6.3.0
+  http: ^1.5.0
+  dio: ^5.9.0
+  shared_preferences: ^2.5.3
+  connectivity_plus: ^7.0.0
+  get_storage: ^2.1.1
+  flutter_secure_storage: ^9.2.4
+  logger: ^2.6.0
+  sign_in_with_apple: ^7.0.1
+  crypto: ^3.0.6
 
 dev_dependencies:
   flutter_test:

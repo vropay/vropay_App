@@ -1,23 +1,100 @@
 import 'package:get/get.dart';
+import 'package:vropay_final/app/core/services/knowledge_service.dart';
+import 'package:vropay_final/app/routes/app_pages.dart';
 
 class KnowledgeCenterScreenController extends GetxController {
-  //TODO: Implement KnowledgeCenterScreenController
+  final KnowledgeService _knowledgeService = Get.find<KnowledgeService>();
+
+  // Observable variables
+  final RxList<dynamic> topics = <dynamic>[].obs;
+  final RxList<dynamic> subtopics = <dynamic>[].obs;
+  final RxList<dynamic> contents = <dynamic>[].obs;
+  final RxBool isLoading = false.obs;
+  final RxString selectedTopicId = ''.obs;
+  final RxString selectedSubtopicId = ''.obs;
 
   final count = 0.obs;
   @override
   void onInit() {
     super.onInit();
+    loadKnowledgeCenter();
   }
 
-  @override
-  void onReady() {
-    super.onReady();
+  // Load knowledge center data
+  Future<void> loadKnowledgeCenter() async {
+    try {
+      isLoading.value = true;
+
+      final response = await _knowledgeService.getKnowledgeCenter();
+
+      if (response.success && response.data != null) {
+        topics.value = response.data?['topics'] ?? [];
+        print('✅ Topics: ${topics.value}');
+      } else {
+        Get.snackbar(
+            'Error', response.message ?? 'Failed to load knowledge center');
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to load knowledge center: ${e.toString()}');
+      print('❌ Knowledge center error: $e');
+    } finally {
+      isLoading.value = false;
+    }
   }
 
-  @override
-  void onClose() {
-    super.onClose();
+  // load subtopics for a topic
+  Future<void> loadSubtopics(String topicId) async {
+    try {
+      isLoading.value = true;
+      selectedTopicId.value = topicId;
+
+      final response = await _knowledgeService.getSubTopicContents(topicId);
+
+      if (response.success && response.data != null) {
+        subtopics.value = response.data![subtopics] ?? [];
+        print('✅ Loaded ${subtopics.length} Subtopics for topic: $topicId');
+      } else {
+        Get.snackbar('Error', response.message ?? 'Failed to load subtopics');
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to load subtopics: ${e.toString()}');
+      print('❌ Load subtopics error: $e');
+    } finally {
+      isLoading.value = false;
+    }
   }
 
-  void increment() => count.value++;
+  // Load contents for a subtopic
+  Future<void> loadContents(String subtopicId) async {
+    try {
+      isLoading.value = true;
+      selectedSubtopicId.value = subtopicId;
+
+      final response = await _knowledgeService.getSubTopicContents(subtopicId);
+
+      if (response.success && response.data != null) {
+        contents.value = response.data![contents] ?? [];
+        print('✅ Loaded ${contents.length} Contents for subtopic: $subtopicId');
+      } else {
+        Get.snackbar('Error', response.message ?? 'Failed to load contents');
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to load contents: ${e.toString()}');
+      print('❌ Load contents error: $e');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  // navigate to content details
+  void navigateToContent(String contentId) {
+    Get.toNamed(Routes.NEWS_DETAILS_SCREEN,
+        arguments: {'contentId': contentId});
+  }
+
+  // Navigate to subtopic community
+  void navigateToSubtopicCommunity(String subtopicId) {
+    Get.toNamed(Routes.WORLD_AND_CULTURE_COMMUNITY_SCREEN,
+        arguments: {'subtopicId': subtopicId});
+  }
 }

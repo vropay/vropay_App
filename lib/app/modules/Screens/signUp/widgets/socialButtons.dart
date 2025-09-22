@@ -5,7 +5,7 @@ class SocialButton extends StatelessWidget {
   final String iconPath;
   final Color borderColor;
   final Color textColor;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
   final double width;
   final double height;
 
@@ -17,7 +17,7 @@ class SocialButton extends StatelessWidget {
     this.textColor = Colors.black,
     this.width = 343, // Default full width
     this.height = 56,
-    required this.onPressed,
+    this.onPressed,
   });
 
   @override

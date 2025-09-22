@@ -1,0 +1,382 @@
+{
+	"info": {
+		"_postman_id": "05d5dea4-5517-4ea9-9905-7716a24daa85",
+		"name": "VroPay",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "25822020"
+	},
+	"item": [
+		{
+			"name": "sign up via mail",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"email\":\"bishtyash069@gmail.com\", \"name\":\"Alice Test\"}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{baseURL}}/api/auth/signin"
+			},
+			"response": []
+		},
+		{
+			"name": "verify otp",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"email\":\"bishtyash069@gmail.com\",\"otp\":\"70539\"}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{baseURL}}/api/auth/verify-otp"
+			},
+			"response": []
+		},
+		{
+			"name": "google login",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGJhZDNiODI5YzkzYjBmYjU4MGE5ZWIiLCJyb2xlcyI6WyJ1c2VyIl0sImlhdCI6MTc1NzA3NDQzNCwiZXhwIjoxNzU3MDc1MzM0fQ.w6h0DI3KG6en9UxPLwYV46dbhBP1R7Qc_UN-e8oIiEA",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"email\":\"yash@gmail.com\",\"password\":\"Pass123\",\"name\":\"yash\",\"phone\":\"987533436\"}"
+				},
+				"url": "{{baseURL}}/api/auth/google  "
+			},
+			"response": []
+		},
+		{
+			"name": "get user profile to show onboarding or not",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGJiZTRhZDk3NmEwNjc0ZWI1ZDQ2YzciLCJpYXQiOjE3NTcxNDQ0NzUsImV4cCI6MTc1Nzc0OTI3NX0.oHDxRfMM1jzJlhIF-9z-SAZKkoiOQMMgOLJQptdsOGE",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"name\":\"yash bisht\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{baseURL}}/api/users/profile"
+			},
+			"response": []
+		},
+		{
+			"name": "first onboarding screen/user info",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": " Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGJiZTRhZDk3NmEwNjc0ZWI1ZDQ2YzciLCJpYXQiOjE3NTcxNDQ0NzUsImV4cCI6MTc1Nzc0OTI3NX0.oHDxRfMM1jzJlhIF-9z-SAZKkoiOQMMgOLJQptdsOGE",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"firstName\": \"yash\",\r\n  \"lastName\": \"bisht\",\r\n  \"gender\": \"male\",\r\n  \"profession\": \"working_professional\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{baseURL}}/api/users/profile"
+			},
+			"response": []
+		},
+		{
+			"name": "second onboarding screen/Interest",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": " Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGJiZTRhZDk3NmEwNjc0ZWI1ZDQ2YzciLCJpYXQiOjE3NTcxNDQ0NzUsImV4cCI6MTc1Nzc0OTI3NX0.oHDxRfMM1jzJlhIF-9z-SAZKkoiOQMMgOLJQptdsOGE",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"selectedTopics\": [\"technology\",\"startups\",\"books\",\"podcast\"]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{baseURL}}/api/users/preferences"
+			},
+			"response": []
+		},
+		{
+			"name": "difficulty level",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": " Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGJiZTRhZDk3NmEwNjc0ZWI1ZDQ2YzciLCJpYXQiOjE3NTcxNDQ0NzUsImV4cCI6MTc1Nzc0OTI3NX0.oHDxRfMM1jzJlhIF-9z-SAZKkoiOQMMgOLJQptdsOGE",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{ \"difficultyLevel\": \"beginner\" }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{baseURL}}/api/users/preferences"
+			},
+			"response": []
+		},
+		{
+			"name": "community access",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": " Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGJiZTRhZDk3NmEwNjc0ZWI1ZDQ2YzciLCJpYXQiOjE3NTcxNDQ0NzUsImV4cCI6MTc1Nzc0OTI3NX0.oHDxRfMM1jzJlhIF-9z-SAZKkoiOQMMgOLJQptdsOGE",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": " Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGJiZTRhZDk3NmEwNjc0ZWI1ZDQ2YzciLCJpYXQiOjE3NTcxNDQ0NzUsImV4cCI6MTc1Nzc0OTI3NX0.oHDxRfMM1jzJlhIF-9z-SAZKkoiOQMMgOLJQptdsOGE",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{ \"communityAccess\": \"join_interact\" }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{baseURL}}/api/users/preferences"
+			},
+			"response": []
+		},
+		{
+			"name": "update notification  prefrence",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": " Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGJiZTRhZDk3NmEwNjc0ZWI1ZDQ2YzciLCJpYXQiOjE3NTcxNDQ0NzUsImV4cCI6MTc1Nzc0OTI3NX0.oHDxRfMM1jzJlhIF-9z-SAZKkoiOQMMgOLJQptdsOGE",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": " Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGJiZTRhZDk3NmEwNjc0ZWI1ZDQ2YzciLCJpYXQiOjE3NTcxNDQ0NzUsImV4cCI6MTc1Nzc0OTI3NX0.oHDxRfMM1jzJlhIF-9z-SAZKkoiOQMMgOLJQptdsOGE",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{ \"notificationsEnabled\": true }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{baseURL}}/api/users/preferences"
+			},
+			"response": []
+		},
+		{
+			"name": "Update user profile",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGJiZTRhZDk3NmEwNjc0ZWI1ZDQ2YzciLCJpYXQiOjE3NTcxNDQ0NzUsImV4cCI6MTc1Nzc0OTI3NX0.oHDxRfMM1jzJlhIF-9z-SAZKkoiOQMMgOLJQptdsOGE",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"firstName\": \"Vikas\",\r\n  \"lastName\": \"Rao\",\r\n  \"gender\": \"male\",\r\n  \"profession\": \"working_professional\",\r\n  \"mobile\": \"9876543210\",\r\n  \"selectedTopics\": [\"technology\", \"startups\", \"books\"],\r\n  \"difficultyLevel\": \"beginner\",\r\n  \"communityAccess\": \"join_interact\",\r\n  \"notificationsEnabled\": true\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{baseURL}}/api/users"
+			},
+			"response": []
+		},
+		{
+			"name": "Get knowlage-center (topics/subtopcs)",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGJiZTRhZDk3NmEwNjc0ZWI1ZDQ2YzciLCJpYXQiOjE3NTc3NTU2NjksImV4cCI6MTc1ODM2MDQ2OX0.mo1vhZI24OZBuxS6A2ssuKydwB93lcOGtKJiAzsbVgc",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"name\":\"yash bisht\"\r\n}"
+				},
+				"url": "{{baseURL}}/knowledge-center"
+			},
+			"response": []
+		},
+		{
+			"name": "Get content for subtopic",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGJiZTRhZDk3NmEwNjc0ZWI1ZDQ2YzciLCJpYXQiOjE3NTcxNDQ0NzUsImV4cCI6MTc1Nzc0OTI3NX0.oHDxRfMM1jzJlhIF-9z-SAZKkoiOQMMgOLJQptdsOGE",
+						"type": "text"
+					}
+				],
+				"url": "{{baseURL}}/api/subtopics/world-culture-art/contents"
+			},
+			"response": []
+		},
+		{
+			"name": "Get particular content",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGJiZTRhZDk3NmEwNjc0ZWI1ZDQ2YzciLCJpYXQiOjE3NTcxNDQ0NzUsImV4cCI6MTc1Nzc0OTI3NX0.oHDxRfMM1jzJlhIF-9z-SAZKkoiOQMMgOLJQptdsOGE",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"name\":\"yash bisht\"\r\n}"
+				},
+				"url": "{{baseURL}}/api/contents/68be9f7d12327f9f98f280db"
+			},
+			"response": []
+		},
+		{
+			"name": "New Request",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "Get community Forum",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "{{baseURL}}/api/forum/categories"
+			},
+			"response": []
+		},
+		{
+			"name": "Get Subtopic Community Forum",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGJiZTRhZDk3NmEwNjc0ZWI1ZDQ2YzciLCJpYXQiOjE3NTc3NTU2NjksImV4cCI6MTc1ODM2MDQ2OX0.mo1vhZI24OZBuxS6A2ssuKydwB93lcOGtKJiAzsbVgc",
+						"type": "text"
+					}
+				],
+				"url": "{{baseURL}}/api/forum/categories/68be8bb3f47097e7546a9605/subtopics"
+			},
+			"response": []
+		},
+		{
+			"name": "Forum Groups for Subtopic",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "{{baseURL}}/api/forum/subtopics/68c1182e9618bac7a3ad2eed/room"
+			},
+			"response": []
+		},
+		{
+			"name": "post message in the community",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGJiZTRhZDk3NmEwNjc0ZWI1ZDQ2YzciLCJpYXQiOjE3NTc0ODYxNDgsImV4cCI6MTc1ODA5MDk0OH0.WVb5laliOeGQFFnQ0mT8vJcZQiscgEiL4cWYxD8kAa8",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{ \"text\": \"Hello Techies!\" }\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{baseURL}}/api/forum/rooms/68c53f34f47097e7546aab11/messages"
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "baseURL",
+			"value": "",
+			"type": "default"
+		}
+	]
+}
