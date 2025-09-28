@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'dart:ui'; // Add this import
 import 'package:get/get.dart';
 import 'package:vropay_final/Utilities/screen_utils.dart';
+import '../controllers/profile_controller.dart';
+import 'package:vropay_final/app/core/services/auth_service.dart';
 
 class DropdownPreference extends StatelessWidget {
   final String label;
@@ -68,8 +70,14 @@ class DropdownPreference extends StatelessWidget {
                     children: options.map((String choice) {
                       final bool isSelected = selectedValue.value == choice;
                       return InkWell(
-                        onTap: () {
+                        onTap: () async {
                           selectedValue.value = choice;
+                          // Call controller method if this is gender selection
+                          if (label == 'Gender') {
+                            final profileController =
+                                Get.find<ProfileController>();
+                            profileController.updateGender(choice);
+                          }
                           overlayEntry?.remove();
                         },
                         child: Container(

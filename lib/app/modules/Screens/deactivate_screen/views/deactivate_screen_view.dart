@@ -6,6 +6,8 @@ import '../controllers/deactivate_screen_controller.dart';
 class DeactivateScreenView extends StatelessWidget {
   final controller = Get.put(DeactivateController());
 
+  DeactivateScreenView({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -30,45 +32,47 @@ class DeactivateScreenView extends StatelessWidget {
                     const Text(
                       "All your profile data, preferences, and progress will be permanently deleted.",
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 20),
                     const Text(
                       "To return, you’ll need to sign up again from scratch.",
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 20),
                     const Text(
                       "If you're just taking a break, we recommend signing out instead..\n"
-                          "you can sign back in anytime and pick up where you left off.",
+                      "you can sign back in anytime and pick up where you left off.",
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 30),
                     Image.asset("assets/images/deactivate.png", height: 170),
                     const SizedBox(height: 20),
                     const Text(
                       "Note:\nAny active monthly subscription with auto-pay will be cancelled "
-                          "after today and won’t renew.",
+                      "after today and won’t renew.",
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 13, color: Colors.red),
                     ),
                     const SizedBox(height: 20),
                     Obx(() => CheckboxListTile(
-                      title: const Text(
-                        "I want to permanently erase my profile,\npreferences, and progress",
-                        style: TextStyle(
-                          color: Color(0xFF1B2B6B),
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      value: controller.confirmErase.value,
-
-                      onChanged: controller.toggleCheckbox,
-                      controlAffinity: ListTileControlAffinity.leading,
-                      contentPadding: EdgeInsets.zero,
-                    )),
+                          title: const Text(
+                            "I want to permanently erase my profile,\npreferences, and progress",
+                            style: TextStyle(
+                              color: Color(0xFF1B2B6B),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          value: controller.confirmErase.value,
+                          onChanged: controller.toggleCheckbox,
+                          controlAffinity: ListTileControlAffinity.leading,
+                          contentPadding: EdgeInsets.zero,
+                        )),
                     const SizedBox(height: 20),
                   ],
                 ),
@@ -88,32 +92,32 @@ class DeactivateScreenView extends StatelessWidget {
                   ],
                 ),
                 child: Obx(() => SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton(
-                    onPressed: controller.confirmErase.value
-                        ? controller.onDeactivate
-                        : null,
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(25),
+                      width: double.infinity,
+                      child: OutlinedButton(
+                        onPressed: controller.confirmErase.value
+                            ? controller.onDeactivate
+                            : null,
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(25),
+                          ),
+                          side: const BorderSide(color: Colors.pinkAccent),
+                          backgroundColor: controller.confirmErase.value
+                              ? Colors.white
+                              : Colors.white.withOpacity(0.8),
+                        ),
+                        child: const Text(
+                          "YES, DEACTIVATE",
+                          style: TextStyle(
+                            color: Colors.pinkAccent,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
                       ),
-                      side: const BorderSide(color: Colors.pinkAccent),
-                      backgroundColor: controller.confirmErase.value
-                          ? Colors.white
-                          : Colors.white.withOpacity(0.8),
-                    ),
-                    child: const Text(
-                      "YES, DEACTIVATE",
-                      style: TextStyle(
-                        color: Colors.pinkAccent,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ),
-                )),
+                    )),
               ),
             )
           ],

@@ -6,6 +6,8 @@ import '../../../../../Components/bottom_navbar.dart';
 import '../../../../../Components/top_navbar.dart';
 
 class TrackSelectionView extends GetView<TrackSelectionController> {
+  const TrackSelectionView({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

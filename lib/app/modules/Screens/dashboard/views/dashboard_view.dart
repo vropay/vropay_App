@@ -10,6 +10,7 @@ class DashboardView extends GetView<DashboardController> {
 
   @override
   Widget build(BuildContext context) {
+    ScreenUtils.setContext(context);
     return Scaffold(
       appBar: PreferredSize(
           preferredSize: Size.fromHeight(ScreenUtils.height * 0.15),

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 class OneTimeOfferButton extends StatelessWidget {
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
-  const OneTimeOfferButton({required this.onTap});
+  const OneTimeOfferButton({super.key, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +20,7 @@ class OneTimeOfferButton extends StatelessWidget {
             width: screenWidth * 0.85,
             padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
             decoration: BoxDecoration(
-              color: const Color(0xFFEF2D56),
+              color: onTap == null ? Colors.grey : const Color(0xFFEF2D56),
               borderRadius: BorderRadius.circular(46),
             ),
             child: Row(

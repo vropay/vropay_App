@@ -1,8 +1,15 @@
+import 'dart:convert';
+import 'dart:math';
+
+import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:vropay_final/app/core/network/api_exception.dart';
 import 'package:vropay_final/app/core/services/auth_service.dart';
 import 'package:vropay_final/app/core/services/user_service.dart';
+import 'package:vropay_final/app/modules/Screens/home/controllers/home_controller.dart';
 import 'package:vropay_final/app/routes/app_pages.dart';
 
 class OnBoardingController extends GetxController {
@@ -13,6 +20,9 @@ class OnBoardingController extends GetxController {
   final RxInt currentPage = 0.obs;
   final RxBool isLoading = false.obs;
   final RxString errorMessage = ''.obs;
+
+  // Disposal flag
+  bool _isDisposed = false;
 
   //User data
   final RxString firstName = ''.obs;
@@ -52,6 +62,7 @@ class OnBoardingController extends GetxController {
     if (user != null) {
       firstName.value = user.firstName ?? '';
       lastName.value = user.lastName ?? '';
+      // Load gender from user data
       gender.value = user.gender ?? '';
       profession.value = user.profession ?? '';
       selectedTopics.value = user.selectedTopics ?? [];
@@ -79,7 +90,7 @@ class OnBoardingController extends GetxController {
   }
 
   void goToSignup() {
-    Get.offAllNamed(Routes.PROFILE);
+    Get.offAllNamed(Routes.SUBSCRIPTION, arguments: {'isOnboarding': true});
   }
 
   void onPageChanged(int index) {
@@ -92,9 +103,102 @@ class OnBoardingController extends GetxController {
     isEmailEmpty.value = false;
   }
 
+  // Gender selection method
+  void selectGender(String selectedGender) {
+    gender.value = selectedGender;
+  }
+
+  // Save user profile data
+  Future<void> saveUserProfile() async {
+    try {
+      isLoading.value = true;
+      await _authService.updateUserProfile(
+        firstName: firstName.value,
+        lastName: lastName.value,
+        gender: gender.value,
+        profession: profession.value,
+        selectedTopics: selectedTopics.toList(),
+        difficultyLevel: difficultyLevel.value,
+        communityAccess: communityAccess.value,
+        notificationsEnabled: notificationsEnabled.value,
+      );
+    } catch (e) {
+      print('Error saving user profile: $e');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   // Email Sign Up with API
   Future<void> signUpWithEmail() async {
-    Get.toNamed(Routes.SIGN_UP);
+    // Stay on onboarding screen, just navigate to next page
+    goToNextPage();
+  }
+
+  // Apple Sign-In with profile completion validation
+  Future<void> signUpWithApple() async {
+    try {
+      isLoading.value = true;
+      errorMessage.value = '';
+
+      // Generate a random nonce
+      final rawNonce = _generateNonce();
+      final hashedNonce = sha256.convert(utf8.encode(rawNonce)).toString();
+
+      // Request Apple Sign In
+      final credential = await SignInWithApple.getAppleIDCredential(scopes: [
+        AppleIDAuthorizationScopes.email,
+        AppleIDAuthorizationScopes.fullName,
+      ], nonce: hashedNonce);
+
+      final email = credential.email ?? '';
+      final fullName =
+          '${credential.givenName ?? ''} ${credential.familyName ?? ''}'.trim();
+      final identityToken = credential.identityToken ?? '';
+
+      final response = await _authService.appleAuth(
+        email: email,
+        name: fullName,
+        identityToken: identityToken,
+        userIdentifier: credential.userIdentifier ?? '',
+      );
+
+      if (response.success) {
+        // Get user profile to check completion status
+        await _authService.getUserProfile();
+        final user = _authService.currentUser.value;
+
+        // Check if user has completed all required profile details
+        bool hasCompleteProfile = user != null &&
+            user.firstName != null &&
+            user.firstName!.isNotEmpty &&
+            user.lastName != null &&
+            user.lastName!.isNotEmpty &&
+            // Gender is optional (user can prefer not to disclose)
+            user.profession != null &&
+            user.profession!.isNotEmpty &&
+            user.selectedTopics != null &&
+            user.selectedTopics!.isNotEmpty &&
+            user.difficultyLevel != null &&
+            user.difficultyLevel!.isNotEmpty &&
+            user.communityAccess != null &&
+            user.communityAccess!.isNotEmpty;
+
+        if (!hasCompleteProfile) {
+          Get.offAllNamed(Routes.HOME, arguments: {'showUserDetails': true});
+        } else {
+          Get.offAllNamed(Routes.HOME);
+        }
+      } else {
+        errorMessage.value = response.message ?? 'Apple sign-in failed';
+        Get.snackbar('Error', errorMessage.value);
+      }
+    } catch (e) {
+      errorMessage.value = e.toString();
+      Get.snackbar('Error', 'Apple sign-in failed: ${e.toString()}');
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   // Google Authentication with API
@@ -102,25 +206,81 @@ class OnBoardingController extends GetxController {
     try {
       isLoading.value = true;
       errorMessage.value = '';
+      print('🚀 Starting Google sign-in...');
 
-      // Call Google Auth API
+      final GoogleSignIn googleSignIn = GoogleSignIn(
+        scopes: ['email', 'profile', 'openid'],
+        serverClientId:
+            '138350205652-bi63pi8effgi3tepl4t7v9le4vlfgsh4.apps.googleusercontent.com',
+      );
+
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+      print('📱 Google user: ${googleUser?.email}');
+
+      if (googleUser == null) {
+        print('❌ User cancelled Google sign-in');
+        return;
+      }
+
+      // Get the authentication details
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+      print('📱 Got ID token: ${googleAuth.idToken != null}');
+
+      // Check if we have the required token
+      if (googleAuth.idToken == null) {
+        throw Exception('Failed to get Google ID token');
+      }
+
       final response = await _authService.googleAuth(
-        email: 'user@gmail.com',
-        password: 'google_password',
-        name: 'Google User',
-        phone: '1234567890',
+        email: googleUser.email,
+        name: googleUser.displayName ?? '',
+        idToken: googleAuth.idToken!,
       );
 
       if (response.success) {
-        Get.snackbar('Success', 'Google authentication successful');
-        // Navigate to home or profile
-        Get.offAllNamed(Routes.PROFILE);
+        final responseData = response.data;
+        final isNewUser = responseData?['isNewUser'] ?? false;
+
+        // Get user profile to check completion status
+        await _authService.getUserProfile();
+        final user = _authService.currentUser.value;
+
+        // Check if user has completed all required profile details
+        bool hasCompleteProfile = user != null &&
+            user.firstName != null &&
+            user.firstName!.isNotEmpty &&
+            user.lastName != null &&
+            user.lastName!.isNotEmpty &&
+            // Gender is optional (user can prefer not to disclose)
+            user.profession != null &&
+            user.profession!.isNotEmpty &&
+            user.selectedTopics != null &&
+            user.selectedTopics!.isNotEmpty &&
+            user.difficultyLevel != null &&
+            user.difficultyLevel!.isNotEmpty &&
+            user.communityAccess != null &&
+            user.communityAccess!.isNotEmpty;
+
+        if (!hasCompleteProfile) {
+          // Incomplete profile - redirect to user details
+          Get.offAllNamed(Routes.HOME, arguments: {'showUserDetails': true});
+        } else {
+          // Complete profile - redirect to home
+          Get.offAllNamed(Routes.HOME);
+        }
       } else {
-        Get.snackbar('Error', response.message);
+        String errorMsg = response.message ?? 'Google sign-in failed';
+        if (errorMsg.contains('already registered with manual login')) {
+          errorMsg =
+              'This email is already registered. Please sign in with your email and password instead.';
+        }
+        Get.snackbar('Error', errorMsg);
       }
     } catch (e) {
-      errorMessage.value = _getErrorMessage(e);
-      Get.snackbar('Error', errorMessage.value);
+      print('❌ Google sign-in error: $e');
+      errorMessage.value = e.toString();
+      Get.snackbar('Error', 'Google sign-in failed: ${e.toString()}');
     } finally {
       isLoading.value = false;
     }
@@ -327,10 +487,16 @@ class OnBoardingController extends GetxController {
       isLoading.value = true;
       errorMessage.value = '';
 
+      // Get gender from HomeController if available
+      final homeController = Get.find<HomeController>();
+      final selectedGender = homeController.selectedLevel.value.isNotEmpty
+          ? homeController.selectedLevel.value
+          : gender.value;
+
       await _userService.completeUserUpdate(
           firstName: firstName.value,
           lastName: lastName.value,
-          gender: gender.value,
+          gender: selectedGender,
           profession: profession.value,
           mobile: '', // Add mobile field if needed
           selectedTopics: selectedTopics,
@@ -367,29 +533,29 @@ class OnBoardingController extends GetxController {
   void updateNotificationEnabled(bool value) =>
       notificationsEnabled.value = value;
 
-  // Clean up controllers
-  void clearControllers() {
-    try {
-      otpFieldController.clear();
-      emailController.clear();
-      phoneController.clear();
-    } catch (e) {
-      print('Error clearing controllers: $e');
-    }
-  }
-
   @override
   void onClose() {
-    clearControllers();
+    if (_isDisposed) return;
+    _isDisposed = true;
+
     try {
       emailController.dispose();
-      pageController.dispose();
       phoneController.dispose();
       otpFieldController.dispose();
+      pageController.dispose();
     } catch (e) {
       print('Controller disposal error: $e');
     }
     super.onClose();
+  }
+
+  // Generate random nonce for Apple Sign In
+  String _generateNonce([int length = 32]) {
+    const charset =
+        '0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._';
+    final random = Random.secure();
+    return List.generate(length, (_) => charset[random.nextInt(charset.length)])
+        .join();
   }
 
   String _getErrorMessage(dynamic error) {

@@ -234,7 +234,7 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
             Positioned(
               right: 20,
               top: 400, // Adjust this value to position below the header
-              child: Container(
+              child: SizedBox(
                 width: 50,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -639,7 +639,7 @@ class CustomShape extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: width,
       height: height,
       child: CustomPaint(

@@ -28,11 +28,11 @@ class KnowledgeCenterScreenController extends GetxController {
       final response = await _knowledgeService.getKnowledgeCenter();
 
       if (response.success && response.data != null) {
-        topics.value = response.data?['topics'] ?? [];
-        print('✅ Topics: ${topics.value}');
+        final raw = response.data!['topics'];
+        topics.value = raw is List ? raw : [];
+        print('✅ Topics loaded: ${topics.length}');
       } else {
-        Get.snackbar(
-            'Error', response.message ?? 'Failed to load knowledge center');
+        Get.snackbar('Error', response.message);
       }
     } catch (e) {
       Get.snackbar('Error', 'Failed to load knowledge center: ${e.toString()}');
@@ -51,10 +51,11 @@ class KnowledgeCenterScreenController extends GetxController {
       final response = await _knowledgeService.getSubTopicContents(topicId);
 
       if (response.success && response.data != null) {
-        subtopics.value = response.data![subtopics] ?? [];
-        print('✅ Loaded ${subtopics.length} Subtopics for topic: $topicId');
+        final raw = response.data!['subtopics'];
+        subtopics.value = raw is List ? raw : [];
+        print('✅ Loaded ${subtopics.length} subtopics for topic: $topicId');
       } else {
-        Get.snackbar('Error', response.message ?? 'Failed to load subtopics');
+        Get.snackbar('Error', response.message);
       }
     } catch (e) {
       Get.snackbar('Error', 'Failed to load subtopics: ${e.toString()}');
@@ -73,10 +74,11 @@ class KnowledgeCenterScreenController extends GetxController {
       final response = await _knowledgeService.getSubTopicContents(subtopicId);
 
       if (response.success && response.data != null) {
-        contents.value = response.data![contents] ?? [];
-        print('✅ Loaded ${contents.length} Contents for subtopic: $subtopicId');
+        final raw = response.data!['contents'];
+        contents.value = raw is List ? raw : [];
+        print('✅ Loaded ${contents.length} contents for subtopic: $subtopicId');
       } else {
-        Get.snackbar('Error', response.message ?? 'Failed to load contents');
+        Get.snackbar('Error', response.message);
       }
     } catch (e) {
       Get.snackbar('Error', 'Failed to load contents: ${e.toString()}');

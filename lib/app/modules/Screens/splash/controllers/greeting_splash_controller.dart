@@ -1,33 +1,37 @@
 import 'package:get/get.dart';
+import 'package:vropay_final/app/core/services/auth_service.dart';
 import 'package:vropay_final/app/routes/app_pages.dart';
 
 class GreetingSplashController extends GetxController {
-  // Configurable timing - you can easily change this value
-  final int greetingDurationSeconds =
-      5; // Change this to increase/decrease timing
+  final AuthService _authService = Get.find<AuthService>();
+
+  var isAuthenticated = false.obs;
+  var userName = 'User'.obs;
 
   @override
   void onInit() {
     super.onInit();
-    // Start the timer when the controller initializes
-    _startGreetingTimer();
+    _checkUserStatus();
+    _initializedApp();
   }
 
-  void _startGreetingTimer() async {
-    // Wait for the specified duration
-    await Future.delayed(Duration(seconds: greetingDurationSeconds));
-
-    // Navigate to the next screen (you can change this destination)
-    Get.offNamed(Routes.ON_BOARDING);
+  void _checkUserStatus() {
+    isAuthenticated.value = _authService.isLoggedIn.value;
+    if (isAuthenticated.value) {
+      final user = _authService.currentUser.value;
+      userName.value = user?.firstName ?? 'User';
+    }
   }
 
-  // Method to manually skip the greeting (if needed)
-  void skipGreeting() {
-    Get.offNamed(Routes.ON_BOARDING);
-  }
+  Future<void> _initializedApp() async {
+    await Future.delayed(Duration(seconds: 2));
 
-  // Method to restart the greeting timer
-  void restartGreeting() {
-    _startGreetingTimer();
+    // Check authentication status
+    if (isAuthenticated.value) {
+      Get.offAllNamed(Routes.DASHBOARD);
+    } else {
+      // First time user - show first time splash
+      Get.offAllNamed(Routes.ON_BOARDING);
+    }
   }
 }

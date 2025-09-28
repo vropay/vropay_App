@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:vropay_final/Utilities/screen_utils.dart';
+import 'package:vropay_final/app/core/services/auth_service.dart';
+import 'package:vropay_final/app/core/services/user_service.dart';
 import 'package:vropay_final/app/modules/Screens/home/widgets/curvedTextField.dart';
 import '../../onBoarding/widgets/faq_help.dart';
 import '../controllers/home_controller.dart';
@@ -13,149 +15,172 @@ class UserDetail extends GetView<HomeController> {
   Widget build(BuildContext context) {
     // Set the context for ScreenUtils
     ScreenUtils.setContext(context);
-    return Scaffold(
-      backgroundColor: Color(0xFFF7F7F7),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              SizedBox(height: ScreenUtils.height * 0.02),
-              Container(
-                color: Colors.white,
-                padding: EdgeInsets.only(left: 44),
-                margin: EdgeInsets.symmetric(horizontal: 10),
-                width: double.infinity,
-                child: RichText(
-                  textAlign: TextAlign.start,
-                  text: TextSpan(
-                    style: TextStyle(
-                      fontSize: 48.69,
-                      fontWeight: FontWeight.w800,
-                      color: Color(0xFFC7D0D7),
-                      fontFamily: GoogleFonts.mPlus2().fontFamily,
+
+    final AuthService authService = Get.find<AuthService>();
+    // Keep reference only if needed later; suppress unused warning intentionally
+    final UserService _ = Get.find<UserService>();
+
+    return Obx(() {
+      final user = authService.currentUser.value;
+      final isLoading = authService.isLoading.value;
+
+      if (isLoading) {
+        return SizedBox(
+          height: ScreenUtils.height * 0.15,
+          child: Center(
+            child: CircularProgressIndicator(),
+          ),
+        );
+      }
+
+      return Scaffold(
+        backgroundColor: Color(0xFFF7F7F7),
+        body: SafeArea(
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                SizedBox(height: ScreenUtils.height * 0.02),
+                Container(
+                  color: Colors.white,
+                  padding: EdgeInsets.only(left: 44),
+                  margin: EdgeInsets.symmetric(horizontal: 10),
+                  width: double.infinity,
+                  child: RichText(
+                    textAlign: TextAlign.start,
+                    text: TextSpan(
+                      style: TextStyle(
+                        fontSize: 48.69,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFFC7D0D7),
+                        fontFamily: GoogleFonts.mPlus2().fontFamily,
+                      ),
+                      children: [
+                        TextSpan(text: "Welcome to\nVroPay "),
+                        TextSpan(
+                          text: "💙",
+                          style: TextStyle(
+                            fontSize: 34,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFFC7D0D7),
+                            fontFamily: GoogleFonts.mPlus2().fontFamily,
+                          ),
+                        ),
+                      ],
                     ),
+                  ),
+                ),
+                SizedBox(height: ScreenUtils.height * 0.02),
+                Container(
+                    width: double.infinity,
+                    color: Color(0xFFF7F7F7),
+                    padding: EdgeInsets.only(left: 38),
+                    child: Image.asset("assets/images/home.png", height: 212)),
+                SizedBox(height: ScreenUtils.height * 0.01),
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFDEEAF1),
+                  ),
+                  child: Column(
                     children: [
-                      TextSpan(text: "Welcome to\nVroPay "),
-                      TextSpan(
-                        text: "💙",
-                        style: TextStyle(
-                          fontSize: 34,
-                          fontWeight: FontWeight.w800,
-                          color: Color(0xFFC7D0D7),
-                          fontFamily: GoogleFonts.mPlus2().fontFamily,
+                      Padding(
+                        padding: const EdgeInsets.only(
+                            left: 53.0, right: 55, top: 11, bottom: 11),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: SizedBox(
+                                width: ScreenUtils.width * 0.3,
+                                child: CurvedTextField(
+                                  controller: controller.firstNameController,
+                                  hint: 'first name',
+                                  // pre-fill with backend data
+                                  initialValue: user?.firstName ?? '',
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: CurvedTextField(
+                                controller: controller.lastNameController,
+                                hint: 'last name',
+                                // Pre-fill with backend data
+                                initialValue: user?.lastName ?? '',
+                              ),
+                            ),
+                          ],
                         ),
                       ),
+                      SizedBox(height: ScreenUtils.height * 0.01),
+                      Padding(
+                        padding: EdgeInsets.only(left: 73, right: 69),
+                        child: _genderSelector(),
+                      ),
+                      SizedBox(height: ScreenUtils.height * 0.01),
+                      Padding(
+                        padding: EdgeInsets.only(left: 63, right: 69),
+                        child: _roleDropdown(),
+                      ),
+                      SizedBox(height: ScreenUtils.height * 0.04),
+                      ElevatedButton(
+                        onPressed: () {
+                          if (controller.isUserDetailValid()) {
+                            controller.nextStep();
+                          } else {
+                            Get.snackbar("Incomplete",
+                                "Please fill in all required fields");
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF172B75),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 50, vertical: 8),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(38),
+                          ),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text("proceed",
+                                style: TextStyle(
+                                    fontSize: 16, color: Colors.white)),
+                            SizedBox(width: 5),
+                            Icon(
+                              Icons.arrow_right_alt,
+                              color: Colors.white,
+                              size: 25,
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: ScreenUtils.height * 0.021),
+                      const FaqHelpText(),
+                      SizedBox(height: ScreenUtils.height * 0.014),
                     ],
                   ),
                 ),
-              ),
-              SizedBox(height: ScreenUtils.height * 0.02),
-              Container(
-                  width: double.infinity,
-                  color: Color(0xFFF7F7F7),
-                  padding: EdgeInsets.only(left: 38),
-                  child: Image.asset("assets/images/home.png", height: 212)),
-              SizedBox(height: ScreenUtils.height * 0.01),
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFDEEAF1),
+                SizedBox(height: ScreenUtils.height * 0.031),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12, top: 12),
+                  child: Image.asset(
+                    'assets/images/vropayLogo.png',
+                    height: 34,
+                  ),
                 ),
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(
-                          left: 53.0, right: 55, top: 11, bottom: 11),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: SizedBox(
-                              width: ScreenUtils.width * 0.3,
-                              child: CurvedTextField(
-                                controller: controller.firstNameController,
-                                hint: 'first name',
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: CurvedTextField(
-                              controller: controller.lastNameController,
-                              hint: 'last name',
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: ScreenUtils.height * 0.01),
-                    Padding(
-                      padding: EdgeInsets.only(left: 73, right: 69),
-                      child: _genderSelector(),
-                    ),
-                    SizedBox(height: ScreenUtils.height * 0.01),
-                    Padding(
-                      padding: EdgeInsets.only(left: 63, right: 69),
-                      child: _roleDropdown(),
-                    ),
-                    SizedBox(height: ScreenUtils.height * 0.04),
-                    ElevatedButton(
-                      onPressed: () {
-                        if (controller.isUserDetailValid()) {
-                          controller.nextPage();
-                        } else {
-                          Get.snackbar("Incomplete",
-                              "Please fill in all required fields");
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF172B75),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 50, vertical: 8),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(38),
-                        ),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text("proceed",
-                              style:
-                                  TextStyle(fontSize: 16, color: Colors.white)),
-                          SizedBox(width: 5),
-                          Icon(
-                            Icons.arrow_right_alt,
-                            color: Colors.white,
-                            size: 25,
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: ScreenUtils.height * 0.021),
-                    const FaqHelpText(),
-                    SizedBox(height: ScreenUtils.height * 0.014),
-                  ],
-                ),
-              ),
-              SizedBox(height: ScreenUtils.height * 0.031),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 12, top: 12),
-                child: Image.asset(
-                  'assets/images/vropayLogo.png',
-                  height: 34,
-                ),
-              ),
-              SizedBox(height: ScreenUtils.height * 0.026),
-            ],
+                SizedBox(height: ScreenUtils.height * 0.026),
+              ],
+            ),
           ),
         ),
-      ),
-    );
+      );
+    });
   }
 
   Widget _genderSelector() {
     // Define genders and their custom sizes in parallel arrays
-    final genders = ['female', 'Male', "don't want \nto disclose"];
+    final genders = ['Female', 'Male', "Don't want \nto disclose"];
     final genderSizes = [
       16.0,
       16.0,
@@ -186,7 +211,7 @@ class UserDetail extends GetView<HomeController> {
                   color: isSelected ? Colors.white : Color(0xFF00B8F0),
                   fontWeight: isSelected ? FontWeight.w400 : FontWeight.w300,
                   fontSize: isSelected ? customSelectedSize : customSize,
-                  fontFamily: GoogleFonts.poppins().fontFamily,
+                  fontFamily: GoogleFonts.poppins().fontFamily ?? 'Roboto',
                 ),
               ),
             ),
@@ -268,7 +293,8 @@ class UserDetail extends GetView<HomeController> {
                                 fontSize: roles.firstWhere((role) =>
                                         role['value'] == selected)['size']
                                     as double,
-                                fontFamily: GoogleFonts.poppins().fontFamily,
+                                fontFamily: GoogleFonts.poppins().fontFamily ??
+                                    'Roboto',
                               ),
                             ),
                           ],
@@ -319,7 +345,8 @@ class UserDetail extends GetView<HomeController> {
                                 fontWeight: FontWeight.w400,
                                 color: role['color'] as Color,
                                 fontSize: role['size'] as double,
-                                fontFamily: GoogleFonts.poppins().fontFamily,
+                                fontFamily: GoogleFonts.poppins().fontFamily ??
+                                    'Roboto',
                               ),
                             ),
                           ),

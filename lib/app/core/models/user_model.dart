@@ -3,9 +3,10 @@ class UserModel {
   final String email;
   final String? firstName;
   final String? lastName;
-  final String? gender;
+  String? gender;
   final String? profession;
   final String? mobile;
+  final String? profileImage;
   final List<String>? selectedTopics;
   final String? difficultyLevel;
   final String? communityAccess;
@@ -22,6 +23,7 @@ class UserModel {
     this.gender,
     this.profession,
     this.mobile,
+    this.profileImage,
     this.selectedTopics,
     this.difficultyLevel,
     this.communityAccess,
@@ -32,6 +34,14 @@ class UserModel {
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
+    // Handle interests array and extract names
+    List<String>? interestIds;
+    if (json['interests'] != null && json['interests'] is List) {
+      interestIds = (json['interests'] as List)
+          .map((interest) => interest['_id']?.toString() ?? interest.toString())
+          .where((id) => id.isNotEmpty)
+          .toList();
+    }
     return UserModel(
       id: json['_id'] ?? json['id'] ?? '',
       email: json['email'] ?? '',
@@ -40,19 +50,17 @@ class UserModel {
       gender: json['gender'],
       profession: json['profession'],
       mobile: json['mobile'],
-      selectedTopics: json['selectedTopics'] != null 
-          ? List<String>.from(json['selectedTopics']) 
-          : null,
+      profileImage: json['profileImage'] ?? json['avatar'],
+      selectedTopics: interestIds,
       difficultyLevel: json['difficultyLevel'],
-      communityAccess: json['communityAccess'],
-      notificationsEnabled: json['notificationsEnabled'],
+      communityAccess: json['community'] ?? json['communityAccess'],
+      notificationsEnabled: json['notifications'] == 'Allowed' ||
+          json['notificationsEnabled'] == true,
       isOnboardingCompleted: json['isOnboardingCompleted'],
-      createdAt: json['createdAt'] != null 
-          ? DateTime.parse(json['createdAt']) 
-          : null,
-      updatedAt: json['updatedAt'] != null 
-          ? DateTime.parse(json['updatedAt']) 
-          : null,
+      createdAt:
+          json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
+      updatedAt:
+          json['updatedAt'] != null ? DateTime.parse(json['updatedAt']) : null,
     );
   }
 
@@ -65,6 +73,7 @@ class UserModel {
       'gender': gender,
       'profession': profession,
       'mobile': mobile,
+      'profileImage': profileImage,
       'selectedTopics': selectedTopics,
       'difficultyLevel': difficultyLevel,
       'communityAccess': communityAccess,

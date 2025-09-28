@@ -18,20 +18,8 @@ class WorldAndCultureCommunityController extends GetxController {
     'podcast',
   ].obs;
 
-  @override
-  void onInit() {
-    super.onInit();
-  }
 
-  @override
-  void onReady() {
-    super.onReady();
-  }
 
-  @override
-  void onClose() {
-    super.onClose();
-  }
 
   // Go back to the previous screen
   void goBack() {

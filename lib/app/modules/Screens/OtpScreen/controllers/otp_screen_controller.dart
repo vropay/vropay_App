@@ -4,6 +4,7 @@ import 'package:vropay_final/Utilities/constants/Colors.dart';
 import 'package:vropay_final/Utilities/snackbar_helper.dart';
 import 'package:vropay_final/app/core/services/auth_service.dart';
 import 'package:vropay_final/app/routes/app_pages.dart';
+import 'package:vropay_final/app/modules/Screens/profile/controllers/profile_controller.dart';
 
 class OTPController extends GetxController {
   final AuthService _authService = Get.find<AuthService>();
@@ -15,6 +16,8 @@ class OTPController extends GetxController {
   var isPhoneOtp = false.obs;
   var isLoading = false.obs;
   var errorMessage = ''.obs;
+  var isEmailChange = false.obs;
+  var profileData = <String, dynamic>{}.obs;
 
   final TextEditingController emailController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
@@ -24,10 +27,16 @@ class OTPController extends GetxController {
   void onInit() {
     super.onInit();
     // Get email from previous screen
-    final args = Get.arguments as Map<String, dynamic>;
-    if (args != null && args['email'] != null) {
+    final args = Get.arguments as Map<String, dynamic>? ?? {};
+    if (args['email'] != null) {
       userEmail.value = args['email'];
       emailController.text = args['email'];
+    }
+
+    // Check if this is for email change
+    if (args['isEmailChange'] == true) {
+      isEmailChange.value = true;
+      profileData.value = args['profileData'] ?? {};
     }
   }
 
@@ -41,7 +50,16 @@ class OTPController extends GetxController {
         userEmail.value = emailController.text;
         isPhoneOtp.value = false; // It's email OTP
 
-        // Call API to send OTP
+        // For email change, we simulate OTP sending
+        if (isEmailChange.value) {
+          setSnackBar("OTP Sent",
+              "OTP has been sent to ${userEmail.value} for verification.",
+              position: SnackPosition.BOTTOM,
+              backgroundColor: KConstColors.snackbarSecondary);
+          return;
+        }
+
+        // Call API to send OTP for normal signup
         final response = await _authService.signUpWithEmail(
             email: userEmail.value, name: 'User');
 
@@ -94,40 +112,75 @@ class OTPController extends GetxController {
       errorMessage.value = '';
 
       if (otpCode.value.trim().isEmpty) {
-        Get.snackbar("Success", "Email OTP Verified!",
+        Get.snackbar("Error", "Please enter OTP",
             snackPosition: SnackPosition.BOTTOM,
             backgroundColor: KConstColors.errorSnackbar,
             colorText: Colors.white);
         return;
       }
 
-      // Call API to verify OTP
-      final response = await _authService.verifyOtp(
-          email: userEmail.value, otp: otpCode.value.trim());
+      // Handle email change verification differently
+      if (isEmailChange.value) {
+        // For email change, use simple verification (any 6-digit code)
+        if (otpCode.value.trim().length == 6) {
+          isEmailVerified.value = true;
+          otpFieldController.clear();
+          otpCode.value = '';
 
-      if (response.success) {
-        isEmailVerified.value = true;
-        otpFieldController.clear();
-        otpCode.value = '';
+          Get.snackbar(
+            "Success",
+            "Email verified successfully!",
+            snackPosition: SnackPosition.TOP,
+            backgroundColor: KConstColors.successSnackbar,
+            colorText: Colors.white,
+          );
 
-        Get.snackbar(
-          "Success",
-          "Email OTP Verified!",
-          snackPosition: SnackPosition.TOP,
-          backgroundColor: KConstColors.successSnackbar,
-          colorText: Colors.white,
-        );
+          // Update email in profile after verification
+          final profileController = Get.find<ProfileController>();
+          await profileController.updateEmailAfterVerification(
+              userEmail.value, profileData.value);
 
-        // Navigate to home screen
-        Get.offAllNamed(Routes.HOME);
+          // Go back to profile screen
+          Get.back();
+          Get.back(); // Go back twice to return to profile
+        } else {
+          Get.snackbar(
+            "Error",
+            "Please enter a valid 6-digit OTP",
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: KConstColors.errorSnackbar,
+            colorText: Colors.white,
+          );
+        }
       } else {
-        Get.snackbar(
-          "Error",
-          response.message ?? "Invalid OTP!",
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: KConstColors.errorSnackbar,
-          colorText: Colors.white,
-        );
+        // Call API to verify OTP for normal signup
+        final response = await _authService.verifyOtp(
+            email: userEmail.value, otp: otpCode.value.trim());
+
+        if (response.success) {
+          isEmailVerified.value = true;
+          otpFieldController.clear();
+          otpCode.value = '';
+
+          Get.snackbar(
+            "Success",
+            "Email OTP Verified!",
+            snackPosition: SnackPosition.TOP,
+            backgroundColor: KConstColors.successSnackbar,
+            colorText: Colors.white,
+          );
+
+          // Navigate to home screen for normal signup
+          Get.offAllNamed(Routes.HOME, arguments: {'showUserDetails': true});
+        } else {
+          Get.snackbar(
+            "Error",
+            response.message ?? "Invalid OTP!",
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: KConstColors.errorSnackbar,
+            colorText: Colors.white,
+          );
+        }
       }
     } catch (e) {
       Get.snackbar(

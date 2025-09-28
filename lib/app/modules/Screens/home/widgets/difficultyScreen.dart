@@ -25,9 +25,17 @@ class DifficultyLevelScreen extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Align(
+            Align(
               alignment: Alignment.centerLeft,
-              child: BackIcon(),
+              child: BackIcon(
+                onTap: () {
+                  if (controller.currentStep.value > 0) {
+                    controller.currentStep.value--;
+                  } else {
+                    Get.back();
+                  }
+                },
+              ),
             ),
             Image.asset(KImages.difficultyImage, height: 77, width: 186),
             SizedBox(

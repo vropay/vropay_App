@@ -57,7 +57,7 @@ class SubscriptionView extends StatelessWidget {
                             : controller.userType.value == UserType.professional
                                 ? '₹1086 yearly'
                                 : '₹960 yearly',
-                        onTap: () {
+                        onTap: controller.isOnboardingFlow.value ? null : () {
                           controller.selectPlan('yearly');
                           Get.toNamed(Routes.PAYMENT_SCREEN);
                         },
@@ -69,7 +69,7 @@ class SubscriptionView extends StatelessWidget {
                             : controller.userType.value == UserType.professional
                                 ? '₹123 monthly'
                                 : '₹96  monthly',
-                        onTap: () {
+                        onTap: controller.isOnboardingFlow.value ? null : () {
                           controller.selectPlan('monthly');
 
                           Get.dialog(
@@ -94,7 +94,7 @@ class SubscriptionView extends StatelessWidget {
                     onToggle: controller.toggleTrial,
                   )),
               SizedBox(height: ScreenUtils.height * 0.05),
-              OneTimeOfferButton(onTap: () {
+              OneTimeOfferButton(onTap: controller.isOnboardingFlow.value ? null : () {
                 Get.toNamed(Routes.PAYMENT_SCREEN);
               }),
               SizedBox(height: ScreenUtils.height * 0.01),

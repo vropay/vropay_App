@@ -5,7 +5,7 @@ class EditBoxWithLabel extends StatelessWidget {
   final TextEditingController controller;
   final TextInputType keyboardType;
 
-  const EditBoxWithLabel({
+  const EditBoxWithLabel({super.key, 
     required this.label,
     required this.controller,
     this.keyboardType = TextInputType.text,

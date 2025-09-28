@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 import '../../routes/app_pages.dart';
 
 class SimpleSplashExample extends StatelessWidget {
+  const SimpleSplashExample({super.key});
+
   @override
   Widget build(BuildContext context) {
     // Auto-navigate after 3 seconds

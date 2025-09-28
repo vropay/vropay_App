@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'dart:ui';
 import 'package:get/get.dart';
 import 'package:vropay_final/Utilities/screen_utils.dart';
+import 'package:vropay_final/app/modules/Screens/profile/controllers/profile_controller.dart';
+import 'package:vropay_final/app/core/services/auth_service.dart';
 
 // Category Preference Widget
 class CategoryPreferenceWidget extends StatelessWidget {
@@ -63,8 +65,34 @@ class CategoryPreferenceWidget extends StatelessWidget {
                     children: options.map((String choice) {
                       final bool isSelected = selectedValue.value == choice;
                       return InkWell(
-                        onTap: () {
+                        onTap: () async {
                           selectedValue.value = choice;
+                          final controller = Get.find<ProfileController>();
+                          controller.updateProfession(choice);
+
+                          // Save immediately to backend with null safety
+                          try {
+                            final authService = Get.find<AuthService>();
+                            await authService.updateUserProfile(
+                              firstName:
+                                  controller.firstNameController.text.isNotEmpty
+                                      ? controller.firstNameController.text
+                                      : controller.user.value?.firstName ?? '',
+                              lastName:
+                                  controller.lastNameController.text.isNotEmpty
+                                      ? controller.lastNameController.text
+                                      : controller.user.value?.lastName ?? '',
+                              mobile:
+                                  controller.mobileController.text.isNotEmpty
+                                      ? controller.mobileController.text
+                                      : controller.user.value?.mobile ?? '',
+                              profession: choice,
+                              gender: controller.selectedGender.value,
+                            );
+                          } catch (e) {
+                            print('Error updating profession: $e');
+                          }
+
                           overlayEntry?.remove();
                         },
                         child: Container(
@@ -146,6 +174,150 @@ class CategoryPreferenceWidget extends StatelessWidget {
                             fontWeight: FontWeight.w400),
                       ),
                       SizedBox(width: ScreenUtils.width * 0.05),
+                      Icon(Icons.keyboard_arrow_down_sharp,
+                          color: Color(0xFF4D84F7)),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ));
+  }
+}
+
+// Interests Preference Widget
+class InterestsPreferenceWidget extends StatelessWidget {
+  final ProfileController controller;
+
+  const InterestsPreferenceWidget({
+    super.key,
+    required this.controller,
+  });
+
+  void _showInterestsDialog(BuildContext context) {
+    // Load interests and set previously selected ones
+    controller.showInterestsSelection();
+
+    // Ensure selected interests are populated from user data
+    final user = controller.user.value;
+    if (user?.selectedTopics != null) {
+      controller.selectedInterests.value = user!.selectedTopics!.toList();
+    }
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: Container(
+            width: MediaQuery.of(context).size.width * 0.9,
+            height: MediaQuery.of(context).size.height * 0.6,
+            padding: EdgeInsets.all(20),
+            child: Column(
+              children: [
+                Text(
+                  'Select Interests',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF172B75),
+                  ),
+                ),
+                SizedBox(height: 20),
+                Expanded(
+                  child: Obx(() => ListView.builder(
+                        itemCount: controller.interests.length,
+                        itemBuilder: (context, index) {
+                          final interest = controller.interests[index];
+                          final isSelected =
+                              controller.selectedInterests.contains(interest);
+
+                          return CheckboxListTile(
+                            title: Text(interest),
+                            value: isSelected,
+                            onChanged: (bool? value) {
+                              controller.toggleInterest(interest);
+                            },
+                            activeColor: Color(0xFF4D84F7),
+                          );
+                        },
+                      )),
+                ),
+                SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: Text('Cancel'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () async {
+                        await controller.saveSelectedInterests();
+                        Navigator.of(context).pop();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Color(0xFF4D84F7),
+                      ),
+                      child:
+                          Text('Save', style: TextStyle(color: Colors.white)),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() => Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: Row(
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    Icons.interests,
+                    size: 18,
+                    color: Color(0xFF4D84F7),
+                  ),
+                  SizedBox(width: ScreenUtils.width * 0.04),
+                  Text(
+                    'Interests',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF172B75),
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(width: ScreenUtils.width * 0.18),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => _showInterestsDialog(context),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          controller.selectedTopics.value.isEmpty
+                              ? 'Select interests'
+                              : controller.selectedTopics.value,
+                          style: const TextStyle(
+                              color: Color(0xFF616161),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w400),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      SizedBox(width: MediaQuery.of(context).size.width * 0.02),
                       Icon(Icons.keyboard_arrow_down_sharp,
                           color: Color(0xFF4D84F7)),
                     ],
@@ -325,6 +497,7 @@ class DifficultyPreferenceWidget extends StatelessWidget {
   });
 
   void _showCustomDropdown(BuildContext context) {
+    ScreenUtils.setContext(context);
     final RenderBox button = context.findRenderObject() as RenderBox;
     final RenderBox overlay =
         Navigator.of(context).overlay!.context.findRenderObject() as RenderBox;
@@ -373,8 +546,18 @@ class DifficultyPreferenceWidget extends StatelessWidget {
                     children: options.map((String choice) {
                       final bool isSelected = selectedValue.value == choice;
                       return InkWell(
-                        onTap: () {
+                        onTap: () async {
                           selectedValue.value = choice;
+                          final controller = Get.find<ProfileController>();
+                          controller.updateDifficultyLevel(choice);
+                          // Add backend save
+                          try {
+                            final authService = Get.find<AuthService>();
+                            await authService.updateUserPreferences(
+                                difficultyLevel: choice);
+                          } catch (e) {
+                            print('Error updating difficulty: $e');
+                          }
                           overlayEntry?.remove();
                         },
                         child: Container(
@@ -528,8 +711,21 @@ class CommunityPreferenceWidget extends StatelessWidget {
                     children: options.map((String choice) {
                       final bool isSelected = selectedValue.value == choice;
                       return InkWell(
-                        onTap: () {
+                        onTap: () async {
                           selectedValue.value = choice;
+                          final controller = Get.find<ProfileController>();
+                          controller.updateCommunityAccess(choice);
+
+                          try {
+                            final authService = Get.find<AuthService>();
+                            await authService.updateUserPreferences(
+                              communityAccess:
+                                  choice == 'In' ? 'Public' : 'Private',
+                            );
+                          } catch (e) {
+                            print('Error updating community: $e');
+                          }
+
                           overlayEntry?.remove();
                         },
                         child: Container(
@@ -683,8 +879,20 @@ class NotificationsPreferenceWidget extends StatelessWidget {
                     children: options.map((String choice) {
                       final bool isSelected = selectedValue.value == choice;
                       return InkWell(
-                        onTap: () {
+                        onTap: () async {
                           selectedValue.value = choice;
+                          final controller = Get.find<ProfileController>();
+                          controller.updateNotifications(choice == 'Allowed');
+
+                          try {
+                            final authService = Get.find<AuthService>();
+                            await authService.updateUserPreferences(
+                              notificationsEnabled: choice == 'Allowed',
+                            );
+                          } catch (e) {
+                            print('Error updating notifications: $e');
+                          }
+
                           overlayEntry?.remove();
                         },
                         child: Container(
@@ -828,6 +1036,72 @@ class CategoryInfoRow extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     maxLines: 2,
                   ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Interests Info Row Widget
+class InterestsInfoRow extends StatelessWidget {
+  final String value;
+
+  const InterestsInfoRow({
+    super.key,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = Get.find<ProfileController>();
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            Icons.interests,
+            size: 18,
+            color: Color(0xFF4D84F7),
+          ),
+          const SizedBox(width: 11.5),
+          Expanded(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Flexible(
+                  flex: 2,
+                  child: Text(
+                    'Interests',
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF172B75),
+                        fontSize: 12),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Flexible(
+                  flex: 3,
+                  child: Obx(() {
+                    final controller = Get.find<ProfileController>();
+                    return Text(
+                      controller.selectedTopics.value.isEmpty
+                          ? 'No interests selected'
+                          : controller.selectedTopics.value,
+                      textAlign: TextAlign.right,
+                      style: const TextStyle(
+                          color: Color(0xFF616161),
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
+                    );
+                  }),
                 ),
               ],
             ),

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:vropay_final/Utilities/screen_utils.dart';
 
 import '../../../../../Components/back_icon.dart';
+import '../controllers/home_controller.dart';
 
 class NotificationScreen extends StatelessWidget {
   final VoidCallback onFinish;
@@ -10,6 +12,7 @@ class NotificationScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final HomeController controller = Get.find<HomeController>();
     ScreenUtils.setContext(context);
     return Dialog(
       insetPadding: EdgeInsets.symmetric(horizontal: 20),
@@ -22,7 +25,15 @@ class NotificationScreen extends StatelessWidget {
           children: [
             Align(
               alignment: Alignment.centerLeft,
-              child: BackIcon(),
+              child: BackIcon(
+                onTap: () {
+                  if (controller.currentStep.value > 0) {
+                    controller.currentStep.value--;
+                  } else {
+                    Get.back();
+                  }
+                },
+              ),
             ),
             Image.asset(
               'assets/images/notification.png',
@@ -50,7 +61,10 @@ class NotificationScreen extends StatelessWidget {
             SizedBox(
               width: 250,
               child: ElevatedButton(
-                onPressed: onFinish,
+                onPressed: () {
+                  controller.notificationsEnabled.value = true;
+                  controller.nextStep();
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
@@ -73,7 +87,10 @@ class NotificationScreen extends StatelessWidget {
             ),
             SizedBox(height: ScreenUtils.height * 0.02),
             GestureDetector(
-              onTap: onFinish,
+              onTap: () {
+                controller.notificationsEnabled.value = false;
+                controller.nextStep();
+              },
               child: Text(
                 "Skip for now",
                 style: TextStyle(

@@ -28,6 +28,21 @@ class ForumService extends GetxService {
     }
   }
 
+  // Convenience: Community posts list for HomeController
+  Future<List<Map<String, dynamic>>> getCommunityPosts(
+      {String? category, String? search}) async {
+    final resp = await getForumCategories();
+    // This is a placeholder mapping – adjust based on actual API when ready
+    if (resp.success && resp.data != null) {
+      final data = resp.data!;
+      final dynamic posts = data['posts'] ?? data['rooms'] ?? [];
+      if (posts is List) {
+        return List<Map<String, dynamic>>.from(posts);
+      }
+    }
+    return <Map<String, dynamic>>[];
+  }
+
   // Get subtopic community forum
   Future<ApiResponse<Map<String, dynamic>>> getSubtopicCommunityForum(
       String categoryId) async {

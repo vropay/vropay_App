@@ -5,6 +5,8 @@ import '../controllers/splash_controller.dart';
 class WelcomeSplashView extends StatelessWidget {
   final SplashController controller = Get.put(SplashController());
 
+  WelcomeSplashView({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

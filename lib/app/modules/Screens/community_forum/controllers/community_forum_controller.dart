@@ -29,11 +29,11 @@ class CommunityForumController extends GetxController {
       final response = await _forumService.getForumCategories();
 
       if (response.success && response.data != null) {
-        categories.value = response.data!['categories'] ?? [];
+        final raw = response.data!['categories'];
+        categories.value = raw is List ? raw : [];
         print('✅ Loaded ${categories.length} categories');
       } else {
-        Get.snackbar(
-            'Error', response.message ?? 'Failed to load forum categories');
+        Get.snackbar('Error', response.message);
       }
     } catch (e) {
       Get.snackbar('Error', 'Failed to load forum categories: ${e.toString()}');
@@ -52,11 +52,12 @@ class CommunityForumController extends GetxController {
           await _forumService.getSubtopicCommunityForum(categoryId);
 
       if (response.success && response.data != null) {
-        subtopics.value = response.data!['subtopics'] ?? [];
+        final raw = response.data!['subtopics'];
+        subtopics.value = raw is List ? raw : [];
         print(
             '✅ Loaded ${subtopics.length} subtopics for category: $categoryId');
       } else {
-        Get.snackbar('Error', response.message ?? 'Failed to load subtopics');
+        Get.snackbar('Error', response.message);
       }
     } catch (e) {
       Get.snackbar('Error', 'Failed to load subtopics: ${e.toString()}');
@@ -76,10 +77,11 @@ class CommunityForumController extends GetxController {
           await _forumService.getForumGroupsForSubtopic(subtopicId);
 
       if (response.success && response.data != null) {
-        rooms.value = response.data!['rooms'] ?? [];
+        final raw = response.data!['rooms'];
+        rooms.value = raw is List ? raw : [];
         print('✅ Loaded ${rooms.length} rooms for subtopic: $subtopicId');
       } else {
-        Get.snackbar('Error', response.message ?? 'Failed to load rooms');
+        Get.snackbar('Error', response.message);
       }
     } catch (e) {
       Get.snackbar('Error', 'Failed to load rooms: ${e.toString()}');
@@ -103,7 +105,7 @@ class CommunityForumController extends GetxController {
         // Reload messages
         loadMessages(roomId);
       } else {
-        Get.snackbar('Success', response.message ?? 'Failed to post message');
+        Get.snackbar('Error', response.message);
       }
     } catch (e) {
       Get.snackbar('Error', 'Failed to post message: ${e.toString()}');
