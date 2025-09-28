@@ -1,2 +1,0 @@
-D:/Development/vropay-app/android/app/.cxx/RelWithDebInfo/5p3d1l1a/x86/CMakeFiles/edit_cache.dir
-D:/Development/vropay-app/android/app/.cxx/RelWithDebInfo/5p3d1l1a/x86/CMakeFiles/rebuild_cache.dir

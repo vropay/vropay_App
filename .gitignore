@@ -47,3 +47,13 @@ app.*.map.json
 # Java heap dumps and profiling files
 *.hprof
 java_pid*.hprof 
+android/app/.cxx/RelWithDebInfo/344i2t51/x86_64/CMakeFiles/3.22.1-g37088a8-dirty/CMakeCCompiler.cmake
+android/app/.cxx/RelWithDebInfo/344i2t51/x86_64/CMakeFiles/3.22.1-g37088a8-dirty/CMakeDetermineCompilerABI_C.bin
+android/app/.cxx/Debug/4v4b2o5u/x86_64/.cmake/api/v1/query/client-agp/cache-v2
+android/app/.cxx/Debug/4v4b2o5u/arm64-v8a/.cmake/api/v1/reply/directory-.-Debug-d0094a50bb2071803777.json
+android/app/.cxx/Debug/4v4b2o5u/hash_key.txt
+android/app/.cxx/Debug/4v4b2o5u/arm64-v8a/CMakeFiles/3.22.1-g37088a8-dirty/CompilerIdCXX/CMakeCXXCompilerId.cpp
+android/app/.cxx/Debug/4v4b2o5u/arm64-v8a/CMakeFiles/3.22.1-g37088a8-dirty/CompilerIdC/CMakeCCompilerId.c
+android/app/.cxx/Debug/4v4b2o5u/armeabi-v7a/additional_project_files.txt
+android/app/.cxx/Debug/4v4b2o5u/arm64-v8a/CMakeFiles/3.22.1-g37088a8-dirty/CompilerIdC/CMakeCCompilerId.o
+android/app/.cxx/Debug/4v4b2o5u/arm64-v8a/CMakeFiles/3.22.1-g37088a8-dirty/CompilerIdCXX/CMakeCXXCompilerId.o
