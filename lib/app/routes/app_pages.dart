@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:vropay_final/app/core/middleware/auth_middleware.dart';
 import 'package:vropay_final/app/modules/Screens/business_and_innovation_community/bindings/business_and_innovation_community_bindings.dart';
 import 'package:vropay_final/app/modules/Screens/business_and_innovation_community/views/business_and_innovation_community_screen.dart';
 import 'package:vropay_final/app/modules/Screens/consent_screen/bindings/consent_binding.dart';
@@ -72,15 +73,15 @@ class AppPages {
       binding: GreetingSplashBinding(),
     ),
     GetPage(
-      name: _Paths.ON_BOARDING,
-      page: () => OnBoardingView(),
-      binding: OnBoardingBinding(),
-    ),
+        name: _Paths.ON_BOARDING,
+        page: () => OnBoardingView(),
+        binding: OnBoardingBinding(),
+        middlewares: [AuthMiddleware()]),
     GetPage(
-      name: _Paths.SIGN_UP,
-      page: () => SignUpView(),
-      binding: SignUpBinding(),
-    ),
+        name: _Paths.SIGN_UP,
+        page: () => SignUpView(),
+        binding: SignUpBinding(),
+        middlewares: [AuthMiddleware()]),
     GetPage(
       name: _Paths.OTP_SCREEN,
       page: () => OtpScreenView(),
@@ -131,11 +132,13 @@ class AppPages {
       name: _Paths.PROFILE,
       page: () => ProfileView(),
       binding: ProfileBinding(),
+      middlewares: [GuestMiddleware()],
     ),
     GetPage(
       name: _Paths.DASHBOARD,
       page: () => const DashboardView(),
       binding: DashboardBinding(),
+      middlewares: [GuestMiddleware()],
     ),
     GetPage(
       name: _Paths.DEACTIVATE_SCREEN,

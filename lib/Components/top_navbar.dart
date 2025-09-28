@@ -17,7 +17,7 @@ class CustomTopNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     ScreenUtils.setContext(context);
-    final List<_NavItem> _items = const [
+    final List<_NavItem> items = const [
       _NavItem(imagePath: 'assets/icons/chat.png', label: 'Chat'),
       _NavItem(imagePath: 'assets/icons/library.png', label: 'Library'),
       _NavItem(imagePath: 'assets/icons/launchPad.png', label: 'Launch Pad'),
@@ -38,8 +38,8 @@ class CustomTopNavBar extends StatelessWidget {
           Expanded(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: List.generate(_items.length, (index) {
-                final item = _items[index];
+              children: List.generate(items.length, (index) {
+                final item = items[index];
                 final isSelected = index == selectedIndex;
 
                 return GestureDetector(

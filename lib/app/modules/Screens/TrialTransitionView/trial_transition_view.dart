@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class TrialTransitionView extends StatelessWidget {
+  const TrialTransitionView({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

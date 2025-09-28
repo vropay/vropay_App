@@ -4,7 +4,7 @@ import '../controllers/subscription_controller.dart';
 
 class PlanCard extends StatelessWidget {
   final UserType userType;
-  const PlanCard({required this.userType});
+  const PlanCard({super.key, required this.userType});
 
   Color getColor() {
     switch (userType) {

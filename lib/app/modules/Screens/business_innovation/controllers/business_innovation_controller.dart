@@ -16,20 +16,8 @@ class BusinessInnovationController extends GetxController {
     'HUSTLE',
   ].obs;
 
-  @override
-  void onInit() {
-    super.onInit();
-  }
 
-  @override
-  void onReady() {
-    super.onReady();
-  }
 
-  @override
-  void onClose() {
-    super.onClose();
-  }
 
   // Go back to the previous screen
   void goBack() {

@@ -3,15 +3,21 @@ import 'package:flutter/material.dart';
 class CurvedTextField extends StatelessWidget {
   final TextEditingController controller;
   final String hint;
+  final String? initialValue;
 
   const CurvedTextField({
     super.key,
     required this.controller,
     required this.hint,
+    this.initialValue,
   });
 
   @override
   Widget build(BuildContext context) {
+    // Set initial value if provided
+    if (initialValue != null && controller.text.isEmpty) {
+      controller.text = initialValue!;
+    }
     return ClipPath(
       clipper: SmoothConvexClipper(),
       child: Container(
@@ -22,16 +28,13 @@ class CurvedTextField extends StatelessWidget {
           child: TextField(
             controller: controller,
             textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Color(0xFF172B75)
-            ),
+            style: TextStyle(color: Color(0xFF172B75)),
             decoration: InputDecoration(
               hintText: hint,
               border: InputBorder.none,
-              hintStyle: TextStyle(
-                color: Color(0xFF172B75),
-                fontSize: 16
-              )
+              hintStyle: TextStyle(color: Color(0xFF172B75), fontSize: 16),
+              filled: true,
+              fillColor: Colors.white,
             ),
           ),
         ),
@@ -54,12 +57,16 @@ class SmoothConvexClipper extends CustomClipper<Path> {
 
     // Top convex curve
     path.quadraticBezierTo(
-      size.width * 0.33, curveHeight,
-      size.width * 0.5, curveHeight,
+      size.width * 0.33,
+      curveHeight,
+      size.width * 0.5,
+      curveHeight,
     );
     path.quadraticBezierTo(
-      size.width * 0.67, curveHeight,
-      size.width - cornerRadius, 0,
+      size.width * 0.67,
+      curveHeight,
+      size.width - cornerRadius,
+      0,
     );
 
     // Top-right corner
@@ -70,18 +77,24 @@ class SmoothConvexClipper extends CustomClipper<Path> {
 
     // Bottom-right corner
     path.quadraticBezierTo(
-      size.width, size.height,
-      size.width - cornerRadius, size.height,
+      size.width,
+      size.height,
+      size.width - cornerRadius,
+      size.height,
     );
 
     // Bottom convex curve
     path.quadraticBezierTo(
-      size.width * 0.67, size.height - curveHeight,
-      size.width * 0.5, size.height - curveHeight,
+      size.width * 0.67,
+      size.height - curveHeight,
+      size.width * 0.5,
+      size.height - curveHeight,
     );
     path.quadraticBezierTo(
-      size.width * 0.33, size.height - curveHeight,
-      cornerRadius, size.height,
+      size.width * 0.33,
+      size.height - curveHeight,
+      cornerRadius,
+      size.height,
     );
 
     // Bottom-left corner

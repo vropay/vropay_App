@@ -8,7 +8,7 @@ import '../controllers/home_controller.dart';
 class CommunityAccessScreen extends StatelessWidget {
   final VoidCallback onNext;
 
-  const CommunityAccessScreen({required this.onNext});
+  const CommunityAccessScreen({super.key, required this.onNext});
 
   @override
   Widget build(BuildContext context) {
@@ -23,9 +23,17 @@ class CommunityAccessScreen extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Align(
+            Align(
               alignment: Alignment.centerLeft,
-              child: BackIcon(),
+              child: BackIcon(
+                onTap: () {
+                  if (controller.currentStep.value > 0) {
+                    controller.currentStep.value--;
+                  } else {
+                    Get.back();
+                  }
+                },
+              ),
             ),
             Image.asset(
               'assets/images/communityAccess.png',
@@ -49,8 +57,8 @@ class CommunityAccessScreen extends StatelessWidget {
             ),
             SizedBox(height: ScreenUtils.height * 0.02),
             Obx(() {
-              final selected = controller.selectedCommunityAccess.value;
-
+              final selected = controller.selectedCommunityAccess
+                  .value; // used below for border highlight
               return Column(
                 children: [
                   _buildOption(
@@ -92,7 +100,7 @@ class CommunityAccessScreen extends StatelessWidget {
     String? selectedOption,
     HomeController controller,
   ) {
-    final bool selected = selectedOption == title;
+    final bool selected = selectedOption == title; // emphasize with border
 
     // Choose background based on title
     final Color bgColor = title.contains("Join")
@@ -108,6 +116,9 @@ class CommunityAccessScreen extends StatelessWidget {
         decoration: BoxDecoration(
           color: bgColor,
           borderRadius: BorderRadius.circular(20),
+          border: selected
+              ? Border.all(color: const Color(0xFF172B75), width: 1)
+              : null,
         ),
         child: Center(
           child: RichText(

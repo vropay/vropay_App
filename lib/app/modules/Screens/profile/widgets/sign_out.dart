@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:vropay_final/Components/back_icon.dart';
+import 'package:vropay_final/app/core/services/auth_service.dart';
+import 'package:vropay_final/app/modules/Screens/onBoarding/bindings/on_boarding_binding.dart';
+import 'package:vropay_final/app/modules/Screens/onBoarding/controllers/on_boarding_controller.dart';
 import 'package:vropay_final/app/routes/app_pages.dart';
 
 class SignOutDialog extends StatelessWidget {
@@ -42,18 +45,23 @@ class SignOutDialog extends StatelessWidget {
                     ),
                   ),
                   TextSpan(text: "\nfrom this device\n"),
-                  TextSpan(text: "you can sign back in from\nany device, anytime"),
+                  TextSpan(
+                      text: "you can sign back in from\nany device, anytime"),
                 ],
               ),
             ),
 
             const SizedBox(height: 20),
 
-            Image.asset('assets/images/signout.png',
+            Image.asset(
+              'assets/images/signout.png',
               height: 150,
             ),
-            SizedBox(height: 10,),
-            Image.asset('assets/images/seeya.png',
+            SizedBox(
+              height: 10,
+            ),
+            Image.asset(
+              'assets/images/seeya.png',
               height: 40,
             ),
 
@@ -61,8 +69,7 @@ class SignOutDialog extends StatelessWidget {
 
             Container(
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular( 20
-                ),
+                borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.redAccent.withOpacity(0.3),
@@ -83,8 +90,28 @@ class SignOutDialog extends StatelessWidget {
                     ),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
-                  onPressed: () {
-                    Get.toNamed(Routes.SIGNOUT_SCREEN);
+                  onPressed: () async {
+                    final authService = Get.find<AuthService>();
+
+                    // Show logind
+                    Get.dialog(
+                        Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                        barrierDismissible: false);
+
+                    try {
+                      await authService.logout();
+                      Get.back(); // close loading dialog
+                      Get.back(); // close sign out dialog
+
+                      // Clear all controllers and navigate to onboarding
+                      Get.delete<OnBoardingController>(force: true);
+                      Get.offAllNamed(Routes.ON_BOARDING);
+                    } catch (e) {
+                      Get.back();
+                      Get.snackbar('Error', 'Logout failed: ${e.toString()}');
+                    }
                   },
                   child: const Text(
                     'Sign Out',

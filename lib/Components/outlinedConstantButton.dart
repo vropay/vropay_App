@@ -8,13 +8,13 @@ class CustomFilledButton extends StatelessWidget {
   final Color? backgroundColor;
 
   const CustomFilledButton({
-    Key? key,
+    super.key,
     required this.text,
     required this.isSelected,
     this.isDifferent = false,
     required this.onPressed,
     this.backgroundColor,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -45,6 +45,16 @@ class CustomFilledButton extends StatelessWidget {
         decoration: BoxDecoration(
           color: finalBackgroundColor,
           borderRadius: BorderRadius.circular(12),
+          border: isSelected
+              ? Border.all(
+                  color: isDifferent
+                      ? Color(0xFF0066FF) // Blue border for Moderate
+                      : text.toLowerCase() == "advance"
+                          ? Color(0xFFEF2D56) // Pink border for Advance
+                          : Color(0xFF172B75), // Dark blue border for Beginner
+                  width: 2,
+                )
+              : null,
         ),
         child: Center(
           child: Text(

@@ -19,20 +19,8 @@ class PersonalGrowthCommunityController extends GetxController {
     'vedic wise'
   ].obs;
 
-  @override
-  void onInit() {
-    super.onInit();
-  }
 
-  @override
-  void onReady() {
-    super.onReady();
-  }
 
-  @override
-  void onClose() {
-    super.onClose();
-  }
 
   // Go back to the previous screen
   void goBack() {

@@ -270,9 +270,10 @@ class OnBoardingView extends GetView<OnBoardingController> {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
+          child: Builder(
+            builder: (context) => Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
               Padding(
                 padding: const EdgeInsets.only(left: 30),
                 child: Align(
@@ -291,7 +292,7 @@ class OnBoardingView extends GetView<OnBoardingController> {
                 width: 276.5,
               ),
               SizedBox(
-                height: ScreenUtils.height * 0.024,
+                height: MediaQuery.of(context).size.height * 0.024,
               ),
 
               // Social Login Buttons
@@ -325,7 +326,7 @@ class OnBoardingView extends GetView<OnBoardingController> {
               ),
 
               SizedBox(
-                height: ScreenUtils.height * 0.021,
+                height: MediaQuery.of(context).size.height * 0.021,
               ),
 
               Padding(
@@ -335,12 +336,14 @@ class OnBoardingView extends GetView<OnBoardingController> {
                   iconPath: KImages.appleIcon,
                   textColor: Colors.grey[900]!,
                   borderColor: Colors.grey[300]!,
-                  onPressed: () {},
+                  onPressed: () {
+                    controller.signUpWithApple();
+                  },
                 ),
               ),
 
               SizedBox(
-                height: ScreenUtils.height * 0.01,
+                height: MediaQuery.of(context).size.height * 0.01,
               ),
 
               Padding(
@@ -366,7 +369,7 @@ class OnBoardingView extends GetView<OnBoardingController> {
                 ),
               ),
               SizedBox(
-                height: ScreenUtils.height * 0.01,
+                height: MediaQuery.of(context).size.height * 0.01,
               ),
 
               // Email Input
@@ -460,7 +463,7 @@ class OnBoardingView extends GetView<OnBoardingController> {
                       ),
                       const TextSpan(
                         text: " and ",
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w300,
                             color: Color(0xFF777777)),
@@ -477,11 +480,11 @@ class OnBoardingView extends GetView<OnBoardingController> {
                 ),
               ),
               SizedBox(
-                height: ScreenUtils.height * 0.015,
+                height: MediaQuery.of(context).size.height * 0.015,
               ),
               FaqHelpText(),
               SizedBox(
-                height: ScreenUtils.height * 0.017,
+                height: MediaQuery.of(context).size.height * 0.017,
               ),
               // Page Indicator
               Row(
@@ -494,7 +497,7 @@ class OnBoardingView extends GetView<OnBoardingController> {
                 ],
               ),
               SizedBox(
-                height: ScreenUtils.height * 0.015,
+                height: MediaQuery.of(context).size.height * 0.015,
               ),
 
               // let's sign up button
@@ -528,7 +531,7 @@ class OnBoardingView extends GetView<OnBoardingController> {
                             }),
                   )),
               SizedBox(
-                height: ScreenUtils.height * 0.02,
+                height: MediaQuery.of(context).size.height * 0.02,
               ),
 
               // Sign In Navigation
@@ -558,9 +561,10 @@ class OnBoardingView extends GetView<OnBoardingController> {
                 ),
               ),
               SizedBox(
-                height: ScreenUtils.height * 0.02,
+                height: MediaQuery.of(context).size.height * 0.02,
               ),
             ],
+            ),
           ),
         ),
       ),

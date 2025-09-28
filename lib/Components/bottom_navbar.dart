@@ -1,6 +1,8 @@
 // widgets/custom_bottom_nav_bar.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:vropay_final/app/modules/Screens/profile/views/profile_view.dart';
+import 'package:vropay_final/app/routes/app_pages.dart';
 
 import '../app/modules/common/controller/bottom_navbar_controller.dart';
 
@@ -60,24 +62,23 @@ class CustomBottomNavBar extends StatelessWidget {
                             ),
                             onPressed: () {
                               if (index == 1) {
-                                navController.setSubOption('primary');
-                                navController.updateIndex(index);
-                                Get.toNamed('/profile/primary');
+                                // Profile - full screen without changing state
+                                Get.to(() => ProfileView());
                               } else if (index == 2) {
                                 navController.setSubOption('learn');
                                 navController.updateIndex(index);
-                                Get.toNamed('/learn-screen');
+                                Get.toNamed(Routes.LEARN_SCREEN);
                               } else {
                                 navController.updateIndex(index);
                                 switch (index) {
                                   case 0:
-                                    Get.toNamed('/dashboard');
+                                    Get.toNamed(Routes.DASHBOARD);
                                     break;
                                   case 3:
                                     Get.toNamed('/shop');
                                     break;
                                   case 4:
-                                    Get.toNamed('/notifications');
+                                    Get.toNamed(Routes.NOTIFICATIONS);
                                     break;
                                 }
                               }

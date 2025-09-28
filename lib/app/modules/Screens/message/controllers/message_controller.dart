@@ -350,8 +350,9 @@ class MessageController extends GetxController {
 
   void sendMessage() {
     try {
-      if (messageController.text == null ||
-          messageController.text.trim().isEmpty) return;
+      if (messageController.text.trim().isEmpty) {
+        return;
+      }
 
       final newMessage = {
         'id': DateTime.now().millisecondsSinceEpoch,

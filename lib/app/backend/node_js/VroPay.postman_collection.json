@@ -104,7 +104,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n  \"firstName\": \"yash\",\r\n  \"lastName\": \"bisht\",\r\n  \"gender\": \"male\",\r\n  \"profession\": \"working_professional\"\r\n}\r\n",
+					"raw": "{\r\n  \"firstName\": \"yash\",\r\n  \"lastName\": \"bisht\",\r\n  \"gender\": \"Male\",\r\n  \"profession\": \"working_professional\"\r\n}\r\n",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -236,7 +236,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n  \"firstName\": \"Vikas\",\r\n  \"lastName\": \"Rao\",\r\n  \"gender\": \"male\",\r\n  \"profession\": \"working_professional\",\r\n  \"mobile\": \"9876543210\",\r\n  \"selectedTopics\": [\"technology\", \"startups\", \"books\"],\r\n  \"difficultyLevel\": \"beginner\",\r\n  \"communityAccess\": \"join_interact\",\r\n  \"notificationsEnabled\": true\r\n}\r\n",
+					"raw": "{\r\n  \"firstName\": \"Vikas\",\r\n  \"lastName\": \"Rao\",\r\n  \"gender\": \"Male\",\r\n  \"profession\": \"working_professional\",\r\n  \"mobile\": \"9876543210\",\r\n  \"selectedTopics\": [\"technology\", \"startups\", \"books\"],\r\n  \"difficultyLevel\": \"beginner\",\r\n  \"communityAccess\": \"join_interact\",\r\n  \"notificationsEnabled\": true\r\n}\r\n",
 					"options": {
 						"raw": {
 							"language": "json"

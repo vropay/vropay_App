@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 
 class PlanToggleButton extends StatelessWidget {
   final String label;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
-  const PlanToggleButton({
+  const PlanToggleButton({super.key, 
     required this.label,
     required this.onTap,
   });
@@ -26,6 +26,7 @@ class PlanToggleButton extends StatelessWidget {
             bottomRight: Radius.circular(11),
           ),
           border: Border.all(color: Colors.white),
+          color: onTap == null ? Colors.grey.withOpacity(0.3) : null,
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,

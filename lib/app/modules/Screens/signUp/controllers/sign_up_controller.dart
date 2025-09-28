@@ -1,10 +1,5 @@
-import 'dart:convert';
-import 'dart:math';
-
-import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:vropay_final/app/core/services/auth_service.dart';
 import 'package:vropay_final/app/routes/app_pages.dart';
 
@@ -19,6 +14,7 @@ class SignUpController extends GetxController {
   var isLoading = false.obs;
   var errorMessage = ''.obs;
   var userEmail = ''.obs;
+  var _isProcessing = false;
 
   void validateInput() {
     String input = emailController.text.trim();
@@ -36,7 +32,10 @@ class SignUpController extends GetxController {
 
   // Email Sign up with API
   Future<void> signUpWithEmail() async {
+    if (_isProcessing) return; // Prevent multiple calls
+
     try {
+      _isProcessing = true;
       isLoading.value = true;
       errorMessage.value = '';
 
@@ -48,8 +47,9 @@ class SignUpController extends GetxController {
       }
 
       // Call API to sign up with email
-      final response =
-          await _authService.signUpWithEmail(email: email, name: name);
+      final response = await _authService
+          .signUpWithEmail(email: email, name: name)
+          .timeout(Duration(seconds: 30));
 
       if (response.success) {
         userEmail.value = email;
@@ -64,100 +64,31 @@ class SignUpController extends GetxController {
       Get.snackbar('Error', 'Sign up failed: ${e.toString()}');
     } finally {
       isLoading.value = false;
+      _isProcessing = false;
     }
   }
 
-  // Google Sign Up
+  // Redirect to onboarding for Google sign-in
   Future<void> signUpWithGoogle() async {
-    try {
-      isLoading.value = true;
-      errorMessage.value = '';
-      print('🚀 Starting Google sign up process...');
-
-      final response = await _authService.googleAuth(
-          email: 'kapadiadigesh@gmail.com',
-          password: 'digesh1234',
-          name: 'Digesh Kapadiya',
-          phone: '7600766992');
-
-      if (response.success) {
-        Get.snackbar('Success', 'Google sign up successful');
-        Get.offAllNamed(Routes.HOME);
-      } else {
-        errorMessage.value = response.message ?? 'Google sign up failed';
-        Get.snackbar('Error', errorMessage.value);
-      }
-    } catch (e) {
-      errorMessage.value = e.toString(); // Better error messages
-      if (e.toString().contains('timeout')) {
-        Get.snackbar('Error',
-            'Request timeout. Please check your internet connection and try again.');
-      } else if (e.toString().contains('network')) {
-        Get.snackbar(
-            'Error', 'Network error. Please check your internet connection.');
-      } else {
-        Get.snackbar('Error', 'Google sign up failed: ${e.toString()}');
-
-        print('❌ Google sign up error: $e');
-      }
-    } finally {
-      isLoading.value = false;
-    }
+    Get.offAllNamed(Routes.ON_BOARDING);
   }
 
-  // Apple Sign Up
+  // Redirect to onboarding for Apple sign-in
   Future<void> signUpWithApple() async {
-    try {
-      isLoading.value = true;
-      errorMessage.value = '';
-
-      // Generate a random nance
-      final rawNonce = _generateNonce();
-      final hashedNonce = sha256.convert(utf8.encode(rawNonce)).toString();
-
-      // Request Apple Sign In
-      final credential = await SignInWithApple.getAppleIDCredential(scopes: [
-        AppleIDAuthorizationScopes.email,
-        AppleIDAuthorizationScopes.fullName,
-      ], nonce: hashedNonce);
-
-      // Use the credential to sign up with backend
-      final response = await _authService.googleAuth(
-          email: 'kapadiadigesh@gmail.com',
-          password: 'Digesh1234',
-          name: '${credential.givenName ?? ''} ${credential.familyName ?? ''}'
-              .trim(),
-          phone: '7600766992');
-
-      if (response.success) {
-        Get.snackbar('Success', 'Apple sign up successful');
-        Get.offAllNamed(Routes.HOME);
-      } else {
-        errorMessage.value = response.message ?? 'Apple sign up failed';
-        Get.snackbar('Error', errorMessage.value);
-      }
-    } catch (e) {
-      errorMessage.value = e.toString();
-      Get.snackbar('Error', 'Apple sign up failed: ${e.toString()}');
-      print('❌ Apple sign up error: $e');
-    } finally {
-      isLoading.value = false;
-    }
-  }
-
-  // Generate random n0nce for Apple Sign In
-  String _generateNonce([int length = 32]) {
-    const charset =
-        '0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._';
-    final random = Random.secure();
-    return List.generate(length, (_) => charset[random.nextInt(charset.length)])
-        .join();
+    Get.offAllNamed(Routes.ON_BOARDING);
   }
 
   @override
   void onClose() {
-    emailController.dispose(); // Dispose PageController to avoid memory leaks
-    nameController.dispose();
+    try {
+      if (!_isProcessing && !Get.isRegistered<SignUpController>()) {
+        emailController
+            .dispose(); // Dispose PageController to avoid memory leaks
+        nameController.dispose();
+      }
+    } catch (e) {
+      print('SignUp controller disposal error: $e');
+    }
     super.onClose();
   }
 }

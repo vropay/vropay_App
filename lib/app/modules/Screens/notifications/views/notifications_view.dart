@@ -13,8 +13,8 @@ class NotificationsView extends StatefulWidget {
 
 class _NotificationsViewState extends State<NotificationsView> {
   String _selectedFilter = 'all';
-  bool _showUnreadOnly = false;
-  bool _showTodayOnly = false;
+  final bool _showUnreadOnly = false;
+  final bool _showTodayOnly = false;
 
   final List<Map<String, dynamic>> _notifications = [
     {

@@ -7,6 +7,7 @@ import 'package:vropay_final/app/core/network/api_exception.dart';
 class KnowledgeService extends GetxService {
   final ApiClient _apiClient = ApiClient();
   final RxBool isLoading = false.obs;
+  final RxList<dynamic> topics = <dynamic>[].obs;
 
   // Get knowledge center topics/subtopics
   Future<ApiResponse<Map<String, dynamic>>> getKnowledgeCenter() async {
@@ -18,6 +19,17 @@ class KnowledgeService extends GetxService {
 
       print('✅ Knowledge center response: ${response.data}');
 
+      // Hydrate observable topics for UI widgets (e.g., InterestSelectionDialog)
+      try {
+        final dynamic root = response.data;
+        final dynamic data = root is Map<String, dynamic> ? root['data'] : null;
+        final dynamic t =
+            (data is Map<String, dynamic>) ? data['topics'] : null;
+        if (t is List) {
+          topics.value = t;
+        }
+      } catch (_) {}
+
       return ApiResponse.fromJson(
           response.data, (data) => data as Map<String, dynamic>);
     } catch (e) {
@@ -26,6 +38,32 @@ class KnowledgeService extends GetxService {
     } finally {
       isLoading.value = false;
     }
+  }
+
+  // Convenience: Featured topics list for HomeController
+  Future<List<Map<String, dynamic>>> getFeaturedTopics() async {
+    final resp = await getKnowledgeCenter();
+    if (resp.success && resp.data != null) {
+      final data = resp.data!;
+      final dynamic featured = data['featured'] ?? data['topics'];
+      if (featured is List) {
+        return List<Map<String, dynamic>>.from(featured);
+      }
+    }
+    return <Map<String, dynamic>>[];
+  }
+
+  // Convenience: Recent topics list for HomeController
+  Future<List<Map<String, dynamic>>> getRecentTopics() async {
+    final resp = await getKnowledgeCenter();
+    if (resp.success && resp.data != null) {
+      final data = resp.data!;
+      final dynamic recent = data['recent'] ?? data['topics'];
+      if (recent is List) {
+        return List<Map<String, dynamic>>.from(recent);
+      }
+    }
+    return <Map<String, dynamic>>[];
   }
 
   // Get content for subtopic

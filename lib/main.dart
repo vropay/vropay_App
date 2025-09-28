@@ -14,6 +14,7 @@ import 'app/routes/app_pages.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  Get.config(enableLog: false);
 
   // Disable debug logs in release mode
   if (kReleaseMode) {

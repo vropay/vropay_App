@@ -8,7 +8,7 @@ import '../../onBoarding/widgets/faq_help.dart';
 import '../controllers/phone_verification_controller.dart';
 
 class PhoneVerificationView extends GetView<PhoneVerificationController> {
-  PhoneVerificationView({super.key});
+  const PhoneVerificationView({super.key});
 
   @override
   Widget build(BuildContext context) {

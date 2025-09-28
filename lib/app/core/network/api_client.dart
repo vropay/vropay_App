@@ -138,7 +138,7 @@ class ApiClient {
         case DioExceptionType.receiveTimeout:
           return TimeoutException('Request timeout');
 
-        case DioException.badResponse:
+        case DioExceptionType.badResponse:
           final statusCode = error.response?.statusCode;
           final message = _getErrorMessage(statusCode);
           return ServerException('$message (Status: $statusCode)');

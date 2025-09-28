@@ -36,12 +36,16 @@ class GreetingSplashView extends StatelessWidget {
                           end: Alignment.bottomRight,
                         ).createShader(bounds);
                       },
-                      child: Text(
-                        "Hey Vikas",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 30,
-                          fontWeight: FontWeight.w400,
+                      child: Obx(
+                        () => Text(
+                          controller.isAuthenticated.value
+                              ? "Hey ${controller.userName.value}"
+                              : " Hey User",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 30,
+                            fontWeight: FontWeight.w400,
+                          ),
                         ),
                       ),
                     ),

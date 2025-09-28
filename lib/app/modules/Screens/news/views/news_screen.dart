@@ -15,9 +15,9 @@ class NewsScreen extends GetView<NewsController> {
 
   @override
   Widget build(BuildContext context) {
-    final GlobalKey _moreButtonKey = GlobalKey();
-    final GlobalKey _moreVertButtonKey = GlobalKey();
-    final GlobalKey _filterButtonKey = GlobalKey();
+    final GlobalKey moreButtonKey = GlobalKey();
+    final GlobalKey moreVertButtonKey = GlobalKey();
+    final GlobalKey filterButtonKey = GlobalKey();
 
     return Scaffold(
       appBar: PreferredSize(
@@ -171,9 +171,9 @@ class NewsScreen extends GetView<NewsController> {
                 children: [
                   SizedBox(width: ScreenUtils.width * 0.15),
                   GestureDetector(
-                    key: _filterButtonKey,
+                    key: filterButtonKey,
                     onTap: () async {
-                      final RenderBox button = _filterButtonKey.currentContext!
+                      final RenderBox button = filterButtonKey.currentContext!
                           .findRenderObject() as RenderBox;
                       final RenderBox overlay = Navigator.of(context)
                           .overlay!
@@ -290,10 +290,10 @@ class NewsScreen extends GetView<NewsController> {
 
                   SizedBox(width: ScreenUtils.width * 0.1),
                   IconButton(
-                    key: _moreVertButtonKey,
+                    key: moreVertButtonKey,
                     onPressed: () async {
                       final RenderBox button =
-                          _moreVertButtonKey.currentContext!.findRenderObject()
+                          moreVertButtonKey.currentContext!.findRenderObject()
                               as RenderBox;
                       final RenderBox overlay = Navigator.of(context)
                           .overlay!
