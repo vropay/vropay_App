@@ -28,7 +28,7 @@ class ProfileController extends GetxController {
   var selectedTopicsList = <String>[].obs;
   var selectedTopics = ''.obs;
   var difficultyLevel = 'Beginner'.obs;
-  var communityAccess = 'Public'.obs;
+  var communityAccess = 'In'.obs;
   var notificationsEnabled = true.obs;
   var interests = <String>[].obs;
   var interestObjects = <Map<String, dynamic>>[].obs;
@@ -83,7 +83,10 @@ class ProfileController extends GetxController {
     });
 
     // Force load fresh data from API
-    loadUserData();
+    loadUserData().then((_) {
+      // After loading user data, refresh preferences from database
+      refreshPreferencesFromDatabase();
+    });
   }
 
   @override
@@ -91,14 +94,16 @@ class ProfileController extends GetxController {
     super.onReady();
     // Ensure data is loaded when view is ready
     if (user.value == null) {
-      loadUserData();
+      loadUserData().then((_) {
+        refreshPreferencesFromDatabase();
+      });
     }
   }
 
   void _populateControllers(UserModel userData) {
     firstNameController.text = userData.firstName ?? '';
     lastNameController.text = userData.lastName ?? '';
-    emailController.text = userData.email ?? '';
+    emailController.text = userData.email;
     mobileController.text = userData.mobile ?? '';
     professionController.text = userData.profession ?? '';
     selectedGender.value = userData.gender ?? 'Male';
@@ -107,6 +112,22 @@ class ProfileController extends GetxController {
     selectedProfession.value = userData.profession ?? 'Business owner';
     selectedCategory.value = userData.profession ?? 'Business owner';
 
+    // Initialize preference values with current user data
+    difficultyLevel.value = userData.difficultyLevel ?? 'Beginner';
+    selectedDifficulty.value = userData.difficultyLevel ?? 'Beginner';
+
+    communityAccess.value = userData.communityAccess ?? 'In';
+    selectedCommunity.value = userData.communityAccess ?? 'In';
+
+    notificationsEnabled.value = userData.notificationsEnabled ?? true;
+    selectedNotifications.value =
+        userData.notificationsEnabled == true ? 'Allowed' : 'Blocked';
+
+    // Initialize topics if available
+    if (userData.selectedTopics != null) {
+      selectedTopicsList.value = userData.selectedTopics!;
+    }
+
     print('🔍 ProfileController - Controllers populated:');
     print('  - FirstName: ${userData.firstName}');
     print('  - LastName: ${userData.lastName}');
@@ -114,6 +135,9 @@ class ProfileController extends GetxController {
     print('  - Mobile: ${userData.mobile}');
     print('  - Gender: ${userData.gender}');
     print('  - Profession: ${userData.profession}');
+    print('  - Difficulty: ${userData.difficultyLevel}');
+    print('  - Community: ${userData.communityAccess}');
+    print('  - Notifications: ${userData.notificationsEnabled}');
   }
 
   // Load user data from backend
@@ -174,7 +198,7 @@ class ProfileController extends GetxController {
         gender: selectedGender.value,
         selectedTopics: selectedTopicsList.toList(),
         difficultyLevel: selectedDifficulty.value,
-        communityAccess: selectedCommunity.value == 'In' ? 'Public' : 'Private',
+        communityAccess: selectedCommunity.value == 'In' ? 'In' : 'Out',
         notificationsEnabled: selectedNotifications.value == 'Allowed',
       );
 
@@ -311,7 +335,7 @@ class ProfileController extends GetxController {
 
   // Update community access
   void updateCommunityAccess(String access) {
-    communityAccess.value = access == 'In' ? 'Public' : 'Private';
+    communityAccess.value = access == 'In' ? 'In' : 'Out';
     selectedCommunity.value = access;
   }
 
@@ -456,7 +480,8 @@ class ProfileController extends GetxController {
     // Force complete screen refresh to prevent null errors
     isLoading.value = true;
     await Future.delayed(Duration(milliseconds: 100));
-    await loadUserData();
+    await loadUserData(); // Reload user data and interests
+    await loadInterests(); // Ensure interests are refreshed
     isLoading.value = false;
 
     print('✅ ProfileController - General profile saved successfully');
@@ -524,16 +549,40 @@ class ProfileController extends GetxController {
     try {
       isLoading.value = true;
       print('🚀 ProfileController - Saving preferences...');
+      print('📤 Values being sent to backend:');
+      print('  - Difficulty: ${selectedDifficulty.value}');
+      print('  - Community: ${selectedCommunity.value}');
+      print('  - Notifications: ${selectedNotifications.value}');
+      print('  - Category: ${selectedCategory.value}');
 
-      // Force database save - no local fallback
+      // STEP 1: Save to database first
       await _authService.updateUserPreferences(
         difficultyLevel: selectedDifficulty.value,
-        communityAccess: selectedCommunity.value == 'In' ? 'Public' : 'Private',
+        communityAccess: selectedCommunity.value == 'In' ? 'In' : 'Out',
         notificationsEnabled: selectedNotifications.value == 'Allowed',
+        profession: selectedCategory.value,
       );
+      print('✅ Database save completed');
 
-      // Reload fresh data from database
-      await loadUserData();
+      // STEP 2: Fetch fresh data from backend
+      print('🔄 Fetching fresh data from backend...');
+      final response = await _authService.getUserProfile();
+
+      // Check if response has data (fix the null check)
+      if (response.data != null) {
+        final freshUser = response.data!;
+        print('📥 Fresh data received from response.data');
+        _updateUIWithFreshData(freshUser);
+      } else {
+        // Fallback: try to get user from AuthService currentUser
+        print('📥 Using fallback - getting user from AuthService');
+        final currentUser = _authService.currentUser.value;
+        if (currentUser != null) {
+          _updateUIWithFreshData(currentUser);
+        } else {
+          print('❌ No user data available from any source');
+        }
+      }
 
       Get.snackbar('Success', 'Preferences updated successfully',
           backgroundColor: Colors.green.withOpacity(0.8),
@@ -542,16 +591,100 @@ class ProfileController extends GetxController {
       print('✅ ProfileController - Preferences saved successfully');
     } catch (e) {
       print('❌ ProfileController - Error saving preferences: $e');
+      print('❌ Error details: ${e.toString()}');
       Get.snackbar('Error', 'Failed to update preferences: ${e.toString()}',
           backgroundColor: Colors.red.withOpacity(0.8),
           colorText: Colors.white);
     } finally {
       isLoading.value = false;
+      print('🏁 savePreferences completed');
+    }
+  }
+
+  // Helper method to update UI with fresh data
+  void _updateUIWithFreshData(UserModel freshUser) {
+    print('📥 Fresh data received:');
+    print('  - Difficulty: ${freshUser.difficultyLevel}');
+    print('  - Community: ${freshUser.communityAccess}');
+    print('  - Notifications: ${freshUser.notificationsEnabled}');
+    print('  - Profession: ${freshUser.profession}');
+
+    user.value = freshUser;
+
+    // Update ALL preference variables with fresh database values
+    selectedDifficulty.value = freshUser.difficultyLevel ?? 'Beginner';
+    selectedCommunity.value = freshUser.communityAccess == 'In' ? 'In' : 'Out';
+    selectedNotifications.value =
+        freshUser.notificationsEnabled == true ? 'Allowed' : 'Blocked';
+    selectedCategory.value = freshUser.profession ?? 'Business owner';
+
+    print('🔄 UI variables updated:');
+    print('  - selectedDifficulty: ${selectedDifficulty.value}');
+    print('  - selectedCommunity: ${selectedCommunity.value}');
+    print('  - selectedNotifications: ${selectedNotifications.value}');
+    print('  - selectedCategory: ${selectedCategory.value}');
+
+    // Force UI refresh
+    user.refresh();
+    selectedDifficulty.refresh();
+    selectedCommunity.refresh();
+    selectedNotifications.refresh();
+    selectedCategory.refresh();
+
+    print('✅ UI refresh triggered');
+  }
+
+  // Add this method to fetch fresh preference values when entering edit mode
+  Future<void> refreshPreferencesFromDatabase() async {
+    try {
+      final response = await _authService.getUserProfile();
+      if (response.data != null) {
+        final freshUser = response.data!;
+
+        // Update preference values with fresh database data
+        selectedDifficulty.value = freshUser.difficultyLevel ?? 'Beginner';
+        selectedCommunity.value = freshUser.communityAccess ?? 'In';
+        selectedNotifications.value =
+            freshUser.notificationsEnabled == true ? 'Allowed' : 'Blocked';
+
+        // Update user object
+        user.value = freshUser;
+      }
+    } catch (e) {
+      print('Error refreshing preferences: $e');
     }
   }
 
   void toggleEditMode() {
     isGeneralEditMode.value = !isGeneralEditMode.value;
+  }
+
+  // Add this method to ProfileController
+  void initializePreferencesForEdit() {
+    final currentUser = user.value;
+    if (currentUser != null) {
+      // Initialize with current user values, not defaults
+      selectedDifficulty.value = currentUser.difficultyLevel ?? 'Beginner';
+      selectedCommunity.value = currentUser.communityAccess ?? 'In';
+      selectedNotifications.value =
+          currentUser.notificationsEnabled == true ? 'Allowed' : 'Blocked';
+      selectedCategory.value = currentUser.profession ?? 'Business owner';
+
+      print('🔄 Preferences initialized for edit mode:');
+      print('  - Difficulty: ${selectedDifficulty.value}');
+      print('  - Community: ${selectedCommunity.value}');
+      print('  - Notifications: ${selectedNotifications.value}');
+      print('  - Category: ${selectedCategory.value}');
+    }
+  }
+
+  // Modify the existing toggleEditMode method or add a new method for preferences edit mode
+  void togglePreferencesEditMode() {
+    if (!isPreferencesEditMode.value) {
+      // Entering edit mode - refresh from database
+      initializePreferencesForEdit();
+    }
+    isPreferencesEditMode.value = !isPreferencesEditMode.value;
   }
 
   // Test method to directly call profile API

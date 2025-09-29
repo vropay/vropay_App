@@ -417,22 +417,27 @@ class AuthService extends GetxService {
 
   // Update user preferences
   Future<ApiResponse<Map<String, dynamic>>> updateUserPreferences({
+    String? profession,
     List<String>? selectedTopics,
     String? difficultyLevel,
     String? communityAccess,
-    bool? notificationsEnabled, // ✅ fixed spelling
+    bool? notificationsEnabled,
   }) async {
     isLoading.value = true;
     try {
       print('🚀 Updating user preferences');
 
       final data = <String, dynamic>{};
-      if (selectedTopics != null) data['selectedTopics'] = selectedTopics;
-      if (difficultyLevel != null) data['difficultyLevel'] = difficultyLevel;
-      if (communityAccess != null) data['communityAccess'] = communityAccess;
+      if (profession != null) data['profession'] = profession;
+      if (selectedTopics != null) data['interests'] = selectedTopics;
+      if (difficultyLevel != null) data['difficulty'] = difficultyLevel;
+      if (communityAccess != null) data['community'] = communityAccess;
       if (notificationsEnabled != null) {
-        data['notificationsEnabled'] = notificationsEnabled;
+        data['notifications'] =
+            notificationsEnabled ? 'Allowed' : 'Not allowed';
       }
+
+      print('🔍 Sending to backend: $data');
 
       final response =
           await _apiClient.put(ApiConstants.userPreferences, data: data);

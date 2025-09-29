@@ -147,7 +147,7 @@ class CategoryPreferenceWidget extends StatelessWidget {
                     height: 21,
                     color: Color(0xFF4D84F7),
                   ),
-                  SizedBox(width: ScreenUtils.width * 0.04),
+                  SizedBox(width: ScreenUtils.width * 0.028),
                   Text(
                     'category',
                     style: TextStyle(
@@ -158,7 +158,7 @@ class CategoryPreferenceWidget extends StatelessWidget {
                   ),
                 ],
               ),
-              SizedBox(width: ScreenUtils.width * 0.10),
+              Spacer(),
               Padding(
                 padding: const EdgeInsets.only(right: 0),
                 child: GestureDetector(
@@ -287,7 +287,7 @@ class InterestsPreferenceWidget extends StatelessWidget {
                     size: 18,
                     color: Color(0xFF4D84F7),
                   ),
-                  SizedBox(width: ScreenUtils.width * 0.04),
+                  SizedBox(width: ScreenUtils.width * 0.028),
                   Text(
                     'Interests',
                     style: TextStyle(
@@ -446,7 +446,7 @@ class TopicsPreferenceWidget extends StatelessWidget {
                     height: 16,
                     color: Color(0xFF4D84F7),
                   ),
-                  SizedBox(width: ScreenUtils.width * 0.04),
+                  SizedBox(width: ScreenUtils.width * 0.028),
                   Text(
                     'Topics',
                     style: TextStyle(
@@ -612,7 +612,7 @@ class DifficultyPreferenceWidget extends StatelessWidget {
                     height: 21,
                     color: Color(0xFF4D84F7),
                   ),
-                  SizedBox(width: ScreenUtils.width * 0.04),
+                  SizedBox(width: ScreenUtils.width * 0.028),
                   Text(
                     'difficulty',
                     style: TextStyle(
@@ -623,7 +623,7 @@ class DifficultyPreferenceWidget extends StatelessWidget {
                   ),
                 ],
               ),
-              SizedBox(width: ScreenUtils.width * 0.178),
+              Spacer(),
               Padding(
                 padding: const EdgeInsets.only(right: 0),
                 child: GestureDetector(
@@ -638,7 +638,7 @@ class DifficultyPreferenceWidget extends StatelessWidget {
                             fontSize: 14,
                             fontWeight: FontWeight.w400),
                       ),
-                      SizedBox(width: ScreenUtils.width * 0.1),
+                      SizedBox(width: ScreenUtils.width * 0.012),
                       Icon(Icons.keyboard_arrow_down_sharp,
                           color: Color(0xFF4D84F7)),
                     ],
@@ -780,7 +780,7 @@ class CommunityPreferenceWidget extends StatelessWidget {
                     height: 16,
                     color: Color(0xFF4D84F7),
                   ),
-                  SizedBox(width: ScreenUtils.width * 0.045),
+                  SizedBox(width: ScreenUtils.width * 0.028),
                   Text(
                     'community',
                     style: TextStyle(
@@ -791,7 +791,7 @@ class CommunityPreferenceWidget extends StatelessWidget {
                   ),
                 ],
               ),
-              SizedBox(width: ScreenUtils.width * 0.205),
+              Spacer(),
               Padding(
                 padding: const EdgeInsets.only(right: 0),
                 child: GestureDetector(
@@ -806,7 +806,7 @@ class CommunityPreferenceWidget extends StatelessWidget {
                             fontSize: 14,
                             fontWeight: FontWeight.w400),
                       ),
-                      SizedBox(width: ScreenUtils.width * 0.16),
+                      SizedBox(width: ScreenUtils.width * 0.012),
                       Icon(Icons.keyboard_arrow_down_sharp,
                           color: Color(0xFF4D84F7)),
                     ],
@@ -831,6 +831,7 @@ class NotificationsPreferenceWidget extends StatelessWidget {
   });
 
   void _showCustomDropdown(BuildContext context) {
+    final controller = Get.find<ProfileController>();
     final RenderBox button = context.findRenderObject() as RenderBox;
     final RenderBox overlay =
         Navigator.of(context).overlay!.context.findRenderObject() as RenderBox;
@@ -877,11 +878,14 @@ class NotificationsPreferenceWidget extends StatelessWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: options.map((String choice) {
-                      final bool isSelected = selectedValue.value == choice;
+                      final bool isSelected =
+                          controller.selectedNotifications.value == choice;
+
                       return InkWell(
                         onTap: () async {
-                          selectedValue.value = choice;
                           final controller = Get.find<ProfileController>();
+
+                          controller.selectedNotifications.value = choice;
                           controller.updateNotifications(choice == 'Allowed');
 
                           try {
@@ -935,6 +939,7 @@ class NotificationsPreferenceWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.find<ProfileController>();
     return Obx(() => Padding(
           padding: const EdgeInsets.symmetric(vertical: 6),
           child: Row(
@@ -947,7 +952,7 @@ class NotificationsPreferenceWidget extends StatelessWidget {
                     height: 19,
                     color: Color(0xFF4D84F7),
                   ),
-                  SizedBox(width: ScreenUtils.width * 0.065),
+                  SizedBox(width: ScreenUtils.width * 0.028),
                   Text(
                     'notifications',
                     style: TextStyle(
@@ -958,7 +963,7 @@ class NotificationsPreferenceWidget extends StatelessWidget {
                   ),
                 ],
               ),
-              SizedBox(width: ScreenUtils.width * 0.118),
+              Spacer(),
               Padding(
                 padding: const EdgeInsets.only(right: 0),
                 child: GestureDetector(
@@ -967,13 +972,13 @@ class NotificationsPreferenceWidget extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        selectedValue.value.isEmpty ? ' ' : selectedValue.value,
+                        controller.selectedNotifications.value,
                         style: const TextStyle(
                             color: Color(0xFF616161),
                             fontSize: 14,
                             fontWeight: FontWeight.w400),
                       ),
-                      SizedBox(width: ScreenUtils.width * 0.113),
+                      SizedBox(width: ScreenUtils.width * 0.012),
                       Icon(Icons.keyboard_arrow_down_sharp,
                           color: Color(0xFF4D84F7)),
                     ],
@@ -1023,19 +1028,16 @@ class CategoryInfoRow extends StatelessWidget {
                           color: Color(0xFF172B75),
                           fontSize: 12)),
                 ),
-                const SizedBox(width: 10),
-                Flexible(
-                  flex: 3,
-                  child: Text(
-                    value,
-                    textAlign: TextAlign.right,
-                    style: const TextStyle(
-                        color: Color(0xFF616161),
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14),
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 2,
-                  ),
+                Spacer(),
+                Text(
+                  value,
+                  textAlign: TextAlign.right,
+                  style: const TextStyle(
+                      color: Color(0xFF616161),
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 2,
                 ),
               ],
             ),
@@ -1084,25 +1086,22 @@ class InterestsInfoRow extends StatelessWidget {
                         fontSize: 12),
                   ),
                 ),
-                const SizedBox(width: 10),
-                Flexible(
-                  flex: 3,
-                  child: Obx(() {
-                    final controller = Get.find<ProfileController>();
-                    return Text(
-                      controller.selectedTopics.value.isEmpty
-                          ? 'No interests selected'
-                          : controller.selectedTopics.value,
-                      textAlign: TextAlign.right,
-                      style: const TextStyle(
-                          color: Color(0xFF616161),
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 2,
-                    );
-                  }),
-                ),
+                Spacer(),
+                Obx(() {
+                  final controller = Get.find<ProfileController>();
+                  return Text(
+                    controller.selectedTopics.value.isEmpty
+                        ? 'No interests selected'
+                        : controller.selectedTopics.value,
+                    textAlign: TextAlign.right,
+                    style: const TextStyle(
+                        color: Color(0xFF616161),
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 2,
+                  );
+                }),
               ],
             ),
           ),
@@ -1152,19 +1151,16 @@ class TopicsInfoRow extends StatelessWidget {
                         fontSize: 12),
                   ),
                 ),
-                const SizedBox(width: 10),
-                Flexible(
-                  flex: 3,
-                  child: Text(
-                    value,
-                    textAlign: TextAlign.right,
-                    style: const TextStyle(
-                        color: Color(0xFF616161),
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14),
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 2,
-                  ),
+                Spacer(),
+                Text(
+                  value,
+                  textAlign: TextAlign.right,
+                  style: const TextStyle(
+                      color: Color(0xFF616161),
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 2,
                 ),
               ],
             ),
@@ -1186,6 +1182,7 @@ class DifficultyInfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.find<ProfileController>();
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
@@ -1210,20 +1207,17 @@ class DifficultyInfoRow extends StatelessWidget {
                           color: Color(0xFF172B75),
                           fontSize: 12)),
                 ),
-                const SizedBox(width: 10),
-                Flexible(
-                  flex: 3,
-                  child: Text(
-                    value,
-                    textAlign: TextAlign.right,
-                    style: const TextStyle(
-                        color: Color(0xFF616161),
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14),
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 2,
-                  ),
-                ),
+                Spacer(),
+                Obx(() => Text(
+                      controller.user.value?.difficultyLevel ?? 'N/A',
+                      textAlign: TextAlign.right,
+                      style: const TextStyle(
+                          color: Color(0xFF616161),
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
+                    )),
               ],
             ),
           ),
@@ -1244,6 +1238,7 @@ class CommunityInfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.find<ProfileController>();
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
@@ -1264,17 +1259,17 @@ class CommunityInfoRow extends StatelessWidget {
                         fontWeight: FontWeight.w600,
                         color: Color(0xFF172B75),
                         fontSize: 12)),
-                SizedBox(width: ScreenUtils.width * 0.3),
-                Text(
-                  value,
-                  textAlign: TextAlign.right,
-                  style: const TextStyle(
-                      color: Color(0xFF616161),
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 2,
-                ),
+                Spacer(),
+                Obx(() => Text(
+                      controller.user.value?.communityAccess ?? 'N/A',
+                      textAlign: TextAlign.right,
+                      style: const TextStyle(
+                          color: Color(0xFF616161),
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
+                    )),
               ],
             ),
           ),
@@ -1295,6 +1290,7 @@ class NotificationsInfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.find<ProfileController>();
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
@@ -1315,17 +1311,19 @@ class NotificationsInfoRow extends StatelessWidget {
                         fontWeight: FontWeight.w600,
                         color: Color(0xFF172B75),
                         fontSize: 12)),
-                SizedBox(width: ScreenUtils.width * 0.23),
-                Text(
-                  value,
-                  textAlign: TextAlign.right,
-                  style: const TextStyle(
-                      color: Color(0xFF616161),
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 2,
-                ),
+                Spacer(),
+                Obx(() => Text(
+                      controller.user.value?.notificationsEnabled == true
+                          ? 'Allowed'
+                          : 'Blocked',
+                      textAlign: TextAlign.right,
+                      style: const TextStyle(
+                          color: Color(0xFF616161),
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
+                    )),
               ],
             ),
           ),

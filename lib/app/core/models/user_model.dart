@@ -52,7 +52,7 @@ class UserModel {
       mobile: json['mobile'],
       profileImage: json['profileImage'] ?? json['avatar'],
       selectedTopics: interestIds,
-      difficultyLevel: json['difficultyLevel'],
+      difficultyLevel: json['difficulty'] ?? json['difficultyLevel'],
       communityAccess: json['community'] ?? json['communityAccess'],
       notificationsEnabled: json['notifications'] == 'Allowed' ||
           json['notificationsEnabled'] == true,

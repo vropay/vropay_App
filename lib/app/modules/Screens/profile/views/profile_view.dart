@@ -638,7 +638,7 @@ class _PreferencesSection extends StatelessWidget {
                             child: Row(
                               children: [
                                 Icon(Icons.interests,
-                                    size: 18, color: Color(0xFF4D84F7)),
+                                    size: 18, color: Color(0xFF83A5FA)),
                                 SizedBox(width: ScreenUtils.width * 0.04),
                                 Text('Interests',
                                     style: TextStyle(
@@ -674,8 +674,10 @@ class _PreferencesSection extends StatelessWidget {
                                 )
                               : Padding(
                                   padding: const EdgeInsets.only(left: 22.0),
-                                  child: _buildInfoRowWidget(item.$2,
-                                      _getDisplayValue(item.$2, item.$4.value)),
+                                  child: Obx(() => _buildInfoRowWidget(
+                                      item.$2,
+                                      _getDisplayValue(
+                                          item.$2, item.$4.value))),
                                 ),
                 ),
             ],
@@ -736,20 +738,17 @@ class _PreferencesSection extends StatelessWidget {
 
     switch (label) {
       case 'Category':
-        return user?.profession ?? (value.isNotEmpty ? value : 'N/A');
+        return user?.profession ?? 'N/A';
       case 'Interests':
-        // Show user's selected topics from database
         return controller.selectedTopics.value.isNotEmpty
             ? controller.selectedTopics.value
             : 'No interests selected';
       case 'Difficulty':
-        return user?.difficultyLevel ?? (value.isNotEmpty ? value : 'N/A');
+        return user?.difficultyLevel ?? 'N/A';
       case 'Community':
-        return user?.communityAccess ?? (value.isNotEmpty ? value : 'N/A');
+        return user?.communityAccess ?? 'N/A';
       case 'Notifications':
-        return user?.notificationsEnabled != null
-            ? (user?.notificationsEnabled == true ? 'Allowed' : 'Blocked')
-            : (value.isNotEmpty ? value : 'N/A');
+        return user?.notificationsEnabled == true ? 'Allowed' : 'Blocked';
       default:
         return value.isNotEmpty ? value : 'N/A';
     }
@@ -787,13 +786,13 @@ class _PreferencesSection extends StatelessWidget {
                             fontSize: 12),
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    Spacer(),
                     Flexible(
                       flex: 3,
                       child: Obx(() => Text(
                             controller.selectedTopics.value.isEmpty
-                                ? 'No interests selected'
-                                : controller.selectedTopics.value,
+                                ? 'No selected'
+                                : 'Selected',
                             textAlign: TextAlign.right,
                             style: const TextStyle(
                                 color: Color(0xFF616161),
