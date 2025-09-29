@@ -22,7 +22,10 @@ class OnBoardingController extends GetxController {
   final RxString errorMessage = ''.obs;
 
   // Disposal flag
-  bool _isDisposed = false;
+  final RxBool _isDisposed = false.obs;
+  
+  // Public getter for disposal state
+  bool get isDisposed => _isDisposed.value;
 
   //User data
   final RxString firstName = ''.obs;
@@ -94,13 +97,17 @@ class OnBoardingController extends GetxController {
   }
 
   void onPageChanged(int index) {
-    currentPage.value = index;
+    if (!_isDisposed.value) {
+      currentPage.value = index;
+    }
   }
 
   // Validation methods
   void validateInput() {
-    isValid.value = true;
-    isEmailEmpty.value = false;
+    if (!_isDisposed.value) {
+      isValid.value = true;
+      isEmailEmpty.value = false;
+    }
   }
 
   // Gender selection method
@@ -141,13 +148,14 @@ class OnBoardingController extends GetxController {
       }
 
       userEmail.value = email;
+      isPhoneOtp.value = false; // This is email OTP
 
       // Call the API
       final response = await _authService.signUpWithEmail(email: email);
 
       if (response.success) {
         Get.snackbar('Success', 'OTP sent to your email');
-        goToNextPage();
+        goToNextPage(); // Go to email OTP screen
       } else {
         Get.snackbar('Error', response.message ?? 'Failed to send OTP');
       }
@@ -309,24 +317,35 @@ class OnBoardingController extends GetxController {
     }
   }
 
-  // OTP methods
+  // Send OTP to phone using API
   Future<void> sendOtpToPhone() async {
     try {
       isLoading.value = true;
       final phone = phoneController.text.trim();
 
       if (phone.length == 10 && RegExp(r'^[0-9]+$').hasMatch(phone)) {
-        userPhone.value = phone;
-        isPhoneOtp.value = true;
+        // Format phone number with country code
+        final formattedPhone = '+91$phone';
+        userPhone.value = formattedPhone;
+        isPhoneOtp.value = true; // This is phone OTP
 
-        // Here you would call your phone OTP API
-        // For now, just show success message
-        Get.snackbar("OTP Sent", "OTP has been sent to $phone",
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: const Color(0xFF172B75),
-            colorText: Colors.white);
+        // Call phone verification API
+        final response = await _authService.requestPhoneVerification(
+          phoneNumber: formattedPhone,
+        );
 
-        goToNextPage();
+        if (response.success) {
+          Get.snackbar("OTP Sent", "OTP has been sent to $phone",
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: const Color(0xFF172B75),
+              colorText: Colors.white);
+          goToNextPage(); // Go to phone OTP screen
+        } else {
+          Get.snackbar("Error", response.message ?? "Failed to send OTP",
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: const Color(0xFFE74C3C),
+              colorText: Colors.white);
+        }
       } else {
         Get.snackbar("Error", "Invalid phone number",
             snackPosition: SnackPosition.BOTTOM,
@@ -334,7 +353,7 @@ class OnBoardingController extends GetxController {
             colorText: Colors.white);
       }
     } catch (e) {
-      Get.snackbar('Error', "Failed to send OTP");
+      Get.snackbar('Error', "Failed to send OTP: ${e.toString()}");
     } finally {
       isLoading.value = false;
     }
@@ -352,22 +371,37 @@ class OnBoardingController extends GetxController {
         return;
       }
 
-      String emailOrPhone =
-          isPhoneOtp.value ? userPhone.value : userEmail.value;
+      if (isPhoneOtp.value) {
+        // Verify phone OTP - after this go to user details
+        final response = await _authService.verifyPhoneNumber(otp: otp);
 
-      // Call API to verify OTP
-      final response = await _authService.verifyOtp(
-        email: isPhoneOtp.value ? '' : emailOrPhone,
-        otp: otp,
-      );
-
-      if (response.success) {
-        Get.snackbar('Success', 'OTP verified successfully');
-
-        // Navigate to home or profile
-        Get.offAllNamed(Routes.PROFILE);
+        if (response.success) {
+          Get.snackbar('Success', 'Phone number verified successfully');
+          // Navigate to user details screen
+          Get.offAllNamed(Routes.HOME, arguments: {'showUserDetails': true});
+        } else {
+          Get.snackbar(
+              'Error', response.message ?? 'Phone verification failed');
+        }
       } else {
-        Get.snackbar('Error', response.message);
+        // Verify email OTP - after this go to phone verification
+        final response = await _authService.verifyOtp(
+          email: userEmail.value,
+          otp: otp,
+        );
+
+        if (response.success) {
+          Get.snackbar('Success', 'Email verified successfully');
+          // Show phone verification screen
+          showPhoneVerification.value = true;
+          currentPage.value =
+              1; // Go back to signup page but show phone verification
+          pageController.animateToPage(1,
+              duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
+        } else {
+          Get.snackbar(
+              'Error', response.message ?? 'Email verification failed');
+        }
       }
     } catch (e) {
       errorMessage.value = _getErrorMessage(e);
@@ -378,6 +412,7 @@ class OnBoardingController extends GetxController {
   }
 
   void resendOtp() async {
+    if (_isDisposed.value) return;
     try {
       if (!isPhoneOtp.value) {
         // Resend email OTP
@@ -387,12 +422,16 @@ class OnBoardingController extends GetxController {
         await sendOtpToPhone();
       }
     } catch (e) {
-      Get.snackbar('Error', 'Failed to resend OTP');
+      if (!_isDisposed.value) {
+        Get.snackbar('Error', 'Failed to resend OTP');
+      }
     }
   }
 
   void updateOtp(String value) {
-    otpCode.value = value;
+    if (!_isDisposed.value) {
+      otpCode.value = value;
+    }
   }
 
   // Update current page
@@ -558,13 +597,13 @@ class OnBoardingController extends GetxController {
 
   @override
   void onClose() {
-    if (_isDisposed) return;
-    _isDisposed = true;
+    if (_isDisposed.value) return;
+    _isDisposed.value = true;
 
     try {
-      emailController.dispose();
-      phoneController.dispose();
-      otpFieldController.dispose();
+      if (emailController.hasListeners) emailController.dispose();
+      if (phoneController.hasListeners) phoneController.dispose();
+      if (otpFieldController.hasListeners) otpFieldController.dispose();
       pageController.dispose();
     } catch (e) {
       print('Controller disposal error: $e');

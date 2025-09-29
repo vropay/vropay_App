@@ -58,6 +58,10 @@ class ApiConstants {
 
   // User details forms GET api
 
+  // Phone verification endpoints
+  static const String requestPhoneVerification = '$apiVersion/request-phone-verification';
+  static const String verifyPhoneNumber = '$apiVersion/verify-phone-number';
+
   // Interest screen's
   static const String interest = '$apiVersion/interests';
   static const String updateUserInterests = '$apiVersion/interests/user';

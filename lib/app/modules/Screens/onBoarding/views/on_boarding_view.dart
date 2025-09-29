@@ -389,9 +389,10 @@ class OnBoardingView extends GetView<OnBoardingController> {
                               fontWeight: FontWeight.w400,
                               color: Color(0xFF172B75)),
                           onChanged: (value) {
-                            controller
-                                .validateInput(); // <- This updates isEmailEmpty
-                          }, // Centers the input text
+                            if (!controller.isDisposed) {
+                              controller.validateInput();
+                            }
+                          },
                           decoration: InputDecoration(
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.all(
@@ -632,8 +633,10 @@ class OnBoardingView extends GetView<OnBoardingController> {
                     counterText: "",
                   ),
                   onChanged: (value) {
-                    controller.isValidPhone.value = value.length == 10 &&
-                        RegExp(r'^[0-9]+$').hasMatch(value);
+                    if (!controller.isDisposed) {
+                      controller.isValidPhone.value = value.length == 10 &&
+                          RegExp(r'^[0-9]+$').hasMatch(value);
+                    }
                   },
                 ),
               ),
@@ -763,14 +766,20 @@ class OnBoardingView extends GetView<OnBoardingController> {
                   padding: EdgeInsets.symmetric(horizontal: 20),
                   child: PinCodeTextField(
                     length: 5,
-                    controller: controller.otpFieldController,
-                    onChanged: (value) => controller.updateOtp(value),
+                    onChanged: (value) {
+                      try {
+                        controller.updateOtp(value);
+                      } catch (e) {
+                        // Ignore disposal errors
+                      }
+                    },
                     keyboardType: TextInputType.number,
                     appContext: Get.context!,
-                    // Add error handling for disposed controller
                     onCompleted: (value) {
-                      if (controller.otpFieldController.hasListeners) {
+                      try {
                         controller.updateOtp(value);
+                      } catch (e) {
+                        // Ignore disposal errors
                       }
                     },
                     textStyle:

@@ -268,6 +268,56 @@ class AuthService extends GetxService {
     }
   }
 
+  // Request phone verification OTP
+  Future<ApiResponse<Map<String, dynamic>>> requestPhoneVerification({
+    required String phoneNumber,
+  }) async {
+    try {
+      isLoading.value = true;
+      print('🚀 Requesting phone verification for: $phoneNumber');
+
+      final response = await _apiClient.post(ApiConstants.requestPhoneVerification, data: {
+        'phoneNumber': phoneNumber,
+      });
+
+      print('✅ Phone verification OTP sent successfully');
+      return ApiResponse.fromJson(
+        response.data,
+        (data) => data as Map<String, dynamic>,
+      );
+    } catch (e) {
+      print('❌ Phone verification request error: $e');
+      throw _handleAuthError(e);
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  // Verify phone number OTP
+  Future<ApiResponse<Map<String, dynamic>>> verifyPhoneNumber({
+    required String otp,
+  }) async {
+    try {
+      isLoading.value = true;
+      print('🚀 Verifying phone OTP: $otp');
+
+      final response = await _apiClient.post(ApiConstants.verifyPhoneNumber, data: {
+        'otp': otp,
+      });
+
+      print('✅ Phone number verified successfully');
+      return ApiResponse.fromJson(
+        response.data,
+        (data) => data as Map<String, dynamic>,
+      );
+    } catch (e) {
+      print('❌ Phone verification error: $e');
+      throw _handleAuthError(e);
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   // Update user profile
   Future<ApiResponse<Map<String, dynamic>>> updateUserProfile({
     required String firstName,
