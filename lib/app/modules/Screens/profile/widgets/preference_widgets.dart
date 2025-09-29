@@ -1029,15 +1029,20 @@ class CategoryInfoRow extends StatelessWidget {
                           fontSize: 12)),
                 ),
                 Spacer(),
-                Text(
-                  value,
-                  textAlign: TextAlign.right,
-                  style: const TextStyle(
-                      color: Color(0xFF616161),
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 2,
+                Center(
+                  child: SizedBox(
+                    width: 140,
+                    child: Text(
+                      value,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                          color: Color(0xFF616161),
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -1089,17 +1094,22 @@ class InterestsInfoRow extends StatelessWidget {
                 Spacer(),
                 Obx(() {
                   final controller = Get.find<ProfileController>();
-                  return Text(
-                    controller.selectedTopics.value.isEmpty
-                        ? 'No interests selected'
-                        : controller.selectedTopics.value,
-                    textAlign: TextAlign.right,
-                    style: const TextStyle(
-                        color: Color(0xFF616161),
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14),
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 2,
+                  return Center(
+                    child: SizedBox(
+                      width: 100,
+                      child: Text(
+                        controller.selectedTopics.value.isEmpty
+                            ? 'No interests selected'
+                            : controller.selectedTopics.value,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                            color: Color(0xFF616161),
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 2,
+                      ),
+                    ),
                   );
                 }),
               ],
@@ -1208,15 +1218,20 @@ class DifficultyInfoRow extends StatelessWidget {
                           fontSize: 12)),
                 ),
                 Spacer(),
-                Obx(() => Text(
-                      controller.user.value?.difficultyLevel ?? 'N/A',
-                      textAlign: TextAlign.right,
-                      style: const TextStyle(
-                          color: Color(0xFF616161),
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 2,
+                Obx(() => Center(
+                      child: SizedBox(
+                        width: 100,
+                        child: Text(
+                          controller.user.value?.difficultyLevel ?? 'N/A',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                              color: Color(0xFF616161),
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 2,
+                        ),
+                      ),
                     )),
               ],
             ),
@@ -1254,21 +1269,29 @@ class CommunityInfoRow extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Community',
-                    style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF172B75),
-                        fontSize: 12)),
-                Spacer(),
-                Obx(() => Text(
-                      controller.user.value?.communityAccess ?? 'N/A',
-                      textAlign: TextAlign.right,
+                Flexible(
+                  flex: 2,
+                  child: Text('Community',
                       style: const TextStyle(
-                          color: Color(0xFF616161),
                           fontWeight: FontWeight.w600,
-                          fontSize: 14),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 2,
+                          color: Color(0xFF172B75),
+                          fontSize: 12)),
+                ),
+                Spacer(),
+                Obx(() => Center(
+                      child: SizedBox(
+                        width: 100,
+                        child: Text(
+                          controller.user.value?.communityAccess ?? 'N/A',
+                          textAlign: TextAlign.right,
+                          style: const TextStyle(
+                              color: Color(0xFF616161),
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 2,
+                        ),
+                      ),
                     )),
               ],
             ),
@@ -1306,23 +1329,31 @@ class NotificationsInfoRow extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Notifications',
-                    style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF172B75),
-                        fontSize: 12)),
-                Spacer(),
-                Obx(() => Text(
-                      controller.user.value?.notificationsEnabled == true
-                          ? 'Allowed'
-                          : 'Blocked',
-                      textAlign: TextAlign.right,
+                Flexible(
+                  flex: 2,
+                  child: Text('Notifications',
                       style: const TextStyle(
-                          color: Color(0xFF616161),
                           fontWeight: FontWeight.w600,
-                          fontSize: 14),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 2,
+                          color: Color(0xFF172B75),
+                          fontSize: 12)),
+                ),
+                Spacer(),
+                Obx(() => Center(
+                      child: SizedBox(
+                        width: 120,
+                        child: Text(
+                          controller.user.value?.notificationsEnabled == true
+                              ? 'Allowed'
+                              : 'Blocked',
+                          textAlign: TextAlign.right,
+                          style: const TextStyle(
+                              color: Color(0xFF616161),
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 2,
+                        ),
+                      ),
                     )),
               ],
             ),

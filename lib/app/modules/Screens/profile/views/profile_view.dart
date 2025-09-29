@@ -647,8 +647,11 @@ class _PreferencesSection extends StatelessWidget {
                                       fontSize: 12,
                                     )),
                                 Spacer(),
-                                Text('Select',
-                                    style: TextStyle(color: Color(0xFF616161))),
+                                SizedBox(
+                                  child: Text('Select',
+                                      style:
+                                          TextStyle(color: Color(0xFF616161))),
+                                ),
                                 SizedBox(width: ScreenUtils.width * 0.02),
                                 Icon(Icons.keyboard_arrow_down_sharp,
                                     color: Color(0xFF4D84F7)),
@@ -788,18 +791,20 @@ class _PreferencesSection extends StatelessWidget {
                     ),
                     Spacer(),
                     Flexible(
-                      flex: 3,
-                      child: Obx(() => Text(
-                            controller.selectedTopics.value.isEmpty
-                                ? 'No selected'
-                                : 'Selected',
-                            textAlign: TextAlign.right,
-                            style: const TextStyle(
-                                color: Color(0xFF616161),
-                                fontWeight: FontWeight.w600,
-                                fontSize: 14),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 2,
+                      flex: 2,
+                      child: Obx(() => Center(
+                            child: Text(
+                              controller.selectedTopics.value.isEmpty
+                                  ? 'No selected'
+                                  : 'Selected',
+                              textAlign: TextAlign.right,
+                              style: const TextStyle(
+                                  color: Color(0xFF616161),
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 2,
+                            ),
                           )),
                     ),
                   ],
