@@ -131,8 +131,31 @@ class OnBoardingController extends GetxController {
 
   // Email Sign Up with API
   Future<void> signUpWithEmail() async {
-    // Stay on onboarding screen, just navigate to next page
-    goToNextPage();
+    try {
+      isLoading.value = true;
+      final email = emailController.text.trim();
+
+      if (email.isEmpty || !GetUtils.isEmail(email)) {
+        Get.snackbar('Error', 'Please enter a valid email address');
+        return;
+      }
+
+      userEmail.value = email;
+
+      // Call the API
+      final response = await _authService.signUpWithEmail(email: email);
+
+      if (response.success) {
+        Get.snackbar('Success', 'OTP sent to your email');
+        goToNextPage();
+      } else {
+        Get.snackbar('Error', response.message ?? 'Failed to send OTP');
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to send OTP: ${e.toString()}');
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   // Apple Sign-In with profile completion validation

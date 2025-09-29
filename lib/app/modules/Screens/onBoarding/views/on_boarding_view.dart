@@ -274,296 +274,289 @@ class OnBoardingView extends GetView<OnBoardingController> {
             builder: (context) => Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 30),
-                child: Align(
-                  alignment: Alignment.topLeft,
-                  child: IconButton(
-                    icon: Icon(Icons.arrow_back_ios),
-                    onPressed: () {
-                      Get.back();
-                    },
-                  ),
-                ),
-              ),
-              Image.asset(
-                KImages.authImage,
-                height: 276.5,
-                width: 276.5,
-              ),
-              SizedBox(
-                height: MediaQuery.of(context).size.height * 0.024,
-              ),
-
-              // Social Login Buttons
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 26),
-                child: Obx(
-                  () => controller.isLoading.value
-                      ? Container(
-                          height: 56,
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Color(0xFf172B75)),
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          child: Center(
-                            child: CircularProgressIndicator(
-                              color: Color(0xFf172B75),
-                            ),
-                          ),
-                        )
-                      : SocialButton(
-                          text: "Continue with Google",
-                          textColor: Color(0xFf172B75),
-                          borderColor: Color(0xFf172B75),
-                          iconPath: KImages.googleIcon,
-                          onPressed: () {
-                            // Call Google Auth API
-                            controller.signUpWithGoogle();
-                          },
-                        ),
-                ),
-              ),
-
-              SizedBox(
-                height: MediaQuery.of(context).size.height * 0.021,
-              ),
-
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 26),
-                child: SocialButton(
-                  text: "Continue with Apple",
-                  iconPath: KImages.appleIcon,
-                  textColor: Colors.grey[900]!,
-                  borderColor: Colors.grey[300]!,
-                  onPressed: () {
-                    controller.signUpWithApple();
-                  },
-                ),
-              ),
-
-              SizedBox(
-                height: MediaQuery.of(context).size.height * 0.01,
-              ),
-
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 59),
-                child: Row(
-                  children: [
-                    Expanded(
-                        child: Divider(
-                      endIndent: 8,
-                      color: Color(0xFFD9D9D9),
-                    )),
-                    Text("or",
-                        style: TextStyle(
-                            fontSize: 14,
-                            color: Color(0xFF9A9A9A),
-                            fontFamily: GoogleFonts.poppins().fontFamily)),
-                    Expanded(
-                        child: Divider(
-                      indent: 8,
-                      color: Color(0xFFD9D9D9),
-                    ))
-                  ],
-                ),
-              ),
-              SizedBox(
-                height: MediaQuery.of(context).size.height * 0.01,
-              ),
-
-              // Email Input
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 26),
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    SizedBox(
-                      width: 343,
-                      height: 56,
-                      child: TextField(
-                        controller: controller.emailController,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400,
-                            color: Color(0xFF172B75)),
-                        onChanged: (value) {
-                          controller
-                              .validateInput(); // <- This updates isEmailEmpty
-                        }, // Centers the input text
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.all(
-                                Radius.circular(30)), // Rounded border
-                            borderSide: BorderSide(
-                              color: Colors.grey[300]!,
-                            ),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(30)),
-                            borderSide: BorderSide(color: Colors.grey[300]!),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(30)),
-                            borderSide:
-                                BorderSide(color: Colors.grey[300]!, width: 1),
-                          ),
-                          contentPadding: EdgeInsets.symmetric(vertical: 18),
-                          labelText: "", // Hide the default label
-                        ),
-                      ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 30),
+                  child: Align(
+                    alignment: Alignment.topLeft,
+                    child: IconButton(
+                      icon: Icon(Icons.arrow_back_ios),
+                      onPressed: () {
+                        Get.back();
+                      },
                     ),
-                    Obx(() {
-                      return controller.isEmailEmpty.value
-                          ? Center(
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.email_outlined,
-                                      color: Color(0xFF9E9E9E), size: 20),
-                                  SizedBox(width: 10),
-                                  Text(
-                                    "Email ID",
-                                    style: TextStyle(
-                                        fontSize: 16,
-                                        color: Color(0xFF9E9E9E),
-                                        fontFamily:
-                                            GoogleFonts.poppins().fontFamily,
-                                        fontWeight: FontWeight.w400),
-                                  ),
-                                ],
-                              ),
-                            )
-                          : SizedBox.shrink(); // Hide icon and text when typing
-                    }),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 10),
-
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Text.rich(
-                  TextSpan(
-                    text: "By continuing, you agree to VRopay’s\n",
-                    style: const TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w300,
-                        color: Color(0xFF777777)),
-                    children: [
-                      TextSpan(
-                        text: "Terms of Service",
-                        style: const TextStyle(
-                            color: Color(0xFF45548F),
-                            fontSize: 10,
-                            fontWeight: FontWeight.w300,
-                            decoration: TextDecoration.underline),
-                      ),
-                      const TextSpan(
-                        text: " and ",
-                        style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w300,
-                            color: Color(0xFF777777)),
-                      ),
-                      TextSpan(
-                        text: "Privacy Policy",
-                        style: const TextStyle(
-                            color: Color(0xFF45548F),
-                            decoration: TextDecoration.underline),
-                      ),
-                    ],
                   ),
-                  textAlign: TextAlign.center,
                 ),
-              ),
-              SizedBox(
-                height: MediaQuery.of(context).size.height * 0.015,
-              ),
-              FaqHelpText(),
-              SizedBox(
-                height: MediaQuery.of(context).size.height * 0.017,
-              ),
-              // Page Indicator
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _buildProgressDot(false),
-                  _buildProgressDot(true),
-                  _buildProgressDot(false),
-                  _buildProgressDot(false)
-                ],
-              ),
-              SizedBox(
-                height: MediaQuery.of(context).size.height * 0.015,
-              ),
+                Image.asset(
+                  KImages.authImage,
+                  height: 276.5,
+                  width: 276.5,
+                ),
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.024,
+                ),
 
-              // let's sign up button
-              Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 30),
+                // Social Login Buttons
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 26),
                   child: Obx(
                     () => controller.isLoading.value
                         ? Container(
+                            height: 56,
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              border: Border.all(color: Color(0xFf172B75)),
                               borderRadius: BorderRadius.circular(30),
                             ),
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                color: Color(0xFf172B75),
+                              ),
                             ),
                           )
-                        : CommonButton(
-                            text: "Let's Sign up",
+                        : SocialButton(
+                            text: "Continue with Google",
+                            textColor: Color(0xFf172B75),
+                            borderColor: Color(0xFf172B75),
+                            iconPath: KImages.googleIcon,
                             onPressed: () {
-                              // Set the email from the email controller
-                              controller.userEmail.value =
-                                  controller.emailController.text.trim();
+                              // Call Google Auth API
+                              controller.signUpWithGoogle();
+                            },
+                          ),
+                  ),
+                ),
 
-                              // Set isPhoneOtp to false since this is email OTP
-                              controller.isPhoneOtp.value = false;
-                              // Navigate to OTP screen
-                              controller.currentPage.value = 2;
-                              controller.pageController.animateToPage(2,
-                                  duration: Duration(milliseconds: 300),
-                                  curve: Curves.easeInOut);
-                            }),
-                  )),
-              SizedBox(
-                height: MediaQuery.of(context).size.height * 0.02,
-              ),
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.021,
+                ),
 
-              // Sign In Navigation
-              GestureDetector(
-                onTap: () {
-                  controller.showPhoneVerification.value = true;
-                },
-                child: RichText(
-                  textAlign: TextAlign.center,
-                  text: TextSpan(
-                    text: "have an account?\n",
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
-                      color: KConstColors.onBoardingSubTitle,
-                    ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 26),
+                  child: SocialButton(
+                    text: "Continue with Apple",
+                    iconPath: KImages.appleIcon,
+                    textColor: Colors.grey[900]!,
+                    borderColor: Colors.grey[300]!,
+                    onPressed: () {
+                      controller.signUpWithApple();
+                    },
+                  ),
+                ),
+
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.01,
+                ),
+
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 59),
+                  child: Row(
                     children: [
-                      TextSpan(
-                        text: "SIGN IN",
-                        style: const TextStyle(
-                            color: Color(0xFF172B75),
-                            fontSize: 16,
-                            fontWeight: FontWeight.w400),
-                      ),
+                      Expanded(
+                          child: Divider(
+                        endIndent: 8,
+                        color: Color(0xFFD9D9D9),
+                      )),
+                      Text("or",
+                          style: TextStyle(
+                              fontSize: 14,
+                              color: Color(0xFF9A9A9A),
+                              fontFamily: GoogleFonts.poppins().fontFamily)),
+                      Expanded(
+                          child: Divider(
+                        indent: 8,
+                        color: Color(0xFFD9D9D9),
+                      ))
                     ],
                   ),
                 ),
-              ),
-              SizedBox(
-                height: MediaQuery.of(context).size.height * 0.02,
-              ),
-            ],
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.01,
+                ),
+
+                // Email Input
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 26),
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      SizedBox(
+                        width: 343,
+                        height: 56,
+                        child: TextField(
+                          controller: controller.emailController,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w400,
+                              color: Color(0xFF172B75)),
+                          onChanged: (value) {
+                            controller
+                                .validateInput(); // <- This updates isEmailEmpty
+                          }, // Centers the input text
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.all(
+                                  Radius.circular(30)), // Rounded border
+                              borderSide: BorderSide(
+                                color: Colors.grey[300]!,
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(30)),
+                              borderSide: BorderSide(color: Colors.grey[300]!),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(30)),
+                              borderSide: BorderSide(
+                                  color: Colors.grey[300]!, width: 1),
+                            ),
+                            contentPadding: EdgeInsets.symmetric(vertical: 18),
+                            labelText: "", // Hide the default label
+                          ),
+                        ),
+                      ),
+                      Obx(() {
+                        return controller.isEmailEmpty.value
+                            ? Center(
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.email_outlined,
+                                        color: Color(0xFF9E9E9E), size: 20),
+                                    SizedBox(width: 10),
+                                    Text(
+                                      "Email ID",
+                                      style: TextStyle(
+                                          fontSize: 16,
+                                          color: Color(0xFF9E9E9E),
+                                          fontFamily:
+                                              GoogleFonts.poppins().fontFamily,
+                                          fontWeight: FontWeight.w400),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : SizedBox
+                                .shrink(); // Hide icon and text when typing
+                      }),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Text.rich(
+                    TextSpan(
+                      text: "By continuing, you agree to VRopay’s\n",
+                      style: const TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w300,
+                          color: Color(0xFF777777)),
+                      children: [
+                        TextSpan(
+                          text: "Terms of Service",
+                          style: const TextStyle(
+                              color: Color(0xFF45548F),
+                              fontSize: 10,
+                              fontWeight: FontWeight.w300,
+                              decoration: TextDecoration.underline),
+                        ),
+                        const TextSpan(
+                          text: " and ",
+                          style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w300,
+                              color: Color(0xFF777777)),
+                        ),
+                        TextSpan(
+                          text: "Privacy Policy",
+                          style: const TextStyle(
+                              color: Color(0xFF45548F),
+                              decoration: TextDecoration.underline),
+                        ),
+                      ],
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.015,
+                ),
+                FaqHelpText(),
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.017,
+                ),
+                // Page Indicator
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildProgressDot(false),
+                    _buildProgressDot(true),
+                    _buildProgressDot(false),
+                    _buildProgressDot(false)
+                  ],
+                ),
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.015,
+                ),
+
+                // let's sign up button
+                Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 30),
+                    child: Obx(
+                      () => controller.isLoading.value
+                          ? Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                              ),
+                            )
+                          : CommonButton(
+                              text: "Let's Sign up",
+                              onPressed: () {
+                                controller.signUpWithEmail();
+                              }),
+                    )),
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.02,
+                ),
+
+                // Sign In Navigation
+                GestureDetector(
+                  onTap: () {
+                    controller.showPhoneVerification.value = true;
+                  },
+                  child: RichText(
+                    textAlign: TextAlign.center,
+                    text: TextSpan(
+                      text: "have an account?\n",
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                        color: KConstColors.onBoardingSubTitle,
+                      ),
+                      children: [
+                        TextSpan(
+                          text: "SIGN IN",
+                          style: const TextStyle(
+                              color: Color(0xFF172B75),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w400),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.02,
+                ),
+              ],
             ),
           ),
         ),

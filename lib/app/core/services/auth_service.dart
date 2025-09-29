@@ -66,7 +66,7 @@ class AuthService extends GetxService {
   // Sign up with email - Postman collection endpoint
   Future<ApiResponse<Map<String, dynamic>>> signUpWithEmail({
     required String email,
-    required String name,
+    String? name,
   }) async {
     try {
       isLoading.value = true;
@@ -76,7 +76,7 @@ class AuthService extends GetxService {
 
       final requestData = {
         'email': email,
-        'name': name,
+        if (name != null) 'name': name,
       };
       print('📦 Request data: $requestData');
 
