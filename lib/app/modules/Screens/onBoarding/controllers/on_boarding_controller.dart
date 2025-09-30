@@ -23,7 +23,7 @@ class OnBoardingController extends GetxController {
 
   // Disposal flag
   final RxBool _isDisposed = false.obs;
-  
+
   // Public getter for disposal state
   bool get isDisposed => _isDisposed.value;
 
@@ -48,6 +48,7 @@ class OnBoardingController extends GetxController {
   final RxBool isEmailEmpty = true.obs;
   final RxBool isValidPhone = false.obs;
   final RxBool isPhoneOtp = false.obs;
+  final RxBool isSignInFlow = false.obs;
   final RxBool showPhoneVerification = false.obs;
   final RxString userPhone = ''.obs;
   final RxString userEmail = ''.obs;
@@ -90,6 +91,7 @@ class OnBoardingController extends GetxController {
 
   void goToSignIn() {
     showPhoneVerification.value = true;
+    goToNextPage();
   }
 
   void goToSignup() {
@@ -372,16 +374,31 @@ class OnBoardingController extends GetxController {
       }
 
       if (isPhoneOtp.value) {
-        // Verify phone OTP - after this go to user details
-        final response = await _authService.verifyPhoneNumber(otp: otp);
-
-        if (response.success) {
-          Get.snackbar('Success', 'Phone number verified successfully');
-          // Navigate to user details screen
-          Get.offAllNamed(Routes.HOME, arguments: {'showUserDetails': true});
+        if (isSignInFlow.value) {
+          // Call the separate sign in verification method
+          await verifySignInOtp();
+          return; // exit early to avoid executing the rest
         } else {
-          Get.snackbar(
-              'Error', response.message ?? 'Phone verification failed');
+          // Verify phone OTP - after this go to user details
+          final response = await _authService.verifyPhoneNumber(otp: otp);
+
+          if (response.success) {
+            // Update user profile with verified mobile number
+            await _authService.updateUserProfile(
+              firstName: '',
+              lastName: '',
+              gender: '',
+              profession: '',
+              mobile: userPhone.value,
+            );
+
+            Get.snackbar('Success', 'Phone number verified successfully');
+            // Navigate to user details screen
+            Get.offAllNamed(Routes.HOME, arguments: {'showUserDetails': true});
+          } else {
+            Get.snackbar(
+                'Error', response.message ?? 'Phone verification failed');
+          }
         }
       } else {
         // Verify email OTP - after this go to phone verification
@@ -631,6 +648,77 @@ class OnBoardingController extends GetxController {
       return 'Network error. Please check your connection.';
     } else {
       return 'Something went wrong. Please try again';
+    }
+  }
+
+  // Phone Sign-IN(for existing users)
+  Future<void> signInWithPhone() async {
+    try {
+      isLoading.value = true;
+      final phone = phoneController.text.trim();
+
+      if (phone.length == 10 && RegExp(r'^[0-9]+$').hasMatch(phone)) {
+        // formate phone number with country code
+        final formattedPhone = '+91$phone';
+
+        userPhone.value = formattedPhone;
+        isPhoneOtp.value = true;
+        isSignInFlow.value = true;
+
+        // call phone sign in api
+        final response =
+            await _authService.signInWithPhone(phoneNumber: formattedPhone);
+
+        if (response.success) {
+          Get.snackbar(
+              "OTP Sent ", "Verification code sent to your phone number",
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: const Color(0xFF172B75),
+              colorText: Colors.white);
+          goToNextPage();
+        } else {
+          Get.snackbar("Error", response.message ?? "Failed to send OTP",
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: const Color(0xFFE74C3C),
+              colorText: Colors.white);
+        }
+      } else {
+        Get.snackbar("Error", "Invalid phone number",
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: const Color(0xFFE74C3C),
+            colorText: Colors.white);
+      }
+    } catch (e) {
+      Get.snackbar("Error", "Failed to send OTP: ${e.toString()}");
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  // Update the existing verifyOtp method to handle sign in
+  Future<void> verifySignInOtp() async {
+    try {
+      isLoading.value = true;
+      final otp = otpCode.value;
+
+      if (otp.length != 5) {
+        Get.snackbar('Error ', 'Please enter a valid 5-digit OTP');
+        ;
+        return;
+      }
+
+      final response = await _authService.verfiySignInOtp(
+          phoneNumber: userPhone.value, otp: otp);
+
+      if (response.success) {
+        Get.offAllNamed(Routes.PROFILE);
+      } else {
+        Get.snackbar('Error', response.message);
+      }
+    } catch (e) {
+      Get.snackbar('Error ', 'Sign in failed : ${e.toString()}');
+    } finally {
+      isLoading.value = false;
     }
   }
 }

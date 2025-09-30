@@ -7,6 +7,7 @@ class ApiConstants {
   static const String signUp = '$apiVersion/signup';
   static const String signIn = '$apiVersion/signin';
   static const String verifyOtp = '$apiVersion/verify-otp';
+  static const String verifySignin = '$apiVersion/verify-signin';
   static const String googleAuth = '$apiVersion/google-auth';
   static const String appleAuth = '$apiVersion/apple-auth';
 
@@ -59,7 +60,8 @@ class ApiConstants {
   // User details forms GET api
 
   // Phone verification endpoints
-  static const String requestPhoneVerification = '$apiVersion/request-phone-verification';
+  static const String requestPhoneVerification =
+      '$apiVersion/request-phone-verification';
   static const String verifyPhoneNumber = '$apiVersion/verify-phone-number';
 
   // Interest screen's

@@ -110,7 +110,7 @@ class OnBoardingView extends GetView<OnBoardingController> {
                                     ),
                                     onTap: () {
                                       // Call API instead of just navigating
-                                      controller.signUpWithEmail();
+                                      controller.goToNextPage();
                                     },
                                   ),
                                 ],
@@ -720,7 +720,7 @@ class OnBoardingView extends GetView<OnBoardingController> {
                         text: "Send OTP",
                         onPressed: () {
                           controller.isPhoneOtp.value = true;
-                          controller.sendOtpToPhone();
+                          controller.signInWithPhone();
                         }),
               ),
             )
@@ -910,8 +910,12 @@ class OnBoardingView extends GetView<OnBoardingController> {
                   child: CommonButton(
                       text: "Verify OTP",
                       onPressed: () {
-                        // Call API to verify OTP
-                        controller.verifyOtp();
+                        if (controller.isSignInFlow.value) {
+                          controller
+                              .verifySignInOtp(); // use sign in verification
+                        } else {
+                          controller.verifyOtp();
+                        }
                       }),
                 )
               ],

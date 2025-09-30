@@ -143,6 +143,15 @@ class ProfileController extends GetxController {
   // Load user data from backend
   Future<void> loadUserData() async {
     try {
+      // First load user profile data
+      final profileResponse = await _authService.getUserProfile();
+      if (profileResponse.data != null) {
+        user.value = profileResponse.data!;
+        _populateControllers(profileResponse.data!);
+        print('✅ User profile loaded: ${profileResponse.data!.mobile}');
+      }
+
+      // Then load interests
       final response = await _authService.getInterests();
 
       if (response['interests'] is List) {
@@ -182,7 +191,7 @@ class ProfileController extends GetxController {
         print('User selected topics: $selectedNames');
       }
     } catch (e) {
-      print("Error loading interests: $e");
+      print("Error loading user data: $e");
     }
   }
 

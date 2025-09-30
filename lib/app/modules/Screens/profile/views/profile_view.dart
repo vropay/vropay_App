@@ -313,7 +313,7 @@ class _ProfileSection extends StatelessWidget {
                 _buildInfoRow(
                   icon: Icons.phone_android_outlined,
                   label: 'Mob no',
-                  value: user.mobile ?? 'N/A',
+                  value: controller.mobileController.text,
                   controller: controller.mobileController,
                   isEditMode: isEditMode,
                   hint: 'Enter mobile',

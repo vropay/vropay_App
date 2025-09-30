@@ -49,7 +49,7 @@ class UserModel {
       lastName: json['lastName'],
       gender: json['gender'],
       profession: json['profession'],
-      mobile: json['mobile'],
+      mobile: json['mobile'] ?? json['phone'] ?? json['phoneNumber'],
       profileImage: json['profileImage'] ?? json['avatar'],
       selectedTopics: interestIds,
       difficultyLevel: json['difficulty'] ?? json['difficultyLevel'],

@@ -276,7 +276,8 @@ class AuthService extends GetxService {
       isLoading.value = true;
       print('🚀 Requesting phone verification for: $phoneNumber');
 
-      final response = await _apiClient.post(ApiConstants.requestPhoneVerification, data: {
+      final response =
+          await _apiClient.post(ApiConstants.requestPhoneVerification, data: {
         'phoneNumber': phoneNumber,
       });
 
@@ -301,7 +302,8 @@ class AuthService extends GetxService {
       isLoading.value = true;
       print('🚀 Verifying phone OTP: $otp');
 
-      final response = await _apiClient.post(ApiConstants.verifyPhoneNumber, data: {
+      final response =
+          await _apiClient.post(ApiConstants.verifyPhoneNumber, data: {
         'otp': otp,
       });
 
@@ -634,6 +636,50 @@ class AuthService extends GetxService {
       isLoggedIn.value = false;
       currentUser.value = null;
       authToken.value = '';
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  // Phone sign in with api
+  Future<ApiResponse<Map<String, dynamic>>> signInWithPhone({
+    required String phoneNumber,
+  }) async {
+    try {
+      isLoading.value = true;
+      final response = await _apiClient.post(ApiConstants.signIn, data: {
+        'phoneNumber': phoneNumber,
+      });
+
+      return ApiResponse.fromJson(
+          response.data, (data) => data as Map<String, dynamic>);
+    } catch (e) {
+      throw _handleAuthError(e);
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  // Verify Sign-in otp
+  Future<ApiResponse<Map<String, dynamic>>> verfiySignInOtp({
+    required String phoneNumber,
+    required String otp,
+  }) async {
+    try {
+      isLoading.value = false;
+
+      final response = await _apiClient.post(ApiConstants.verifySignin,
+          data: {'phoneNumber': phoneNumber, 'otp': otp});
+
+      final responseData = response.data;
+
+      if (responseData['token'] != null) {
+        await _saveAuthData(responseData['token'], responseData['user'] ?? {});
+      }
+      return ApiResponse.fromJson(
+          responseData, (data) => data as Map<String, dynamic>);
+    } catch (e) {
+      throw _handleAuthError(e);
     } finally {
       isLoading.value = false;
     }
