@@ -198,7 +198,6 @@ class HomeController extends GetxController {
         lastName: lastNameController.text.trim(),
         gender: gender,
         profession: selectedRole.value.trim(),
-        mobile: null,
         selectedTopics: selectedTopics.toList(),
         difficultyLevel: difficultyLevel.value,
         communityAccess: communityAccess.value,
@@ -349,7 +348,7 @@ class HomeController extends GetxController {
       }
 
       // Save difficulty when moving from difficulty screen
-      if (currentStep.value == 2 && hasSelectedInterests()) {
+      if (currentStep.value == 2 && hasSelectedDifficulty()) {
         await saveSelectedDifficulty();
       }
 

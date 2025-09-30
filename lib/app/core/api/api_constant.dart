@@ -8,6 +8,10 @@ class ApiConstants {
   static const String signIn = '$apiVersion/signin';
   static const String verifyOtp = '$apiVersion/verify-otp';
   static const String verifySignin = '$apiVersion/verify-signin';
+  static const String signUpPhoneVerification =
+      '$apiVersion/request-phone-verification';
+  static const String signUpVerifyPhoneNumber =
+      '$apiVersion/verify-phone-number';
   static const String googleAuth = '$apiVersion/google-auth';
   static const String appleAuth = '$apiVersion/apple-auth';
 
@@ -54,15 +58,6 @@ class ApiConstants {
   static const int forbiddenCode = 403;
   static const int notFoundCode = 404;
   static const int serverErrorCode = 500;
-
-  // GET APIs
-
-  // User details forms GET api
-
-  // Phone verification endpoints
-  static const String requestPhoneVerification =
-      '$apiVersion/request-phone-verification';
-  static const String verifyPhoneNumber = '$apiVersion/verify-phone-number';
 
   // Interest screen's
   static const String interest = '$apiVersion/interests';

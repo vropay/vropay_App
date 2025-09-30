@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'package:vropay_final/app/core/models/api_response.dart';
 import 'package:vropay_final/app/core/network/api_exception.dart';
 import 'package:vropay_final/app/core/services/auth_service.dart';
 import 'package:vropay_final/app/core/services/user_service.dart';
@@ -92,6 +93,12 @@ class OnBoardingController extends GetxController {
   void goToSignIn() {
     showPhoneVerification.value = true;
     goToNextPage();
+  }
+
+  void goBackToSignUp() {
+    showPhoneVerification.value = false;
+    isSignInFlow.value = false;
+    phoneController.clear();
   }
 
   void goToSignup() {
@@ -383,15 +390,6 @@ class OnBoardingController extends GetxController {
           final response = await _authService.verifyPhoneNumber(otp: otp);
 
           if (response.success) {
-            // Update user profile with verified mobile number
-            await _authService.updateUserProfile(
-              firstName: '',
-              lastName: '',
-              gender: '',
-              profession: '',
-              mobile: userPhone.value,
-            );
-
             Get.snackbar('Success', 'Phone number verified successfully');
             // Navigate to user details screen
             Get.offAllNamed(Routes.HOME, arguments: {'showUserDetails': true});
@@ -435,8 +433,11 @@ class OnBoardingController extends GetxController {
         // Resend email OTP
         await signUpWithEmail();
       } else {
-        // Resend phone OTP
-        await sendOtpToPhone();
+        if (isSignInFlow.value) {
+          await sendSigninPhoneOtp();
+        } else {
+          await sendSignupPhoneOtp();
+        }
       }
     } catch (e) {
       if (!_isDisposed.value) {
@@ -652,7 +653,7 @@ class OnBoardingController extends GetxController {
   }
 
   // Phone Sign-IN(for existing users)
-  Future<void> signInWithPhone() async {
+  Future<void> sendSignupPhoneOtp() async {
     try {
       isLoading.value = true;
       final phone = phoneController.text.trim();
@@ -660,14 +661,12 @@ class OnBoardingController extends GetxController {
       if (phone.length == 10 && RegExp(r'^[0-9]+$').hasMatch(phone)) {
         // formate phone number with country code
         final formattedPhone = '+91$phone';
-
         userPhone.value = formattedPhone;
         isPhoneOtp.value = true;
-        isSignInFlow.value = true;
+        isSignInFlow.value = false;
 
-        // call phone sign in api
-        final response =
-            await _authService.signInWithPhone(phoneNumber: formattedPhone);
+        final response = await _authService.requestPhoneVerification(
+            phoneNumber: formattedPhone);
 
         if (response.success) {
           Get.snackbar(
@@ -695,6 +694,57 @@ class OnBoardingController extends GetxController {
     }
   }
 
+  // Send OTP to phone for SIGNIN
+  Future<void> sendSigninPhoneOtp() async {
+    try {
+      isLoading.value = true;
+      final phone = phoneController.text.trim();
+
+      if (phone.length == 10 && RegExp(r'^[0-9]+$').hasMatch(phone)) {
+        final formattedPhone = '+91$phone';
+        userPhone.value = formattedPhone;
+        isPhoneOtp.value = true;
+        isSignInFlow.value = true;
+
+        final response =
+            await _authService.signInWithPhone(phoneNumber: formattedPhone);
+
+        if (response.success) {
+          Get.snackbar(
+              "OTP Sent", "Verification code sent to your phone number",
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: const Color(0xFF172B75),
+              colorText: Colors.white);
+          goToNextPage();
+        } else {
+          String errorMsg = response.message ?? "Failed to send OTP";
+          if (errorMsg.contains("not found") ||
+              errorMsg.contains("not registered")) {
+            Get.snackbar(
+                "User Not Found", "Please sign up first to create an account",
+                snackPosition: SnackPosition.BOTTOM,
+                backgroundColor: const Color(0xFFE74C3C),
+                colorText: Colors.white);
+          } else {
+            Get.snackbar("Error", errorMsg,
+                snackPosition: SnackPosition.BOTTOM,
+                backgroundColor: const Color(0xFFE74C3C),
+                colorText: Colors.white);
+          }
+        }
+      } else {
+        Get.snackbar("Error", "Invalid phone number",
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: const Color(0xFFE74C3C),
+            colorText: Colors.white);
+      }
+    } catch (e) {
+      Get.snackbar("Error", "Failed to send OTP: ${e.toString()}");
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   // Update the existing verifyOtp method to handle sign in
   Future<void> verifySignInOtp() async {
     try {
@@ -706,11 +756,20 @@ class OnBoardingController extends GetxController {
         ;
         return;
       }
-
-      final response = await _authService.verfiySignInOtp(
+      final response = await _authService.verifySignInOtp(
           phoneNumber: userPhone.value, otp: otp);
 
       if (response.success) {
+        print('🔍 Sign-in response data: ${response.data}');
+
+        // Debug: Check what getUserProfile returns
+        final currentUser = _authService.currentUser.value;
+        print('🔍 Current user after getUserProfile: ${currentUser?.toJson()}');
+
+        // Fetch user profile data after successful sign in
+        // await _authService.getUserProfile();
+        _loadUserData();
+
         Get.offAllNamed(Routes.PROFILE);
       } else {
         Get.snackbar('Error', response.message);

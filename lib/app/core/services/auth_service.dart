@@ -213,8 +213,12 @@ class AuthService extends GetxService {
       } else {
         throw Exception('Invalid user profile response format');
       }
-
       print('🔍 AuthService - Extracted user data: $userData');
+      print('🔍 AuthService - Phone fields in response:');
+      print('  - phoneNumber: ${userData['phoneNumber']}');
+      print('  - mobile: ${userData['mobile']}');
+      print('  - phone: ${userData['phone']}');
+      print('  - All keys: ${userData.keys.toList()}');
 
       final user = UserModel.fromJson(userData);
       print('✅ AuthService - Parsed user successfully:');
@@ -277,7 +281,7 @@ class AuthService extends GetxService {
       print('🚀 Requesting phone verification for: $phoneNumber');
 
       final response =
-          await _apiClient.post(ApiConstants.requestPhoneVerification, data: {
+          await _apiClient.post(ApiConstants.signUpPhoneVerification, data: {
         'phoneNumber': phoneNumber,
       });
 
@@ -303,7 +307,7 @@ class AuthService extends GetxService {
       print('🚀 Verifying phone OTP: $otp');
 
       final response =
-          await _apiClient.post(ApiConstants.verifyPhoneNumber, data: {
+          await _apiClient.post(ApiConstants.signUpVerifyPhoneNumber, data: {
         'otp': otp,
       });
 
@@ -343,7 +347,9 @@ class AuthService extends GetxService {
         'profession': profession,
       };
 
-      if (mobile != null) data['mobile'] = mobile;
+      if (mobile != null && mobile.isNotEmpty) {
+        data['mobile'] = mobile;
+      }
       if (selectedTopics != null) {
         data['selectedTopics'] = selectedTopics;
       }
@@ -661,7 +667,7 @@ class AuthService extends GetxService {
   }
 
   // Verify Sign-in otp
-  Future<ApiResponse<Map<String, dynamic>>> verfiySignInOtp({
+  Future<ApiResponse<Map<String, dynamic>>> verifySignInOtp({
     required String phoneNumber,
     required String otp,
   }) async {

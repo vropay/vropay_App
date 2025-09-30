@@ -394,6 +394,17 @@ class OnBoardingView extends GetView<OnBoardingController> {
                             }
                           },
                           decoration: InputDecoration(
+                            hintText: "Email ID",
+                            hintStyle: TextStyle(
+                                fontSize: 16,
+                                color: Color(0xFF9E9E9E),
+                                fontFamily: GoogleFonts.poppins().fontFamily,
+                                fontWeight: FontWeight.w400),
+                            prefixIcon: Icon(
+                              Icons.email_outlined,
+                              color: Color(0xFF9E9E9E),
+                              size: 20,
+                            ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.all(
                                   Radius.circular(30)), // Rounded border
@@ -413,34 +424,33 @@ class OnBoardingView extends GetView<OnBoardingController> {
                                   color: Colors.grey[300]!, width: 1),
                             ),
                             contentPadding: EdgeInsets.symmetric(vertical: 18),
-                            labelText: "", // Hide the default label
                           ),
                         ),
                       ),
-                      Obx(() {
-                        return controller.isEmailEmpty.value
-                            ? Center(
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(Icons.email_outlined,
-                                        color: Color(0xFF9E9E9E), size: 20),
-                                    SizedBox(width: 10),
-                                    Text(
-                                      "Email ID",
-                                      style: TextStyle(
-                                          fontSize: 16,
-                                          color: Color(0xFF9E9E9E),
-                                          fontFamily:
-                                              GoogleFonts.poppins().fontFamily,
-                                          fontWeight: FontWeight.w400),
-                                    ),
-                                  ],
-                                ),
-                              )
-                            : SizedBox
-                                .shrink(); // Hide icon and text when typing
-                      }),
+                      // Obx(() {
+                      //   return controller.isEmailEmpty.value
+                      //       ? Center(
+                      //           child: Row(
+                      //             mainAxisAlignment: MainAxisAlignment.center,
+                      //             children: [
+                      //               Icon(Icons.email_outlined,
+                      //                   color: Color(0xFF9E9E9E), size: 20),
+                      //               SizedBox(width: 10),
+                      //               Text(
+                      //                 "Email ID",
+                      //                 style: TextStyle(
+                      //                     fontSize: 16,
+                      //                     color: Color(0xFF9E9E9E),
+                      //                     fontFamily:
+                      //                         GoogleFonts.poppins().fontFamily,
+                      //                     fontWeight: FontWeight.w400),
+                      //               ),
+                      //             ],
+                      //           ),
+                      //         )
+                      //       : SizedBox
+                      //           .shrink(); // Hide icon and text when typing
+                      // }),
                     ],
                   ),
                 ),
@@ -590,7 +600,7 @@ class OnBoardingView extends GetView<OnBoardingController> {
                 child: IconButton(
                   icon: Icon(Icons.arrow_back_ios,
                       color: KConstColors.colorSecondary),
-                  onPressed: () => Get.back(),
+                  onPressed: () => controller.goBackToSignUp(),
                 ),
               ),
             ),
@@ -720,7 +730,8 @@ class OnBoardingView extends GetView<OnBoardingController> {
                         text: "Send OTP",
                         onPressed: () {
                           controller.isPhoneOtp.value = true;
-                          controller.signInWithPhone();
+                          // Since this screen appears after email verification, it's always signup flow
+                          controller.sendSignupPhoneOtp();
                         }),
               ),
             )

@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:vropay_final/app/core/services/auth_service.dart';
 import 'package:vropay_final/app/modules/Screens/subscription/widgets/free_pop_up.dart';
 
 import '../../../../routes/app_pages.dart';
@@ -7,6 +8,7 @@ import '../../TrialTransitionView/trial_transition_view.dart';
 enum UserType { student, professional, business }
 
 class SubscriptionController extends GetxController {
+  final AuthService _authService = Get.find<AuthService>();
   var userType = UserType.student.obs;
   var selectedPlan = 'yearly'.obs;
   var enableTrial = false.obs;
@@ -18,9 +20,18 @@ class SubscriptionController extends GetxController {
   void onInit() {
     super.onInit();
     // Check if this is part of onboarding flow
+    _loadUserData();
     final args = Get.arguments;
     if (args != null && args['isOnboarding'] == true) {
       isOnboardingFlow.value = true;
+    }
+  }
+
+  Future<void> _loadUserData() async {
+    try {
+      await _authService.getUserProfile();
+    } catch (e) {
+      print('Error loading user data: $e');
     }
   }
 
