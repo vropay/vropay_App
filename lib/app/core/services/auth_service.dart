@@ -19,6 +19,11 @@ class AuthService extends GetxService {
   @override
   void onInit() {
     super.onInit();
+
+    // initialize api client
+    final apiClient = ApiClient();
+    apiClient.init();
+
     _loadAuthData();
     _checkAuthStatus();
   }
@@ -145,6 +150,8 @@ class AuthService extends GetxService {
 
       // Check if response is HTML (Google login page)
       if (response.data['token'] != null) {
+        print('🔍 Saving Google auth token: ${response.data['token']}');
+
         await _saveAuthData(
             response.data['token'], response.data['user'] ?? {});
       }
@@ -280,6 +287,15 @@ class AuthService extends GetxService {
       isLoading.value = true;
       print('🚀 Requesting phone verification for: $phoneNumber');
 
+      // Debug: Check if token exists before making request
+      final currentToken = _storage.read('auth_token');
+      print(
+          '🔍 Current token before phone verification: ${currentToken != null ? 'EXISTS' : 'MISSING'}');
+      if (currentToken != null) {
+        print(
+            '🔍 Token preview: ${currentToken.toString().substring(0, 20)}...');
+      }
+
       final response =
           await _apiClient.post(ApiConstants.signUpPhoneVerification, data: {
         'phoneNumber': phoneNumber,
@@ -305,6 +321,11 @@ class AuthService extends GetxService {
     try {
       isLoading.value = true;
       print('🚀 Verifying phone OTP: $otp');
+
+      // Debug: Check if token exists before making request
+      final currentToken = _storage.read('auth_token');
+      print(
+          '🔍 Current token before phone OTP verification: ${currentToken != null ? 'EXISTS' : 'MISSING'}');
 
       final response =
           await _apiClient.post(ApiConstants.signUpVerifyPhoneNumber, data: {
@@ -519,8 +540,10 @@ class AuthService extends GetxService {
     currentUser.value = UserModel.fromJson(userData);
 
     await _storage.write('auth_token', token);
-    await _storage.write('user_data', userData);
-
+    await _storage.write('user_data', userData); // Verify token was saved
+    final savedToken = _storage.read('auth_token');
+    print(
+        '🔍 Token saved verification: ${savedToken != null ? 'SUCCESS' : 'FAILED'}');
     print('✅ Auth data saved successfully');
   }
 

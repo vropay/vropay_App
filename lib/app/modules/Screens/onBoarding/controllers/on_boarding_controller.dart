@@ -279,35 +279,50 @@ class OnBoardingController extends GetxController {
       );
 
       if (response.success) {
+        print('✅ Google auth successful');
+
+        // Verify token was saved
+        final savedToken = _authService.authToken.value;
+        print(
+            '🔍 Token after Google auth: ${savedToken.isNotEmpty ? 'EXISTS' : 'MISSING'}');
+
         final responseData = response.data;
         final isNewUser = responseData?['isNewUser'] ?? false;
 
-        // Get user profile to check completion status
+        // Get user profile to check if phone number exists
         await _authService.getUserProfile();
         final user = _authService.currentUser.value;
 
-        // Check if user has completed all required profile details
-        bool hasCompleteProfile = user != null &&
-            user.firstName != null &&
-            user.firstName!.isNotEmpty &&
-            user.lastName != null &&
-            user.lastName!.isNotEmpty &&
-            // Gender is optional (user can prefer not to disclose)
-            user.profession != null &&
-            user.profession!.isNotEmpty &&
-            user.selectedTopics != null &&
-            user.selectedTopics!.isNotEmpty &&
-            user.difficultyLevel != null &&
-            user.difficultyLevel!.isNotEmpty &&
-            user.communityAccess != null &&
-            user.communityAccess!.isNotEmpty;
-
-        if (!hasCompleteProfile) {
-          // Incomplete profile - redirect to user details
-          Get.offAllNamed(Routes.HOME, arguments: {'showUserDetails': true});
+        if (isNewUser || user?.mobile == null || user!.mobile!.isEmpty) {
+          // New user - redirect to phone verification (skip email verification)
+          showPhoneVerification.value = true;
+          currentPage.value = 1; // Go to phone verification screen
+          pageController.animateToPage(1,
+              duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
         } else {
-          // Complete profile - redirect to home
-          Get.offAllNamed(Routes.HOME);
+          // Existing user - check profile completion
+          await _authService.getUserProfile();
+          final user = _authService.currentUser.value;
+
+          bool hasCompleteProfile = user != null &&
+              user.firstName != null &&
+              user.firstName!.isNotEmpty &&
+              user.lastName != null &&
+              user.lastName!.isNotEmpty &&
+              user.profession != null &&
+              user.profession!.isNotEmpty &&
+              user.selectedTopics != null &&
+              user.selectedTopics!.isNotEmpty &&
+              user.difficultyLevel != null &&
+              user.difficultyLevel!.isNotEmpty &&
+              user.communityAccess != null &&
+              user.communityAccess!.isNotEmpty;
+
+          if (!hasCompleteProfile) {
+            Get.offAllNamed(Routes.HOME, arguments: {'showUserDetails': true});
+          } else {
+            Get.offAllNamed(Routes.HOME);
+          }
         }
       } else {
         String errorMsg = response.message ?? 'Google sign-in failed';

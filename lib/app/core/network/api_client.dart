@@ -178,8 +178,12 @@ class _AuthInterceptor extends Interceptor {
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     final token = _storage.read('auth_token');
+    print(
+        '🔍 Auth Interceptor - Token: ${token != null ? 'EXISTS' : 'MISSING'}');
+
     if (token != null) {
-      options.headers['Authorization'] = 'bearer $token';
+      options.headers['Authorization'] = 'Bearer $token';
+      print('🔍 Auth Interceptor - Added Authorization header');
     }
     handler.next(options);
   }
