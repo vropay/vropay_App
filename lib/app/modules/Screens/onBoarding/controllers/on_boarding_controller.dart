@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
-import 'package:vropay_final/app/core/models/api_response.dart';
 import 'package:vropay_final/app/core/network/api_exception.dart';
 import 'package:vropay_final/app/core/services/auth_service.dart';
 import 'package:vropay_final/app/core/services/user_service.dart';
@@ -352,25 +351,26 @@ class OnBoardingController extends GetxController {
         final formattedPhone = '+91$phone';
         userPhone.value = formattedPhone;
         isPhoneOtp.value = true; // This is phone OTP
+        print('DEBUG: isSignInFlow: ${isSignInFlow.value}');
 
-        // Choose API based on flow
-        final response = isSignInFlow.value
-            ? await _authService.signInWithPhone(phoneNumber: formattedPhone)
-            : await _authService.requestPhoneVerification(
-                phoneNumber: formattedPhone);
+        // // Choose API based on flow
+        // final response = isSignInFlow.value
+        //     ? await _authService.signInWithPhone(phoneNumber: formattedPhone)
+        //     : await _authService.requestPhoneVerification(
+        //         phoneNumber: formattedPhone);
 
-        if (response.success) {
-          Get.snackbar("OTP Sent", "OTP has been sent to $phone",
-              snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: const Color(0xFF172B75),
-              colorText: Colors.white);
-          goToNextPage(); // Go to phone OTP screen
-        } else {
-          Get.snackbar("Error", response.message ?? "Failed to send OTP",
-              snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: const Color(0xFFE74C3C),
-              colorText: Colors.white);
-        }
+        // if (response.success) {
+        //   Get.snackbar("OTP Sent", "OTP has been sent to $phone",
+        //       snackPosition: SnackPosition.BOTTOM,
+        //       backgroundColor: const Color(0xFF172B75),
+        //       colorText: Colors.white);
+        //   goToNextPage(); // Go to phone OTP screen
+        // } else {
+        //   Get.snackbar("Error", response.message ?? "Failed to send OTP",
+        //       snackPosition: SnackPosition.BOTTOM,
+        //       backgroundColor: const Color(0xFFE74C3C),
+        //       colorText: Colors.white);
+        // }
       } else {
         Get.snackbar("Error", "Invalid phone number",
             snackPosition: SnackPosition.BOTTOM,

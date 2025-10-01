@@ -10,7 +10,6 @@ import 'package:vropay_final/Utilities/screen_utils.dart';
 import 'package:vropay_final/app/modules/Screens/onBoarding/controllers/on_boarding_controller.dart';
 import 'package:vropay_final/app/modules/Screens/onBoarding/widgets/faq_help.dart';
 import 'package:vropay_final/app/modules/Screens/signUp/widgets/socialButtons.dart';
-import 'package:vropay_final/app/routes/app_pages.dart';
 
 class OnBoardingView extends GetView<OnBoardingController> {
   const OnBoardingView({super.key});
@@ -730,8 +729,14 @@ class OnBoardingView extends GetView<OnBoardingController> {
                         text: "Send OTP",
                         onPressed: () {
                           controller.isPhoneOtp.value = true;
-                          // Since this screen appears after email verification, it's always signup flow
-                          controller.sendSignupPhoneOtp();
+
+                          if (controller.isSignInFlow.value) {
+                            controller
+                                .sendSigninPhoneOtp(); // use sign in verification
+                          } else {
+                            // Since this screen appears after email verification, it's always signup flow
+                            controller.sendSignupPhoneOtp();
+                          }
                         }),
               ),
             )
