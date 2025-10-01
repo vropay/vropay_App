@@ -90,13 +90,14 @@ class OnBoardingController extends GetxController {
   }
 
   void goToSignIn() {
+    isSignInFlow.value = true; // Set sign-in flow to true
     showPhoneVerification.value = true;
     goToNextPage();
   }
 
   void goBackToSignUp() {
     showPhoneVerification.value = false;
-    isSignInFlow.value = false;
+    isSignInFlow.value = false; // Ensure sign-up flow
     phoneController.clear();
   }
 
@@ -157,6 +158,7 @@ class OnBoardingController extends GetxController {
 
       userEmail.value = email;
       isPhoneOtp.value = false; // This is email OTP
+      isSignInFlow.value = false; // This is sign-up flow
 
       // Call the API
       final response = await _authService.signUpWithEmail(email: email);
