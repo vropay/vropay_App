@@ -34,8 +34,6 @@ class ApiConstants {
   static const String communityAccess = '$apiVersion/set-community';
   static const String setNotification = '$apiVersion/set-notifications';
 
-  // Knowledge Center Endpoints
-  static const String knowledgeCenter = '$apiVersion/knowledge-center';
   static const String subtopicContents =
       '$apiVersion/knowledge-center/subtopics';
   static const String contentDetails = '$apiVersion/knowledge-center/contents';
@@ -77,15 +75,30 @@ class ApiConstants {
   static const String learnMainCategories = '$apiVersion/main-categories';
 
   // knowledge center endpoints
-  static String learnMainCategoryById(String id) =>
-      '$apiVersion/learn/main-categories/$id';
+  static String learnMainCategoryById(String mainCategoryId) =>
+      '$apiVersion/main-category/$mainCategoryId';
 
-  static String learnSubCategories(String mainId) =>
-      '$apiVersion/learn/main-categories/$mainId/sub-categories';
+  static String learnSubCategories(String mainCategoryId) =>
+      '$apiVersion/main-category/$mainCategoryId/sub-categories';
 
-  static String learnTopics(String mainId, String subId) =>
-      '$apiVersion/learn/main-categories/$mainId/sub-categories/$subId/topics';
+  static String learnTopics(String mainCategoryId, String subCategoryId) =>
+      '$apiVersion/main-category/$mainCategoryId/sub-category/$subCategoryId/topics';
 
-  static String learnEntries(String mainId, String subId, String topicId) =>
-      '$apiVersion/learn/main-categories/$mainId/sub-categories/$subId/topics/$topicId/entries';
+  static String learnEntries(
+          String mainCategoryId, String subCategoryId, String topicId) =>
+      '$apiVersion/main-category/$mainCategoryId/sub-category/$subCategoryId/topic/$topicId/entries';
+
+// Entry content endpoints
+  static String learnEntryContent(String entryId) =>
+      '$apiVersion/entries/$entryId/content';
+
+  static String learnContentWithDetails(String mainCategoryId,
+          String subCategoryId, String topicId, String entryId) =>
+      '$apiVersion/main-category/$mainCategoryId/sub-category/$subCategoryId/topics/$topicId/entries/$entryId/details';
+
+  static String learnSearchContent(String subCategoryId, String searchQuery) =>
+      '$apiVersion/sub-categories/$subCategoryId/search?q=${Uri.encodeComponent(searchQuery)}';
+
+  static String learnRelatedContent(String entryId) =>
+      '$apiVersion/entries/$entryId/related';
 }

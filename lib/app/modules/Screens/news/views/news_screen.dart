@@ -15,6 +15,9 @@ class NewsScreen extends GetView<NewsController> {
 
   @override
   Widget build(BuildContext context) {
+    // Set the context for ScreenUtils
+    ScreenUtils.setContext(context);
+
     final GlobalKey moreButtonKey = GlobalKey();
     final GlobalKey moreVertButtonKey = GlobalKey();
     final GlobalKey filterButtonKey = GlobalKey();
@@ -292,9 +295,8 @@ class NewsScreen extends GetView<NewsController> {
                   IconButton(
                     key: moreVertButtonKey,
                     onPressed: () async {
-                      final RenderBox button =
-                          moreVertButtonKey.currentContext!.findRenderObject()
-                              as RenderBox;
+                      final RenderBox button = moreVertButtonKey.currentContext!
+                          .findRenderObject() as RenderBox;
                       final RenderBox overlay = Navigator.of(context)
                           .overlay!
                           .context

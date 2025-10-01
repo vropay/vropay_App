@@ -306,7 +306,7 @@ class LearnScreenView extends GetView<LearnScreenController> {
     final image = images[index % images.length];
 
     return _infoCard(
-      category['name']?.toString().toUpperCase() ?? "CATEGORY",
+      category['name']?.toString().toLowerCase() ?? "CATEGORY",
       category['description']?.toString() ?? "Explore this category",
       color,
       "explore",

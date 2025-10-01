@@ -15,7 +15,7 @@ class KnowledgeService extends GetxService {
       isLoading.value = true;
       print('🚀 Getting knowledge center topics/subtopics');
 
-      final response = await _apiClient.get(ApiConstants.knowledgeCenter);
+      final response = await _apiClient.get(ApiConstants.learnMainCategories);
 
       print('✅ Knowledge center response: ${response.data}');
 

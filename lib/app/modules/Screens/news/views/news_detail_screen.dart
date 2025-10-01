@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'dart:ui';
+import 'package:html/parser.dart' as html_parser;
+import 'package:flutter_html/flutter_html.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:vropay_final/Components/back_icon.dart';
 import 'package:vropay_final/Utilities/constants/KImages.dart';
 import 'package:vropay_final/Utilities/screen_utils.dart';
@@ -199,16 +202,7 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
                                 const EdgeInsets.only(left: 20.0, right: 60),
                             child: _showHighlightView
                                 ? _buildHighlightedText()
-                                : Text(
-                                    _getFullDescription(
-                                        widget.news['title'] ?? ''),
-                                    style: TextStyle(
-                                      fontSize: ScreenUtils.x(4),
-                                      fontWeight: FontWeight.w300,
-                                      color: Color(0xFF424242),
-                                      height: 1,
-                                    ),
-                                  ),
+                                : _buildNewsContent(),
                           ),
                         ],
                       ),
@@ -454,6 +448,181 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
     );
   }
 
+  String _getNewsContent() {
+    // Use actual body content from API if available, otherwise fallback to generated content
+    final body = widget.news['body']?.toString();
+    print('🔍 NewsDetail - Raw body content: $body');
+
+    if (body != null && body.isNotEmpty && body != 'null') {
+      // Convert HTML to text if it contains HTML tags
+      final convertedText = _convertHtmlToText(body);
+      print('🔍 NewsDetail - Converted text: $convertedText');
+      return convertedText;
+    }
+
+    // Fallback to generated content based on title
+    return _getFullDescription(widget.news['title'] ?? '');
+  }
+
+  // Helper method to convert HTML to text while preserving links and formatting
+  String _convertHtmlToText(String htmlContent) {
+    try {
+      // Check if content contains HTML tags
+      if (!htmlContent.contains('<') || !htmlContent.contains('>')) {
+        // No HTML tags found, return as is
+        return htmlContent;
+      }
+
+      print(
+          '🔄 NewsDetail - Converting HTML to text: ${htmlContent.substring(0, htmlContent.length > 100 ? 100 : htmlContent.length)}...');
+
+      // Parse HTML content
+      final document = html_parser.parse(htmlContent);
+
+      if (document.body == null) {
+        return htmlContent;
+      }
+
+      // Process each element to preserve links and formatting
+      final buffer = StringBuffer();
+      _processElement(document.body!, buffer);
+
+      // Clean up extra whitespace and normalize line breaks
+      final cleanedText = buffer
+          .toString()
+          .replaceAll(
+              RegExp(r'\s+'), ' ') // Replace multiple spaces with single space
+          .replaceAll(RegExp(r'\n\s*\n'), '\n\n') // Preserve paragraph breaks
+          .trim(); // Remove leading/trailing whitespace
+
+      print(
+          '✅ NewsDetail - HTML conversion successful: ${cleanedText.length} characters');
+      return cleanedText;
+    } catch (e) {
+      print('⚠️ NewsDetail - HTML parsing error: $e');
+      // Return original content if parsing fails
+      return htmlContent;
+    }
+  }
+
+  // Helper method to process HTML elements and preserve links and formatting
+  void _processElement(dynamic element, StringBuffer buffer) {
+    if (element.nodes == null) return;
+
+    for (var node in element.nodes) {
+      if (node.nodeType == 3) {
+        // Text node
+        buffer.write(node.text);
+      } else if (node.nodeType == 1) {
+        // Element node
+        final tagName = node.localName?.toLowerCase();
+
+        if (tagName == 'a') {
+          // Preserve links - keep the full HTML for clickable links
+          buffer.write(node.outerHtml);
+        } else if (tagName == 'p' || tagName == 'div') {
+          // Add line breaks for paragraphs and divs
+          _processElement(node, buffer);
+          buffer.write('\n\n');
+        } else if (tagName == 'br') {
+          // Add line break for br tags
+          buffer.write('\n');
+        } else if (tagName == 'strong' || tagName == 'b') {
+          // Preserve bold text with HTML
+          buffer.write(node.outerHtml);
+        } else if (tagName == 'em' || tagName == 'i') {
+          // Preserve italic text with HTML
+          buffer.write(node.outerHtml);
+        } else {
+          // For other tags, just process their content
+          _processElement(node, buffer);
+        }
+      }
+    }
+  }
+
+  // Build news content with HTML rendering for links
+  Widget _buildNewsContent() {
+    final content = _getNewsContent();
+
+    // Check if content contains HTML tags (links, bold, italic)
+    if (content.contains('<') && content.contains('>')) {
+      return Html(
+        data: content,
+        style: {
+          "body": Style(
+            fontSize: FontSize(ScreenUtils.x(4)),
+            fontWeight: FontWeight.w300,
+            color: Color(0xFF1E2025),
+            lineHeight: LineHeight(1.0),
+          ),
+          "p": Style(
+            margin: Margins.zero,
+            padding: HtmlPaddings.zero,
+          ),
+          "a": Style(
+            color: Color(0xFF1E2025),
+            textDecoration: TextDecoration.underline,
+          ),
+          "strong, b": Style(
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF1E2025),
+          ),
+          "em, i": Style(
+            fontStyle: FontStyle.italic,
+            color: Color(0xFF1E2025),
+          ),
+        },
+        onLinkTap: (url, _, __) {
+          if (url != null) {
+            _launchUrl(url);
+          }
+        },
+      );
+    } else {
+      // Plain text content
+      return Text(
+        content,
+        style: TextStyle(
+          fontSize: ScreenUtils.x(4),
+          fontWeight: FontWeight.w300,
+          color: Color(0xFF424242),
+          height: 1,
+        ),
+      );
+    }
+  }
+
+  // Launch URL in external browser
+  Future<void> _launchUrl(String url) async {
+    try {
+      final Uri uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        print('❌ NewsDetail - Cannot launch URL: $url');
+        Get.snackbar(
+          'Error',
+          'Cannot open link',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+          duration: Duration(seconds: 2),
+        );
+      }
+    } catch (e) {
+      print('❌ NewsDetail - Error launching URL: $e');
+      Get.snackbar(
+        'Error',
+        'Failed to open link',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        duration: Duration(seconds: 2),
+      );
+    }
+  }
+
   String _getFullDescription(String title) {
     // Generate a detailed description based on the title
     switch (title) {
@@ -502,8 +671,47 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
   }
 
   Widget _buildHighlightedText() {
-    final String fullText = _getFullDescription(widget.news['title'] ?? '');
-    return _buildDynamicHighlightedText(fullText);
+    final String fullText = _getNewsContent();
+
+    // Check if content contains HTML tags (links, bold, italic)
+    if (fullText.contains('<') && fullText.contains('>')) {
+      return Html(
+        data: fullText,
+        style: {
+          "body": Style(
+            fontSize: FontSize(ScreenUtils.x(4)),
+            fontWeight: FontWeight.w300,
+            color: Color(0xFF1E2025),
+            lineHeight: LineHeight(1.0),
+          ),
+          "p": Style(
+            margin: Margins.zero,
+            padding: HtmlPaddings.zero,
+          ),
+          "a": Style(
+            color: Color(0xFFEF2D56),
+            textDecoration:
+                TextDecoration.underline, // Highlight links in yellow
+          ),
+          "strong, b": Style(
+            fontWeight: FontWeight.bold,
+            color: Color(0xFFEF2D56), // Highlight bold text
+          ),
+          "em, i": Style(
+            fontStyle: FontStyle.italic,
+            color: Color(0xFFEF2D56), // Highlight italic text
+          ),
+        },
+        onLinkTap: (url, _, __) {
+          if (url != null) {
+            _launchUrl(url);
+          }
+        },
+      );
+    } else {
+      // Plain text content with highlighting
+      return _buildDynamicHighlightedText(fullText);
+    }
   }
 
   Widget _buildDynamicHighlightedText(String text) {

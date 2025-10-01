@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:collection/collection.dart';
 import 'package:vropay_final/Components/bottom_navbar.dart';
 import 'package:vropay_final/Components/top_navbar.dart';
 import 'package:vropay_final/Utilities/screen_utils.dart';
@@ -89,10 +90,33 @@ class BusinessInnovationScreen extends GetView<BusinessInnovationController> {
     );
   }
 
+  // Handle topic tap - navigate to news screen with topic data
+  void _onTopicTap(String topicName) {
+    // Find the topic data from the loaded topics
+    final topicData = controller.topics.firstWhereOrNull(
+      (topic) => topic['name']?.toString().toUpperCase() == topicName,
+    );
+
+    if (topicData != null) {
+      // Navigate to news screen with topic data
+      Get.toNamed(Routes.NEWS_SCREEN, arguments: {
+        'topicId': topicData['_id']?.toString(),
+        'topicName': topicData['name']?.toString(),
+        'subCategoryId': controller.subCategoryId,
+        'categoryId': controller.categoryId,
+        'subCategoryName': controller.subCategoryName,
+        'categoryName': controller.categoryName,
+      });
+    } else {
+      // Fallback - navigate without topic data
+      Get.toNamed(Routes.NEWS_SCREEN);
+    }
+  }
+
   Widget _buildCategoryCard(String category) {
     return GestureDetector(
       onTap: () {
-        Get.toNamed(Routes.NEWS_SCREEN);
+        _onTopicTap(category);
       },
       child: Container(
         height: ScreenUtils.height * 0.2,
