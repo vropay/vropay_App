@@ -101,4 +101,10 @@ class ApiConstants {
 
   static String learnRelatedContent(String entryId) =>
       '$apiVersion/entries/$entryId/related';
+
+  // Community endpoints
+  static String communityMainCategories = '$apiVersion/main-categories';
+
+  static String communityMainCategoryById(String mainCategoryId) =>
+      '$apiVersion/main-category/$mainCategoryId';
 }

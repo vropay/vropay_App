@@ -19,9 +19,6 @@ class PersonalGrowthCommunityController extends GetxController {
     'vedic wise'
   ].obs;
 
-
-
-
   // Go back to the previous screen
   void goBack() {
     Get.back();

@@ -4,7 +4,6 @@ import 'package:get/get.dart';
 import 'package:vropay_final/Utilities/constants/KImages.dart';
 import 'package:vropay_final/Utilities/screen_utils.dart';
 import 'package:vropay_final/app/modules/Screens/community_forum/controllers/community_forum_controller.dart';
-import 'package:vropay_final/app/routes/app_pages.dart';
 
 import '../../../../../Components/bottom_navbar.dart';
 import '../../../../../Components/top_navbar.dart';
@@ -161,10 +160,32 @@ class CommunityForumView extends GetView<CommunityForumController> {
                       ),
                     ),
                     SizedBox(height: ScreenUtils.height * 0.02),
+                    // Dynamic content - API integration with existing UI
+                    Obx(() {
+                      if (controller.isLoading.value) {
+                        return Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(20),
+                            child: CircularProgressIndicator(
+                              color: Color(0xFF01B3B2),
+                            ),
+                          ),
+                        );
+                      }
+
+                      if (controller.subCategories.isNotEmpty) {
+                        return _buildApiContent();
+                      }
+
+                      return SizedBox.shrink();
+                    }),
+
+                    // Existing static cards (kept as-is)
                     Padding(
                       padding: const EdgeInsets.only(left: 40, right: 40),
                       child: _buildCard('world\n&\nculture', () {
-                        Get.toNamed(Routes.WORLD_AND_CULTURE_COMMUNITY_SCREEN);
+                        _loadCommunityDataFromAPI(
+                            'world-culture-main-category-id');
                       }, ScreenUtils.height * 0.058,
                           ScreenUtils.height * 0.039),
                     ),
@@ -172,15 +193,16 @@ class CommunityForumView extends GetView<CommunityForumController> {
                     Padding(
                       padding: const EdgeInsets.only(left: 40, right: 40),
                       child: _buildCard('personal\ngrowth', () {
-                        Get.toNamed(Routes.PERSONAL_GROWTH_COMMUNITY_SCREEN);
+                        _loadCommunityDataFromAPI(
+                            'personal-growth-main-category-id');
                       }, ScreenUtils.height * 0.07, ScreenUtils.height * 0.039),
                     ),
                     SizedBox(height: ScreenUtils.height * 0.02),
                     Padding(
                       padding: const EdgeInsets.only(left: 40, right: 40),
                       child: _buildCard('business\n&\ninnovation', () {
-                        Get.toNamed(
-                            Routes.BUSINESS_INNOVATION_COMMUNITY_SCREEN);
+                        _loadCommunityDataFromAPI(
+                            'business-innovation-main-category-id');
                       }, ScreenUtils.height * 0.04, ScreenUtils.height * 0.04),
                     ),
                     SizedBox(height: ScreenUtils.height * 0.063),
@@ -286,6 +308,48 @@ class CommunityForumView extends GetView<CommunityForumController> {
     );
   }
 
+  // Build API content using existing card style
+  Widget _buildApiContent() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: controller.subCategories
+          .map((subCategory) => _buildSubCategoryCard(subCategory))
+          .toList(),
+    );
+  }
+
+  // Build subcategory card using existing _buildCard UI
+  Widget _buildSubCategoryCard(Map<String, dynamic> subCategory) {
+    return Container(
+      margin: EdgeInsets.only(bottom: 16),
+      child: _buildCard(
+        subCategory['name']?.toString().toLowerCase() ?? 'SUBCATEGORY',
+        () => _onSubCategoryTap(subCategory),
+        ScreenUtils.height * 0.058,
+        ScreenUtils.height * 0.039,
+      ),
+    );
+  }
+
+  // Handle subcategory tap (hook for navigation or further loading)
+  void _onSubCategoryTap(Map<String, dynamic> subCategory) {
+    final subCategoryName = subCategory['name']?.toString() ?? 'Subcategory';
+    final subCategoryId = subCategory['_id']?.toString();
+
+    print(
+        '🚀 CommunityForum - SubCategory tapped: $subCategoryName (ID: $subCategoryId)');
+
+    // For now, just acknowledge selection. Hook up navigation if needed.
+    Get.snackbar(
+      'Selected',
+      'Opening $subCategoryName...',
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: Color(0xFF01B3B2),
+      colorText: Colors.white,
+      duration: Duration(seconds: 2),
+    );
+  }
+
   Widget _buildCard(
       String text, VoidCallback onTap, double topHeight, double bottomHeight) {
     return GestureDetector(
@@ -330,6 +394,51 @@ class CommunityForumView extends GetView<CommunityForumController> {
         ),
       ),
     );
+  }
+
+  // Load community data from API when card is tapped
+  void _loadCommunityDataFromAPI(String mainCategoryId) async {
+    print(
+        '🚀 CommunityForum - Loading API data for main category: $mainCategoryId');
+
+    // Show loading message
+    Get.snackbar(
+      'Loading...',
+      'Fetching community data from API...',
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: Color(0xFF01B3B2),
+      colorText: Colors.white,
+      duration: Duration(seconds: 2),
+    );
+
+    try {
+      // Load community data using the controller method
+      await controller.loadCommunityDataForCategory(mainCategoryId);
+
+      // Show success message
+      Get.snackbar(
+        'Success',
+        'Community data loaded from API!',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+        duration: Duration(seconds: 2),
+        icon: Icon(Icons.check_circle, color: Colors.white),
+      );
+    } catch (e) {
+      print('❌ CommunityForum - Error loading API data: $e');
+
+      // Show error message
+      Get.snackbar(
+        'Error',
+        'Failed to load community data from API',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        duration: Duration(seconds: 3),
+        icon: Icon(Icons.error, color: Colors.white),
+      );
+    }
   }
 }
 

@@ -63,6 +63,7 @@ class CustomBottomNavBar extends StatelessWidget {
                             onPressed: () {
                               if (index == 1) {
                                 // Profile - full screen without changing state
+                                navController.updateIndex(index);
                                 Get.to(() => ProfileView());
                               } else if (index == 2) {
                                 navController.setSubOption('learn');
@@ -83,53 +84,20 @@ class CustomBottomNavBar extends StatelessWidget {
                                 }
                               }
                             }),
-                        if (isSelected && index == 4)
+                        // Show tick indicator for selected tab
+                        if (isSelected)
                           Positioned(
                             top: 14,
-                            right: 14,
+                            right: _getTickPosition(index),
                             child: Container(
                               width: 10,
                               height: 10,
                               decoration: BoxDecoration(
-                                color: Colors.red,
+                                color: Color(0xFFFC1A1A),
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: Color(0xFFC4C7D5),
-                                  width: 2,
-                                ),
-                              ),
-                            ),
-                          ),
-                        if (isSelected && index == 2)
-                          Positioned(
-                            top: 14,
-                            right: 14,
-                            child: Container(
-                              width: 10,
-                              height: 10,
-                              decoration: BoxDecoration(
-                                color: Colors.red,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: Color(0xFFC4C7D5),
-                                  width: 2,
-                                ),
-                              ),
-                            ),
-                          ),
-                        if (isSelected && index == 1)
-                          Positioned(
-                            top: 14,
-                            right: 19,
-                            child: Container(
-                              width: 10,
-                              height: 10,
-                              decoration: BoxDecoration(
-                                color: Colors.red,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: Color(0xFFC4C7D5),
-                                  width: 2,
+                                  color: Colors.white,
+                                  width: 1.5,
                                 ),
                               ),
                             ),
@@ -144,19 +112,22 @@ class CustomBottomNavBar extends StatelessWidget {
         ));
   }
 
-  Widget _optionSelector(List<String> options, void Function(String) onSelect) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: options
-          .map((opt) => ListTile(
-                title: Text(
-                  opt,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                onTap: () => Get.back(),
-              ))
-          .toList(),
-    );
+  double _getTickPosition(int index) {
+    // Adjust tick position based on icon size and layout
+    switch (index) {
+      case 0: // Home
+        return 14.0;
+      case 1: // Profile
+        return 19.0;
+      case 2: // Learn
+        return 14.0;
+      case 3: // Shop
+        return 14.0;
+      case 4: // Notifications
+        return 14.0;
+      default:
+        return 14.0;
+    }
   }
 
   Widget _buildDynamicLabel(int selectedIndex) {

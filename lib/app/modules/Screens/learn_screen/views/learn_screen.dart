@@ -215,36 +215,45 @@ class LearnScreenView extends GetView<LearnScreenController> {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               // Left Text Section
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.w300,
-                      color: Color(0xFFD9D9D9),
+              Flexible(
+                flex: 2,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 30,
+                        fontWeight: FontWeight.w300,
+                        color: Color(0xFFD9D9D9),
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(height: ScreenUtils.height * 0.02),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      fontSize: 15,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w300,
+                    SizedBox(height: ScreenUtils.height * 0.02),
+                    Container(
+                      child: Text(
+                        subtitle,
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w300,
+                        ),
+                        overflow: TextOverflow.visible,
+                        softWrap: true,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
 
               SizedBox(width: ScreenUtils.width * 0.08),
-              Image.asset(
-                imagePath,
-                height: imageHeight,
-                width: imageWidth,
-                fit: BoxFit.contain,
+              Flexible(
+                child: Image.asset(
+                  imagePath,
+                  height: imageHeight,
+                  width: imageWidth,
+                  fit: BoxFit.contain,
+                ),
               ),
             ],
           ),

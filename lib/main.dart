@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:vropay_final/app/core/network/api_client.dart';
 import 'package:vropay_final/app/core/services/auth_service.dart';
+import 'package:vropay_final/app/core/services/community_service.dart';
 import 'package:vropay_final/app/core/services/forum_service.dart';
 import 'package:vropay_final/app/core/services/knowledge_service.dart';
 import 'package:vropay_final/app/core/services/learn_service.dart';
@@ -34,6 +35,11 @@ void main() async {
   Get.put(KnowledgeService(), permanent: true);
   Get.put(ForumService(), permanent: true);
   Get.put(LearnService(), permanent: true);
+  Get.put(CommunityService(), permanent: true);
+
+  // Debug: Verify CommunityService is registered
+  print(
+      '🚀 Main - CommunityService registered: ${Get.isRegistered<CommunityService>()}');
 
   runApp(const MyApp());
 }
