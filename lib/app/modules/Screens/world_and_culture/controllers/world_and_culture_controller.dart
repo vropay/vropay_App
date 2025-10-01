@@ -42,11 +42,17 @@ class WorldAndCultureController extends GetxController {
 
       print('🚀 WorldAndCulture - SubCategory ID: $subCategoryId');
       print('🚀 WorldAndCulture - SubCategory Name: $subCategoryName');
+      print('🚀 WorldAndCulture - Category ID: $categoryId');
+      print('🚀 WorldAndCulture - Category Name: $categoryName');
     }
 
     // Load topics from API
     if (subCategoryId != null && categoryId != null) {
       loadTopicsFromAPI();
+    } else if ((categoryName != null && categoryName!.isNotEmpty) &&
+        (subCategoryName != null && subCategoryName!.isNotEmpty)) {
+      // Resolve IDs from provided names then load topics
+      _resolveIdsFromNames();
     }
   }
 
@@ -107,5 +113,79 @@ class WorldAndCultureController extends GetxController {
   // Go back to the previous screen
   void goBack() {
     Get.back();
+  }
+
+  // Resolve categoryId and subCategoryId from provided names
+  Future<void> _resolveIdsFromNames() async {
+    try {
+      isLoading.value = true;
+      final providedCategoryName = _normalizeName(categoryName ?? '');
+      final providedSubCategoryName = _normalizeName(subCategoryName ?? '');
+
+      // 1) Find main category by name
+      final mainResp = await _learnService.getMainCategories();
+      if (!mainResp.success || mainResp.data == null) {
+        _showNoDataMessage();
+        return;
+      }
+
+      final List<Map<String, dynamic>> mains =
+          (mainResp.data!['items'] as List<Map<String, dynamic>>? ??
+              <Map<String, dynamic>>[]);
+
+      final main = mains.firstWhere(
+        (m) =>
+            _normalizeName(m['name']?.toString() ?? '') == providedCategoryName,
+        orElse: () => <String, dynamic>{},
+      );
+
+      if (main.isEmpty || main['_id'] == null) {
+        _showNoDataMessage();
+        return;
+      }
+
+      categoryId = main['_id'].toString();
+
+      // 2) Find subcategory by name
+      final subResp = await _learnService.getSubCategories(categoryId!);
+      if (!subResp.success || subResp.data == null) {
+        _showNoDataMessage();
+        return;
+      }
+
+      final List<Map<String, dynamic>> subs =
+          (subResp.data!['items'] as List<Map<String, dynamic>>? ??
+              <Map<String, dynamic>>[]);
+
+      final sub = subs.firstWhere(
+        (s) =>
+            _normalizeName(s['name']?.toString() ?? '') ==
+            providedSubCategoryName,
+        orElse: () => <String, dynamic>{},
+      );
+
+      if (sub.isEmpty || sub['_id'] == null) {
+        _showNoDataMessage();
+        return;
+      }
+
+      subCategoryId = sub['_id'].toString();
+
+      // 3) Load topics now that IDs are known
+      await loadTopicsFromAPI();
+    } catch (e) {
+      print('❌ WorldAndCulture - Resolve IDs error: $e');
+      _showNoDataMessage();
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  String _normalizeName(String raw) {
+    final lower = raw.toLowerCase().trim();
+    return lower
+        .replaceAll('_', ' ')
+        .replaceAll('-', ' ')
+        .replaceAll(RegExp(r'\s+'), ' ');
   }
 }

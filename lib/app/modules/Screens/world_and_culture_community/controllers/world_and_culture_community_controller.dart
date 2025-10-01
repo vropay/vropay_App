@@ -18,9 +18,6 @@ class WorldAndCultureCommunityController extends GetxController {
     'podcast',
   ].obs;
 
-
-
-
   // Go back to the previous screen
   void goBack() {
     Get.back();

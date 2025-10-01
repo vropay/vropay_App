@@ -85,7 +85,10 @@ class PersonalGrowthCommunityScreen
   Widget _buildCategoryCard(String category, int index) {
     return GestureDetector(
       onTap: () {
-        Get.toNamed(Routes.CONSENT_SCREEN);
+        Get.toNamed(Routes.PERSONAL_GROWTH_SCREEN, arguments: {
+          'categoryName': 'personal growth',
+          'subCategoryName': category,
+        });
       },
       child: Container(
         height: ScreenUtils.height * 0.2,

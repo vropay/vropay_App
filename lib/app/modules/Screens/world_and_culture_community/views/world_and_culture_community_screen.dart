@@ -88,7 +88,10 @@ class WorldAndCultureCommunityScreen
   Widget _buildCategoryCard(String category, int index) {
     return GestureDetector(
       onTap: () {
-        Get.toNamed(Routes.CONSENT_SCREEN);
+        Get.toNamed(Routes.WORLD_AND_CULTURE_SCREEN, arguments: {
+          'categoryName': 'world and culture',
+          'subCategoryName': category,
+        });
       },
       child: Container(
         height: ScreenUtils.height * 0.5,
