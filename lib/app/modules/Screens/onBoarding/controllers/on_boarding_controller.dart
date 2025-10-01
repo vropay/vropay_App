@@ -353,10 +353,11 @@ class OnBoardingController extends GetxController {
         userPhone.value = formattedPhone;
         isPhoneOtp.value = true; // This is phone OTP
 
-        // Call phone verification API
-        final response = await _authService.requestPhoneVerification(
-          phoneNumber: formattedPhone,
-        );
+        // Choose API based on flow
+        final response = isSignInFlow.value
+            ? await _authService.signInWithPhone(phoneNumber: formattedPhone)
+            : await _authService.requestPhoneVerification(
+                phoneNumber: formattedPhone);
 
         if (response.success) {
           Get.snackbar("OTP Sent", "OTP has been sent to $phone",
@@ -771,7 +772,7 @@ class OnBoardingController extends GetxController {
         ;
         return;
       }
-      final response = await _authService.verifySignInOtp(
+      final response = await _authService.verifyPhoneSignInOtp(
           phoneNumber: userPhone.value, otp: otp);
 
       if (response.success) {

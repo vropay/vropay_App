@@ -8,12 +8,22 @@ class ApiConstants {
   static const String signIn = '$apiVersion/signin';
   static const String verifyOtp = '$apiVersion/verify-otp';
   static const String verifySignin = '$apiVersion/verify-signin';
+
+  // Phone sign up endpoints
   static const String signUpPhoneVerification =
       '$apiVersion/request-phone-verification';
   static const String signUpVerifyPhoneNumber =
       '$apiVersion/verify-phone-number';
+
+  // Google auth endpoints
   static const String googleAuth = '$apiVersion/google-auth';
   static const String appleAuth = '$apiVersion/apple-auth';
+
+  // Phone sign in endpoints
+  static const String phoneSignIn =
+      '$apiVersion/signin'; //  Phone sign-in endpoint
+  static const String phoneSignInVerify =
+      '$apiVersion/verify-signin'; // Phone OTP verification
 
   // User Endpoints
   static const String userProfile = '$apiVersion/profile';
@@ -51,7 +61,7 @@ class ApiConstants {
   static const int receiveTimeout = 120000; // 120 seconds
 
   // API Response Status Codes
-  static const int succesCode = 200;
+  static const int successCode = 200;
   static const int createdCode = 201;
   static const int badRequestCode = 400;
   static const int unauthorizedCode = 401;
@@ -62,4 +72,20 @@ class ApiConstants {
   // Interest screen's
   static const String interest = '$apiVersion/interests';
   static const String updateUserInterests = '$apiVersion/interests/user';
+
+  // Learn Screen endpoints
+  static const String learnMainCategories = '$apiVersion/main-categories';
+
+  // knowledge center endpoints
+  static String learnMainCategoryById(String id) =>
+      '$apiVersion/learn/main-categories/$id';
+
+  static String learnSubCategories(String mainId) =>
+      '$apiVersion/learn/main-categories/$mainId/sub-categories';
+
+  static String learnTopics(String mainId, String subId) =>
+      '$apiVersion/learn/main-categories/$mainId/sub-categories/$subId/topics';
+
+  static String learnEntries(String mainId, String subId, String topicId) =>
+      '$apiVersion/learn/main-categories/$mainId/sub-categories/$subId/topics/$topicId/entries';
 }

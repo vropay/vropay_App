@@ -1,6 +1,9 @@
 {
     "cSpell.words": [
+        "Getx",
         "vropay"
     ],
-    "java.configuration.updateBuildConfiguration": "disabled"
+    "java.configuration.updateBuildConfiguration": "disabled",
+    "editor.cursorSmoothCaretAnimation": "on",
+    "editor.cursorBlinking": "smooth"
 }

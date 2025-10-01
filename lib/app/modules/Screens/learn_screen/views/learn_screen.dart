@@ -3,8 +3,6 @@ import 'package:get/get.dart';
 import 'package:vropay_final/Components/top_navbar.dart';
 import 'package:vropay_final/Utilities/screen_utils.dart';
 
-import 'package:vropay_final/app/routes/app_pages.dart';
-
 import '../../../../../Components/bottom_navbar.dart';
 import '../controllers/learn_screen_controller.dart';
 
@@ -117,31 +115,62 @@ class LearnScreenView extends GetView<LearnScreenController> {
 
                 SizedBox(height: ScreenUtils.height * 0.042),
 
+                Obx(() {
+                  if (controller.isLoading.value) {
+                    return Center(
+                      child: CircularProgressIndicator(
+                        color: Color(0xFF006DF4),
+                      ),
+                    );
+                  }
+
+                  // if (controller.mainCategories.isEmpty) {
+                  //   return _infoCard(
+                  //     "Knowledge\n Center",
+                  //     "Articles, blogs, explainers &\nvisuals on tech, money,\nmindset & more.",
+                  //     Color(0xFFE93A47),
+                  //     "learn",
+                  //     'assets/images/cupboard.png',
+                  //     ScreenUtils.height * 0.128,
+                  //     ScreenUtils.width * 0.2,
+                  //     ScreenUtils.width * 0.08,
+                  //     () => Get.toNamed(Routes.KNOWLEDGE_CENTER_SCREEN),
+                  //   );
+                  // }
+
+                  // Show first 2 categories from API
+                  return Column(
+                    children: [
+                      // First category
+                      if (controller.mainCategories.isNotEmpty)
+                        _buildCategoryCard(controller.mainCategories[0], 0),
+                      SizedBox(height: ScreenUtils.height * 0.058),
+                      // Second category
+                      if (controller.mainCategories.length > 1)
+                        _buildCategoryCard(
+                          controller.mainCategories[1],
+                          1,
+                        )
+                      // else
+                      //   _infoCard(
+                      //     "Community\n Forum",
+                      //     "Talk with the community\nfor real questions, real\nopinions, zero fluff.",
+                      //     Color(0xFF3E9292),
+                      //     "engage",
+                      //     'assets/images/communityForum.png',
+                      //     ScreenUtils.height * 0.122,
+                      //     ScreenUtils.width * 0.27,
+                      //     ScreenUtils.width * 0.3,
+                      //     () => Get.toNamed(Routes.COMMUNITY_FORUM),
+                      //   ),
+                    ],
+                  );
+                }),
+
                 // Info Cards
-                _infoCard(
-                  "Knowledge\n Center",
-                  "Articles, blogs, explainers &\nvisuals on tech, money,\nmindset & more.",
-                  Color(0xFFE93A47),
-                  "learn",
-                  'assets/images/cupboard.png',
-                  ScreenUtils.height * 0.128,
-                  ScreenUtils.width * 0.2,
-                  ScreenUtils.width * 0.08,
-                  () => Get.toNamed(Routes.KNOWLEDGE_CENTER_SCREEN),
-                ),
+
                 SizedBox(height: ScreenUtils.height * 0.058),
 
-                _infoCard(
-                  "Community\n Forum",
-                  "Talk with the community\nfor real questions, real\nopinions, zero fluff.",
-                  Color(0xFF3E9292),
-                  "engage",
-                  'assets/images/communityForum.png',
-                  ScreenUtils.height * 0.122,
-                  ScreenUtils.width * 0.27,
-                  ScreenUtils.width * 0.3,
-                  () => Get.toNamed(Routes.COMMUNITY_FORUM),
-                ),
                 SizedBox(height: ScreenUtils.height * 0.03),
 
                 // Bottom Image
@@ -258,5 +287,51 @@ class LearnScreenView extends GetView<LearnScreenController> {
         ],
       ),
     );
+  }
+
+  Widget _buildCategoryCard(Map<String, dynamic> category, int index) {
+    final colors = [
+      Color(0xFFE93A47), // Red
+      Color(0xFF3E9292), // Teal
+      Color(0xFF6A3DBE), // Purple
+    ];
+
+    final images = [
+      'assets/images/cupboard.png',
+      'assets/images/communityForum.png',
+      'assets/images/knowledgeCenter.png',
+    ];
+
+    final color = colors[index % colors.length];
+    final image = images[index % images.length];
+
+    return _infoCard(
+      category['name']?.toString().toUpperCase() ?? "CATEGORY",
+      category['description']?.toString() ?? "Explore this category",
+      color,
+      "explore",
+      image,
+      ScreenUtils.height * 0.128,
+      ScreenUtils.width * 0.2,
+      ScreenUtils.width * 0.08,
+      () => _onCategoryTap(category),
+    );
+  }
+
+  void _onCategoryTap(Map<String, dynamic> category) {
+    final categoryId = category['_id']?.toString();
+    if (categoryId != null) {
+      // Load subcategories and navigate to detail view
+      controller.onCategoryTap(category);
+
+      // You can navigate to a detail screen or show subcategories
+      Get.snackbar(
+        'Category Selected',
+        'Loading ${category['name']} content...',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Color(0xFF006DF4),
+        colorText: Colors.white,
+      );
+    }
   }
 }

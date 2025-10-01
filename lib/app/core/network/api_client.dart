@@ -175,15 +175,31 @@ class ApiClient {
 class _AuthInterceptor extends Interceptor {
   final GetStorage _storage = GetStorage();
 
+  // Endpoints that don't require authentication
+  final List<String> _noAuthEndpoints = [
+    '/api/signin',
+    '/api/signup',
+    '/api/google-auth',
+    '/api/apple-auth',
+    '/api/verify-otp',
+    '/api/verify-signin',
+  ];
+
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
-    final token = _storage.read('auth_token');
-    print(
-        '🔍 Auth Interceptor - Token: ${token != null ? 'EXISTS' : 'MISSING'}');
+    final requiresAuth =
+        !_noAuthEndpoints.any((endpoint) => options.path.contains(endpoint));
 
-    if (token != null) {
-      options.headers['Authorization'] = 'Bearer $token';
-      print('🔍 Auth Interceptor - Added Authorization header');
+    if (requiresAuth) {
+      final token = _storage.read('auth_token');
+      print(
+          '🔍 Auth Interceptor - Token: ${token != null ? 'EXISTS' : 'MISSING'}');
+      if (token != null) {
+        options.headers['Authorization'] = 'Bearer $token';
+        print('🔍 Auth Interceptor - Added Authorization header');
+      }
+    } else {
+      print('🔍 Auth Interceptor - Skipping auth for: ${options.path}');
     }
     handler.next(options);
   }

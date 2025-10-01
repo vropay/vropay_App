@@ -119,9 +119,13 @@ class AuthService extends GetxService {
       final responseData = response.data;
       print('✅ OTP verification response: $responseData');
 
-      // Save token and user data if available
-      if (responseData['token'] != null) {
-        await _saveAuthData(responseData['token'], responseData['user'] ?? {});
+      // Robust token extraction and optional profile hydration
+      final token = _extractToken(responseData, headers: response.headers.map);
+      if (token != null) {
+        await _saveAuthData(token, responseData['user'] ?? {});
+        try {
+          await getUserProfile();
+        } catch (_) {}
       }
 
       return ApiResponse.fromJson(
@@ -645,7 +649,7 @@ class AuthService extends GetxService {
 
       // Call backend logout api
       try {
-        final response = await _apiClient.post(ApiConstants.logout, data: {});
+        await _apiClient.post(ApiConstants.logout, data: {});
       } catch (e) {
         // Continue with local logout even if backedn fails
       }
@@ -670,18 +674,113 @@ class AuthService extends GetxService {
     }
   }
 
+  // Manually inject an existing token and restore session (useful for dev/QA)
+  Future<void> useExistingToken(String token) async {
+    try {
+      isLoading.value = true;
+      authToken.value = token;
+      isLoggedIn.value = true;
+      await _storage.write('auth_token', token);
+
+      // Try to load profile with the provided token
+      try {
+        await getUserProfile();
+      } catch (_) {
+        // Ignore; token may be valid but profile endpoint might be unavailable
+      }
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   // Phone sign in with api
   Future<ApiResponse<Map<String, dynamic>>> signInWithPhone({
     required String phoneNumber,
   }) async {
     try {
       isLoading.value = true;
-      final response = await _apiClient.post(ApiConstants.signIn, data: {
+
+      print('🚀 Sign-in with phone: $phoneNumber');
+
+      // Debug: Check if token exists (it shouldn't be required for sign-in)
+      final currentToken = _storage.read('auth_token');
+      print(
+          '🔍 Token before sign-in request: ${currentToken != null ? 'EXISTS' : 'MISSING'}');
+
+      final response = await _apiClient.post(ApiConstants.phoneSignIn, data: {
+        'phone': phoneNumber,
         'phoneNumber': phoneNumber,
       });
+      print('✅ Sign-in response: ${response.data}');
 
       return ApiResponse.fromJson(
           response.data, (data) => data as Map<String, dynamic>);
+    } catch (e) {
+      print('❌ Sign-in error: $e');
+
+      throw _handleAuthError(e);
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<ApiResponse<Map<String, dynamic>>> verifyPhoneSignInOtp({
+    required String phoneNumber,
+    required String otp,
+  }) async {
+    try {
+      isLoading.value = true;
+
+      final payload = {
+        'phone': phoneNumber, // tolerate backends expecting 'phone'
+        'phoneNumber': phoneNumber, // and those expecting 'phoneNumber'
+        'otp': otp,
+      };
+
+      final response = await _apiClient.post(
+        ApiConstants.phoneSignInVerify,
+        data: payload,
+      );
+
+      final data = response.data;
+
+      // Robust token extraction: body first, then headers
+      String? token;
+      if (data is Map<String, dynamic>) {
+        token = data['token'] ??
+            data['accessToken'] ??
+            data['jwt'] ??
+            (data['data'] is Map<String, dynamic>
+                ? data['data']['token']
+                : null);
+      }
+      if (token == null) {
+        final headers = response.headers.map;
+        final authHeader = headers['authorization']?.first;
+        if (authHeader != null &&
+            authHeader.toLowerCase().startsWith('bearer ')) {
+          token = authHeader.substring(7);
+        }
+        token ??= headers['x-access-token']?.first;
+      }
+
+      if (token != null) {
+        await _saveAuthData(
+          token,
+          (data is Map<String, dynamic> && data['user'] is Map<String, dynamic>)
+              ? data['user'] as Map<String, dynamic>
+              : <String, dynamic>{},
+        );
+        // Optional: hydrate profile after auth
+        try {
+          await getUserProfile();
+        } catch (_) {}
+      }
+
+      return ApiResponse.fromJson(
+        data,
+        (d) => d as Map<String, dynamic>,
+      );
     } catch (e) {
       throw _handleAuthError(e);
     } finally {
@@ -689,28 +788,19 @@ class AuthService extends GetxService {
     }
   }
 
-  // Verify Sign-in otp
-  Future<ApiResponse<Map<String, dynamic>>> verifySignInOtp({
-    required String phoneNumber,
-    required String otp,
-  }) async {
-    try {
-      isLoading.value = false;
-
-      final response = await _apiClient.post(ApiConstants.verifySignin,
-          data: {'phoneNumber': phoneNumber, 'otp': otp});
-
-      final responseData = response.data;
-
-      if (responseData['token'] != null) {
-        await _saveAuthData(responseData['token'], responseData['user'] ?? {});
-      }
-      return ApiResponse.fromJson(
-          responseData, (data) => data as Map<String, dynamic>);
-    } catch (e) {
-      throw _handleAuthError(e);
-    } finally {
-      isLoading.value = false;
+  String? _extractToken(dynamic data, {Map<String, List<String>>? headers}) {
+    if (data is Map<String, dynamic>) {
+      return data['token'] ??
+          data['accessToken'] ??
+          data['jwt'] ??
+          (data['data'] is Map ? data['data']['token'] : null);
     }
+    // header fallbacks
+    final authHeader = headers?['authorization']?.first;
+    if (authHeader != null && authHeader.toLowerCase().startsWith('bearer ')) {
+      return authHeader.substring(7);
+    }
+    final xToken = headers?['x-access-token']?.first;
+    return xToken;
   }
 }

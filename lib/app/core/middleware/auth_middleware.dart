@@ -9,11 +9,17 @@ class AuthMiddleware extends GetMiddleware {
 
   @override
   RouteSettings? redirect(String? route) {
-    final authService = Get.find<AuthService>();
+    try {
+      final authService = Get.find<AuthService>();
 
-    // If user is authenticated, redirect to home/dashboard
-    if (authService.isAuthenticated) {
-      return RouteSettings(name: Routes.DASHBOARD);
+      // If user is authenticated, redirect to home/dashboard
+      if (authService.isLoggedIn.value &&
+          authService.authToken.value.isNotEmpty) {
+        return RouteSettings(name: Routes.DASHBOARD);
+      }
+    } catch (e) {
+      // If AuthService is not initialized yet, allow navigation to continue
+      print('AuthMiddleware: AuthService not ready yet, allowing navigation');
     }
 
     return null;
@@ -26,10 +32,18 @@ class GuestMiddleware extends GetMiddleware {
 
   @override
   RouteSettings? redirect(String? route) {
-    final authService = Get.find<AuthService>();
+    try {
+      final authService = Get.find<AuthService>();
 
-    // If user is not authenticated, redirect to onboarding
-    if (!authService.isAuthenticated) {
+      // If user is not authenticated, redirect to onboarding
+      if (!authService.isLoggedIn.value ||
+          authService.authToken.value.isEmpty) {
+        return RouteSettings(name: Routes.ON_BOARDING);
+      }
+    } catch (e) {
+      // If AuthService is not initialized yet, redirect to onboarding
+      print(
+          'GuestMiddleware: AuthService not ready yet, redirecting to onboarding');
       return RouteSettings(name: Routes.ON_BOARDING);
     }
     return null;
