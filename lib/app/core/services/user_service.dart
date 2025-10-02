@@ -16,7 +16,7 @@ class UserService extends GetxService {
     required String profession,
   }) async {
     try {
-      final response = await _apiClient.put(ApiConstants.userProfile, data: {
+      final response = await _apiClient.put(ApiConstant.userProfile, data: {
         'firstName': firstName,
         'lastName': lastName,
         'gender': gender,
@@ -37,8 +37,7 @@ class UserService extends GetxService {
     required List<String> selectedTopics,
   }) async {
     try {
-      final response =
-          await _apiClient.put(ApiConstants.userPreferences, data: {
+      final response = await _apiClient.put(ApiConstant.userPreferences, data: {
         'selectedTopics': selectedTopics,
       });
 
@@ -53,7 +52,7 @@ class UserService extends GetxService {
   Future<ApiResponse<UserModel>> updateDifficultyLevel(
       {required String difficultyLevel}) async {
     try {
-      final response = await _apiClient.put(ApiConstants.userPreferences,
+      final response = await _apiClient.put(ApiConstant.userPreferences,
           data: {'difficultyLevel': difficultyLevel});
 
       return ApiResponse.fromJson(
@@ -67,8 +66,7 @@ class UserService extends GetxService {
   Future<ApiResponse<UserModel>> updateCommunityAccess(
       {required String communityAccess}) async {
     try {
-      final response =
-          await _apiClient.put(ApiConstants.userPreferences, data: {
+      final response = await _apiClient.put(ApiConstant.userPreferences, data: {
         'communityAccess': communityAccess,
       });
 
@@ -83,8 +81,7 @@ class UserService extends GetxService {
   Future<ApiResponse<UserModel>> updateNotificationPreferences(
       {required bool notificationsEnabled}) async {
     try {
-      final response =
-          await _apiClient.put(ApiConstants.userPreferences, data: {
+      final response = await _apiClient.put(ApiConstant.userPreferences, data: {
         'notificationsEnabled': notificationsEnabled,
       });
 
@@ -108,7 +105,7 @@ class UserService extends GetxService {
     required bool notificationsEnabled,
   }) async {
     try {
-      final response = await _apiClient.patch(ApiConstants.updateUser, data: {
+      final response = await _apiClient.patch(ApiConstant.updateUser, data: {
         'firstName': firstName,
         'lastName': lastName,
         'gender': gender,

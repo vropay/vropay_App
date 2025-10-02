@@ -77,7 +77,7 @@ class AuthService extends GetxService {
       isLoading.value = true;
 
       print('🚀 Signing up with email: $email, name: $name');
-      print('🔗 Full URL: ${ApiConstants.baseUrl}${ApiConstants.signUp}');
+      print('🔗 Full URL: ${ApiConstant.baseUrl}${ApiConstant.signUp}');
 
       final requestData = {
         'email': email,
@@ -88,7 +88,7 @@ class AuthService extends GetxService {
       // Test connection first
       try {
         final response =
-            await _apiClient.post(ApiConstants.signUp, data: requestData);
+            await _apiClient.post(ApiConstant.signUp, data: requestData);
         print('🔗 Response received successfully');
         return _processSignupResponse(response);
       } catch (e) {
@@ -112,7 +112,7 @@ class AuthService extends GetxService {
       isLoading.value = true;
       print('🚀 Verifying OTP for email: $email, OTP: $otp');
 
-      final response = await _apiClient.post(ApiConstants.verifyOtp, data: {
+      final response = await _apiClient.post(ApiConstant.verifyOtp, data: {
         'email': email,
         'otp': otp,
       });
@@ -148,7 +148,7 @@ class AuthService extends GetxService {
       isLoading.value = true;
 
       print('🚀 Google auth with email: $email,');
-      final response = await _apiClient.post(ApiConstants.googleAuth, data: {
+      final response = await _apiClient.post(ApiConstant.googleAuth, data: {
         'idToken': idToken,
       });
 
@@ -181,7 +181,7 @@ class AuthService extends GetxService {
   }) async {
     try {
       isLoading.value = true;
-      final response = await _apiClient.post(ApiConstants.appleAuth, data: {
+      final response = await _apiClient.post(ApiConstant.appleAuth, data: {
         'email': email,
         'name': name,
         'identityToken': identityToken,
@@ -210,7 +210,7 @@ class AuthService extends GetxService {
       isLoading.value = true;
       print('🚀 AuthService - Getting user profile from API...');
 
-      final response = await _apiClient.get(ApiConstants.userProfile);
+      final response = await _apiClient.get(ApiConstant.userProfile);
       print('🔍 AuthService - Raw API response: ${response.data}');
       print('🔍 AuthService - Response type: ${response.data.runtimeType}');
 
@@ -266,7 +266,7 @@ class AuthService extends GetxService {
       isLoading.value = true;
       print('🚀 AuthService - Sending OTP for email change to: $newEmail');
 
-      final response = await _apiClient.post(ApiConstants.changeEmail, data: {
+      final response = await _apiClient.post(ApiConstant.changeEmail, data: {
         'newEmail': newEmail,
       });
 
@@ -301,7 +301,7 @@ class AuthService extends GetxService {
       }
 
       final response =
-          await _apiClient.post(ApiConstants.signUpPhoneVerification, data: {
+          await _apiClient.post(ApiConstant.signUpPhoneVerification, data: {
         'phoneNumber': phoneNumber,
       });
 
@@ -332,7 +332,7 @@ class AuthService extends GetxService {
           '🔍 Current token before phone OTP verification: ${currentToken != null ? 'EXISTS' : 'MISSING'}');
 
       final response =
-          await _apiClient.post(ApiConstants.signUpVerifyPhoneNumber, data: {
+          await _apiClient.post(ApiConstant.signUpVerifyPhoneNumber, data: {
         'otp': otp,
       });
 
@@ -388,7 +388,7 @@ class AuthService extends GetxService {
 
       try {
         final response =
-            await _apiClient.put(ApiConstants.updateUser, data: data);
+            await _apiClient.put(ApiConstant.updateUser, data: data);
         print('✅ Profile update response: ${response.data}');
 
         // Handle successful response
@@ -437,7 +437,7 @@ class AuthService extends GetxService {
   // get interest
   Future<Map<String, dynamic>> getInterests() async {
     try {
-      final response = await _apiClient.get(ApiConstants.interest);
+      final response = await _apiClient.get(ApiConstant.interest);
       final data = response.data;
       if (data is Map<String, dynamic>) {
         return data;
@@ -458,7 +458,7 @@ class AuthService extends GetxService {
       print('🚀 Updating user interests: $interests');
 
       final response =
-          await _apiClient.put(ApiConstants.updateUserInterests, data: {
+          await _apiClient.put(ApiConstant.updateUserInterests, data: {
         'interests': interests,
       });
 
@@ -482,7 +482,7 @@ class AuthService extends GetxService {
       isLoading.value = true;
       print('🚀 Saving selected interests: $interestIds');
 
-      final response = await _apiClient.post(ApiConstants.interest, data: {
+      final response = await _apiClient.post(ApiConstant.interest, data: {
         'interests': interestIds,
       });
 
@@ -523,7 +523,7 @@ class AuthService extends GetxService {
       print('🔍 Sending to backend: $data');
 
       final response =
-          await _apiClient.put(ApiConstants.userPreferences, data: data);
+          await _apiClient.put(ApiConstant.userPreferences, data: data);
       print('✅ Update preferences response: ${response.data}');
 
       return ApiResponse.fromJson(
@@ -581,7 +581,7 @@ class AuthService extends GetxService {
       print('🚀 Saving selected difficulty: $difficultyLevel');
 
       final response = await _apiClient
-          .post(ApiConstants.difficulty, data: {'difficulty': difficultyLevel});
+          .post(ApiConstant.difficulty, data: {'difficulty': difficultyLevel});
 
       print('✅ Save difficulty response: ${response.data}');
 
@@ -608,7 +608,7 @@ class AuthService extends GetxService {
       isLoading.value = true;
 
       final response =
-          await _apiClient.post(ApiConstants.communityAccess, data: {
+          await _apiClient.post(ApiConstant.communityAccess, data: {
         'community': accessType,
       });
 
@@ -628,7 +628,7 @@ class AuthService extends GetxService {
     try {
       isLoading.value = true;
 
-      final response = await _apiClient.post(ApiConstants.setNotification,
+      final response = await _apiClient.post(ApiConstant.setNotification,
           data: {'notifications': notificationStatus});
 
       return ApiResponse.fromJson(
@@ -649,7 +649,7 @@ class AuthService extends GetxService {
 
       // Call backend logout api
       try {
-        await _apiClient.post(ApiConstants.logout, data: {});
+        await _apiClient.post(ApiConstant.logout, data: {});
       } catch (e) {
         // Continue with local logout even if backedn fails
       }
@@ -707,7 +707,7 @@ class AuthService extends GetxService {
       print(
           '🔍 Token before sign-in request: ${currentToken != null ? 'EXISTS' : 'MISSING'}');
 
-      final response = await _apiClient.post(ApiConstants.phoneSignIn, data: {
+      final response = await _apiClient.post(ApiConstant.phoneSignIn, data: {
         'phone': phoneNumber,
         'phoneNumber': phoneNumber,
       });
@@ -738,7 +738,7 @@ class AuthService extends GetxService {
       };
 
       final response = await _apiClient.post(
-        ApiConstants.phoneSignInVerify,
+        ApiConstant.phoneSignInVerify,
         data: payload,
       );
 

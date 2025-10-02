@@ -20,7 +20,7 @@ class CommunityService extends GetxService {
       isLoading.value = true;
       print('🚀 CommunityService - Getting main categories');
 
-      final res = await _apiClient.get(ApiConstants.learnMainCategories);
+      final res = await _apiClient.get(ApiConstant.learnMainCategories);
       print('✅ CommunityService - Main categories response: ${res.data}');
 
       final data = _unwrap(res.data);
@@ -57,7 +57,7 @@ class CommunityService extends GetxService {
 
       // Use your backend endpoint - matches your backend: /api/main-category/{mainCategoryId}
       final res =
-          await _apiClient.get(ApiConstants.learnSubCategories(mainCategoryId));
+          await _apiClient.get(ApiConstant.learnSubCategories(mainCategoryId));
       print('✅ CommunityService - Subcategories response: ${res.data}');
 
       final data = _unwrap(res.data);
@@ -111,7 +111,7 @@ class CommunityService extends GetxService {
       isLoading.value = true;
       print('🚀 CommunityService - Getting main category by ID: $id');
 
-      final res = await _apiClient.get(ApiConstants.learnMainCategoryById(id));
+      final res = await _apiClient.get(ApiConstant.learnMainCategoryById(id));
       print('✅ CommunityService - Main category response: ${res.data}');
 
       final data = _unwrap(res.data);

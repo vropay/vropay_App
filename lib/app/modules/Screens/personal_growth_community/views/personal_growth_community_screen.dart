@@ -208,12 +208,28 @@ class PersonalGrowthCommunityScreen
 
   // Navigate to message screen
   void _navigateToMessageScreen(String topicName, String? topicId) {
+    print('🚀 [PERSONAL GROWTH COMMUNITY] Navigating to message screen...');
+    print('🚀 [PERSONAL GROWTH COMMUNITY] Topic Name: "$topicName"');
+    print('🚀 [PERSONAL GROWTH COMMUNITY] Topic ID: "$topicId"');
+
+    if (topicId == null || topicId.isEmpty) {
+      print('❌ [PERSONAL GROWTH COMMUNITY] Topic ID is null or empty!');
+      Get.snackbar('Error', 'Topic ID is missing');
+      return;
+    }
+
     Get.toNamed(Routes.MESSAGE_SCREEN, arguments: {
+      'interestId': topicId, // ✅ This will be used for the API call
+      'interestName': topicName, // ✅ This will be shown in header
       'subCategoryId': topicId,
       'subCategoryName': topicName,
       'categoryId': controller.categoryId,
       'categoryName': controller.categoryName,
     });
+
+    print('✅ [PERSONAL GROWTH COMMUNITY] Navigation initiated with arguments:');
+    print('   - interestId: $topicId');
+    print('   - interestName: $topicName');
   }
 
   Color _getTopicColor(int index) {

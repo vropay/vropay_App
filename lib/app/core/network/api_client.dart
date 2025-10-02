@@ -18,10 +18,10 @@ class ApiClient {
 
   void init() {
     _dio = Dio(BaseOptions(
-        baseUrl: ApiConstants.baseUrl,
-        connectTimeout: Duration(milliseconds: ApiConstants.connectionTimeout),
-        receiveTimeout: Duration(milliseconds: ApiConstants.receiveTimeout),
-        headers: ApiConstants.defaultHeaders,
+        baseUrl: ApiConstant.baseUrl,
+        connectTimeout: Duration(milliseconds: ApiConstant.connectionTimeout),
+        receiveTimeout: Duration(milliseconds: ApiConstant.receiveTimeout),
+        headers: ApiConstant.defaultHeaders,
         validateStatus: (status) {
           return status != null && status < 500; // Accept all status code < 500
         }));

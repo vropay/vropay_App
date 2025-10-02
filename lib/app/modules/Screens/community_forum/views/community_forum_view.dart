@@ -413,6 +413,10 @@ class CommunityForumView extends GetView<CommunityForumController> {
 // Navigate to message screen
   void _navigateToMessageScreen(String subCategoryName, String? subCategoryId) {
     Get.toNamed(Routes.MESSAGE_SCREEN, arguments: {
+      'interestId': subCategoryId, // This is the key change - map to interestId
+      'interestName':
+          subCategoryName, // This is the key change - map to interestName
+
       'subCategoryId': subCategoryId,
       'subCategoryName': subCategoryName,
       'categoryId': subCategoryId,

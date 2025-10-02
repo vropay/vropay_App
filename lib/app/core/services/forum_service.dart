@@ -14,7 +14,7 @@ class ForumService extends GetxService {
       isLoading.value = true;
       print('🚀 Getting community forum categories');
 
-      final response = await _apiClient.get(ApiConstants.forumCategories);
+      final response = await _apiClient.get(ApiConstant.forumCategories);
 
       print('✅ Community forum categories response: ${response.data}');
 
@@ -50,7 +50,7 @@ class ForumService extends GetxService {
       isLoading.value = true;
       print('🚀 Getting subtopic community forum: $categoryId');
       final response = await _apiClient
-          .get('${ApiConstants.forumSubtopics}/$categoryId/subtopics');
+          .get('${ApiConstant.forumSubtopics}/$categoryId/subtopics');
       print('✅ Subtopic community forum response: ${response.data}');
 
       return ApiResponse.fromJson(
@@ -71,7 +71,7 @@ class ForumService extends GetxService {
       print('🚀 Getting forum groups for subtopic: $subtopicId');
 
       final response =
-          await _apiClient.get('${ApiConstants.forumRooms}/$subtopicId/room');
+          await _apiClient.get('${ApiConstant.forumRooms}/$subtopicId/room');
 
       print('✅ Forum groups for subtopic response: ${response.data}');
 
@@ -95,7 +95,7 @@ class ForumService extends GetxService {
       print('🚀 Posting message in community: $roomId');
 
       final response = await _apiClient
-          .post('${ApiConstants.forumMessages}/$roomId/messages', data: {
+          .post('${ApiConstant.forumMessages}/$roomId/messages', data: {
         'text': text,
       });
 

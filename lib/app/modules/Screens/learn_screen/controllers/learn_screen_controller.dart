@@ -28,6 +28,12 @@ class LearnScreenController extends GetxController {
     loadMainCategories();
   }
 
+  // Method to refresh categories (useful for pull-to-refresh or retry)
+  Future<void> refreshCategories() async {
+    print('🔄 LearnScreenController - Refreshing categories...');
+    await loadMainCategories();
+  }
+
   Future<void> loadMainCategories() async {
     try {
       isLoading.value = true;
@@ -36,13 +42,28 @@ class LearnScreenController extends GetxController {
       final resp = await _learn.getMainCategories();
       print('✅ LearnScreenController - Response received: ${resp.success}');
       print('📊 LearnScreenController - Response data: ${resp.data}');
+      print('📊 LearnScreenController - Response message: ${resp.message}');
 
       if (resp.success && resp.data != null) {
-        final items = (resp.data!['items'] as List<Map<String, dynamic>>);
-        print('📋 LearnScreenController - Items count: ${items.length}');
+        final items = resp.data!['items'] as List<Map<String, dynamic>>?;
+        print('📋 LearnScreenController - Items: $items');
+        print('📋 LearnScreenController - Items count: ${items?.length ?? 0}');
 
-        mainCategories.assignAll(items);
-        print('✅ LearnScreenController - Categories loaded successfully');
+        if (items != null && items.isNotEmpty) {
+          mainCategories.assignAll(items);
+          print(
+              '✅ LearnScreenController - Categories loaded successfully: ${mainCategories.length}');
+
+          // Log first category details for debugging
+          if (mainCategories.isNotEmpty) {
+            final firstCategory = mainCategories.first;
+            print(
+                '📋 LearnScreenController - First category: ${firstCategory['name']} (ID: ${firstCategory['_id']})');
+          }
+        } else {
+          print('⚠️ LearnScreenController - No categories found in response');
+          Get.snackbar('Info', 'No categories available at the moment');
+        }
       } else {
         print(
             '❌ LearnScreenController - Response not successful: ${resp.message}');
@@ -50,6 +71,8 @@ class LearnScreenController extends GetxController {
       }
     } catch (e) {
       print('❌ LearnScreenController - Exception: $e');
+      print('❌ LearnScreenController - Exception type: ${e.runtimeType}');
+      print('❌ LearnScreenController - Stack trace: ${StackTrace.current}');
 
       Get.snackbar('Error', 'Failed to load categories: ${e.toString()}');
     } finally {
@@ -326,7 +349,7 @@ class LearnScreenController extends GetxController {
             children: [
               if (entry['image'] != null)
                 Image.network(
-                  '${ApiConstants.baseUrl}/uploads/${entry['image']}',
+                  '${ApiConstant.baseUrl}/uploads/${entry['image']}',
                   width: double.infinity,
                   height: 200,
                   fit: BoxFit.cover,

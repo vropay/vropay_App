@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:vropay_final/Components/top_navbar.dart';
 import 'package:vropay_final/Utilities/screen_utils.dart';
+import 'package:vropay_final/app/routes/app_pages.dart';
 
 import '../../../../../Components/bottom_navbar.dart';
 import '../controllers/learn_screen_controller.dart';
@@ -18,170 +19,207 @@ class LearnScreenView extends GetView<LearnScreenController> {
         child: CustomTopNavBar(selectedIndex: null),
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 40),
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      Container(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 20, vertical: 30),
-                        width: ScreenUtils.width * 0.8,
-                        height: ScreenUtils.height * 0.38,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: Color(0xFF006DF4).withOpacity(0.2),
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                                color: Colors.black.withOpacity(0.05),
-                                blurRadius: 10,
-                                offset: Offset(0, 4)),
-                          ],
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "stay",
-                                  style: TextStyle(
-                                    fontSize: 40,
-                                    fontWeight: FontWeight.w400,
-                                    color: Color(0xFF616161),
-                                  ),
-                                ),
-                                Text(
-                                  "consistent ,",
-                                  style: TextStyle(
-                                    fontSize: 40,
-                                    fontWeight: FontWeight.w400,
-                                    color: Color(0xFF006DF4),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 30),
-                            Column(
-                              children: [
-                                Text(
-                                  "let curiosity",
-                                  style: TextStyle(
-                                    fontSize: 25,
-                                    fontWeight: FontWeight.w500,
-                                    color: Color(0xFF616161),
-                                  ),
-                                ),
-                                Text(
-                                  "compound",
-                                  style: TextStyle(
-                                    fontSize: 25,
-                                    fontWeight: FontWeight.w500,
-                                    color: Color(0xFF006DF4),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                      Positioned(
-                        bottom: -25,
-                        right: -10,
-                        child: Container(
-                          height: ScreenUtils.height * 0.07,
-                          width: ScreenUtils.width * 0.15,
+        child: RefreshIndicator(
+          onRefresh: () => controller.refreshCategories(),
+          color: Color(0xFF006DF4),
+          child: SingleChildScrollView(
+            physics: AlwaysScrollableScrollPhysics(),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 40),
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 30),
+                          width: ScreenUtils.width * 0.8,
+                          height: ScreenUtils.height * 0.38,
                           decoration: BoxDecoration(
-                            color: Color(0xFF6A3DBE),
-                            shape: BoxShape.circle,
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: Color(0xFF006DF4).withOpacity(0.2),
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                  color: Colors.black.withOpacity(0.05),
+                                  blurRadius: 10,
+                                  offset: Offset(0, 4)),
+                            ],
                           ),
-                          padding: EdgeInsets.all(12),
-                          child: Image.asset('assets/icons/downward_arrow.png',
-                              color: Colors.white, height: 25, width: 25),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "stay",
+                                    style: TextStyle(
+                                      fontSize: 40,
+                                      fontWeight: FontWeight.w400,
+                                      color: Color(0xFF616161),
+                                    ),
+                                  ),
+                                  Text(
+                                    "consistent ,",
+                                    style: TextStyle(
+                                      fontSize: 40,
+                                      fontWeight: FontWeight.w400,
+                                      color: Color(0xFF006DF4),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 30),
+                              Column(
+                                children: [
+                                  Text(
+                                    "let curiosity",
+                                    style: TextStyle(
+                                      fontSize: 25,
+                                      fontWeight: FontWeight.w500,
+                                      color: Color(0xFF616161),
+                                    ),
+                                  ),
+                                  Text(
+                                    "compound",
+                                    style: TextStyle(
+                                      fontSize: 25,
+                                      fontWeight: FontWeight.w500,
+                                      color: Color(0xFF006DF4),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                        Positioned(
+                          bottom: -25,
+                          right: -10,
+                          child: Container(
+                            height: ScreenUtils.height * 0.07,
+                            width: ScreenUtils.width * 0.15,
+                            decoration: BoxDecoration(
+                              color: Color(0xFF6A3DBE),
+                              shape: BoxShape.circle,
+                            ),
+                            padding: EdgeInsets.all(12),
+                            child: Image.asset(
+                                'assets/icons/downward_arrow.png',
+                                color: Colors.white,
+                                height: 25,
+                                width: 25),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
 
-                SizedBox(height: ScreenUtils.height * 0.042),
+                  SizedBox(height: ScreenUtils.height * 0.042),
 
-                Obx(() {
-                  if (controller.isLoading.value) {
-                    return Center(
-                      child: CircularProgressIndicator(
-                        color: Color(0xFF006DF4),
-                      ),
-                    );
-                  }
+                  Obx(() {
+                    if (controller.isLoading.value) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            CircularProgressIndicator(
+                              color: Color(0xFF006DF4),
+                            ),
+                            SizedBox(height: 16),
+                            Text(
+                              'Loading categories...',
+                              style: TextStyle(
+                                color: Color(0xFF616161),
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
 
-                  // if (controller.mainCategories.isEmpty) {
-                  //   return _infoCard(
-                  //     "Knowledge\n Center",
-                  //     "Articles, blogs, explainers &\nvisuals on tech, money,\nmindset & more.",
-                  //     Color(0xFFE93A47),
-                  //     "learn",
-                  //     'assets/images/cupboard.png',
-                  //     ScreenUtils.height * 0.128,
-                  //     ScreenUtils.width * 0.2,
-                  //     ScreenUtils.width * 0.08,
-                  //     () => Get.toNamed(Routes.KNOWLEDGE_CENTER_SCREEN),
-                  //   );
-                  // }
+                    // Show categories from API or fallback
+                    if (controller.mainCategories.isEmpty) {
+                      return Column(
+                        children: [
+                          _infoCard(
+                            "Knowledge\n Center",
+                            "Articles, blogs, explainers &\nvisuals on tech, money,\nmindset & more.",
+                            Color(0xFFE93A47),
+                            "learn",
+                            'assets/images/cupboard.png',
+                            ScreenUtils.height * 0.128,
+                            ScreenUtils.width * 0.2,
+                            ScreenUtils.width * 0.08,
+                            () => Get.toNamed(Routes.KNOWLEDGE_CENTER_SCREEN),
+                          ),
+                          SizedBox(height: ScreenUtils.height * 0.058),
+                          _infoCard(
+                            "Community\n Forum",
+                            "Talk with the community\nfor real questions, real\nopinions, zero fluff.",
+                            Color(0xFF3E9292),
+                            "engage",
+                            'assets/images/communityForum.png',
+                            ScreenUtils.height * 0.122,
+                            ScreenUtils.width * 0.27,
+                            ScreenUtils.width * 0.3,
+                            () => Get.toNamed(Routes.COMMUNITY_FORUM),
+                          ),
+                        ],
+                      );
+                    }
 
-                  // Show first 2 categories from API
-                  return Column(
-                    children: [
-                      // First category
-                      if (controller.mainCategories.isNotEmpty)
+                    // Show categories from API
+                    return Column(
+                      children: [
+                        // First category
                         _buildCategoryCard(controller.mainCategories[0], 0),
-                      SizedBox(height: ScreenUtils.height * 0.058),
-                      // Second category
-                      if (controller.mainCategories.length > 1)
-                        _buildCategoryCard(
-                          controller.mainCategories[1],
-                          1,
-                        )
-                      // else
-                      //   _infoCard(
-                      //     "Community\n Forum",
-                      //     "Talk with the community\nfor real questions, real\nopinions, zero fluff.",
-                      //     Color(0xFF3E9292),
-                      //     "engage",
-                      //     'assets/images/communityForum.png',
-                      //     ScreenUtils.height * 0.122,
-                      //     ScreenUtils.width * 0.27,
-                      //     ScreenUtils.width * 0.3,
-                      //     () => Get.toNamed(Routes.COMMUNITY_FORUM),
-                      //   ),
-                    ],
-                  );
-                }),
+                        SizedBox(height: ScreenUtils.height * 0.058),
+                        // Second category (if available)
+                        if (controller.mainCategories.length > 1)
+                          _buildCategoryCard(
+                            controller.mainCategories[1],
+                            1,
+                          )
+                        else
+                          _infoCard(
+                            "Community\n Forum",
+                            "Talk with the community\nfor real questions, real\nopinions, zero fluff.",
+                            Color(0xFF3E9292),
+                            "engage",
+                            'assets/images/communityForum.png',
+                            ScreenUtils.height * 0.122,
+                            ScreenUtils.width * 0.27,
+                            ScreenUtils.width * 0.3,
+                            () => Get.toNamed(Routes.COMMUNITY_FORUM),
+                          ),
+                      ],
+                    );
+                  }),
 
-                // Info Cards
+                  // Info Cards
 
-                SizedBox(height: ScreenUtils.height * 0.058),
+                  SizedBox(height: ScreenUtils.height * 0.058),
 
-                SizedBox(height: ScreenUtils.height * 0.03),
+                  SizedBox(height: ScreenUtils.height * 0.03),
 
-                // Bottom Image
-                Image.asset(
-                  'assets/images/targetImage.png',
-                  height: ScreenUtils.height * 0.3,
-                  width: ScreenUtils.width * 0.45,
-                ),
+                  // Bottom Image
+                  Image.asset(
+                    'assets/images/targetImage.png',
+                    height: ScreenUtils.height * 0.3,
+                    width: ScreenUtils.width * 0.45,
+                  ),
 
-                SizedBox(height: ScreenUtils.height * 0.02),
-              ],
+                  SizedBox(height: ScreenUtils.height * 0.02),
+                ],
+              ),
             ),
           ),
         ),

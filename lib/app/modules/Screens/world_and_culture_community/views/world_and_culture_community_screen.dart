@@ -196,12 +196,28 @@ class WorldAndCultureCommunityScreen
 
   // Navigate to message screen
   void _navigateToMessageScreen(String topicName, String? topicId) {
+    print('🚀 [WORLD & CULTURE COMMUNITY] Navigating to message screen...');
+    print('🚀 [WORLD & CULTURE COMMUNITY] Topic Name: "$topicName"');
+    print('🚀 [WORLD & CULTURE COMMUNITY] Topic ID: "$topicId"');
+
+    if (topicId == null || topicId.isEmpty) {
+      print('❌ [WORLD & CULTURE COMMUNITY] Topic ID is null or empty!');
+      Get.snackbar('Error', 'Topic ID is missing');
+      return;
+    }
+
     Get.toNamed(Routes.MESSAGE_SCREEN, arguments: {
+      'interestId': topicId, // ✅ This will be used for the API call
+      'interestName': topicName, // ✅ This will be shown in header
       'subCategoryId': topicId,
       'subCategoryName': topicName,
       'categoryId': controller.categoryId,
       'categoryName': controller.categoryName,
     });
+
+    print('✅ [WORLD & CULTURE COMMUNITY] Navigation initiated with arguments:');
+    print('   - interestId: $topicId');
+    print('   - interestName: $topicName');
   }
 
   Color _getCategoryColor(int index) {

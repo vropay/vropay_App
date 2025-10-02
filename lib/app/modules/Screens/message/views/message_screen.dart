@@ -31,7 +31,6 @@ class _MessageScreenState extends State<MessageScreen> {
   @override
   void initState() {
     super.initState();
-    controller.loadMessages();
     controller.setScrollCallback(() {
       if (_scrollController.hasClients) {
         _scrollController.animateTo(
@@ -51,25 +50,6 @@ class _MessageScreenState extends State<MessageScreen> {
     super.dispose();
   }
 
-  void _scrollToBottom() {
-    if (_scrollController.hasClients) {
-      try {
-        // Use a small delay to ensure the UI has updated
-        Future.delayed(const Duration(milliseconds: 50), () {
-          if (_scrollController.hasClients) {
-            _scrollController.animateTo(
-              _scrollController.position.maxScrollExtent,
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeOut,
-            );
-          }
-        });
-      } catch (e) {
-        print('Error scrolling to bottom: $e');
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -77,6 +57,7 @@ class _MessageScreenState extends State<MessageScreen> {
         body: Stack(
           children: [
             CustomScrollView(
+              controller: _scrollController,
               slivers: [
                 // SliverAppBar with blur effect
                 Obx(() => SliverAppBar(
@@ -103,11 +84,11 @@ class _MessageScreenState extends State<MessageScreen> {
                       ),
                       leadingWidth: 48,
                       title: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Text(
-                            "news",
+                            controller.interestName.value,
                             style: TextStyle(
                               fontSize: 50,
                               color: const Color(0xFFCC415D),
@@ -116,7 +97,7 @@ class _MessageScreenState extends State<MessageScreen> {
                           ),
                           SizedBox(width: ScreenUtils.width * 0.02),
                           Text(
-                            "\n400 members",
+                            "\n${controller.memberCount.value} members",
                             style: TextStyle(
                               fontSize: 10,
                               color: const Color(0xFF616161),
@@ -126,68 +107,76 @@ class _MessageScreenState extends State<MessageScreen> {
                         ],
                       ),
                       actions: [
-                        Padding(
-                          padding: const EdgeInsets.only(right: 20.0, top: 15),
-                          child: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _showSearchOverlay = true;
-                              });
-                            },
-                            child: Container(
-                              width: 30,
-                              height: 30,
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                              ),
-                              child: CustomPaint(
-                                painter: _DottedCirclePainter(),
-                                child: const Center(
-                                  child: Icon(
-                                    Icons.add,
-                                    size: 20,
-                                    color: Color(0xFF714FC0),
+                        Obx(() => controller.canSendMessages.value
+                            ? Padding(
+                                padding:
+                                    const EdgeInsets.only(right: 20.0, top: 15),
+                                child: GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      _showSearchOverlay = true;
+                                    });
+                                  },
+                                  child: Container(
+                                    width: 30,
+                                    height: 30,
+                                    decoration: const BoxDecoration(
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: CustomPaint(
+                                      painter: _DottedCirclePainter(),
+                                      child: const Center(
+                                        child: Icon(
+                                          Icons.add,
+                                          size: 20,
+                                          color: Color(0xFF714FC0),
+                                        ),
+                                      ),
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(right: 29.0, top: 15),
-                          child: GestureDetector(
-                            onTap: () {
-                              controller.toggleBlurEffect();
-                              setState(() {
-                                _showImportantMessage = true;
-                              });
-                            },
-                            child: Obx(() => controller
-                                    .isImportantIconPressed.value
-                                ? Container(
-                                    padding: const EdgeInsets.all(4),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(8),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withOpacity(0.1),
-                                          blurRadius: 4,
-                                          offset: const Offset(0, 2),
-                                        ),
-                                      ],
-                                    ),
-                                    child: Image.asset(
-                                      KImages.importantIcon,
-                                      height: 30,
-                                    ),
-                                  )
-                                : Image.asset(
-                                    KImages.importantIcon,
-                                    height: 30,
-                                  )),
-                          ),
-                        )
+                              )
+                            : const SizedBox.shrink()),
+                        Obx(() => controller.canSendMessages.value
+                            ? Padding(
+                                padding:
+                                    const EdgeInsets.only(right: 29.0, top: 15),
+                                child: GestureDetector(
+                                  onTap: () {
+                                    controller.toggleBlurEffect();
+                                    setState(() {
+                                      _showImportantMessage = true;
+                                    });
+                                  },
+                                  child: Obx(() =>
+                                      controller.isImportantIconPressed.value
+                                          ? Container(
+                                              padding: const EdgeInsets.all(4),
+                                              decoration: BoxDecoration(
+                                                color: Colors.white,
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: Colors.black
+                                                        .withOpacity(0.1),
+                                                    blurRadius: 4,
+                                                    offset: const Offset(0, 2),
+                                                  ),
+                                                ],
+                                              ),
+                                              child: Image.asset(
+                                                KImages.importantIcon,
+                                                height: 30,
+                                              ),
+                                            )
+                                          : Image.asset(
+                                              KImages.importantIcon,
+                                              height: 30,
+                                            )),
+                                ),
+                              )
+                            : const SizedBox.shrink())
                       ],
                     )),
 
@@ -199,6 +188,19 @@ class _MessageScreenState extends State<MessageScreen> {
                     color: Color(0xFF01B3B2),
                   ),
                 ),
+                // Loading indicator
+                Obx(() => controller.isLoading.value
+                    ? SliverToBoxAdapter(
+                        child: Container(
+                          padding: const EdgeInsets.all(20),
+                          child: const Center(
+                            child: CircularProgressIndicator(
+                              color: Color(0xFF714FC0),
+                            ),
+                          ),
+                        ),
+                      )
+                    : const SliverToBoxAdapter(child: SizedBox.shrink())),
 
                 // Reply indicator
                 SliverToBoxAdapter(
@@ -232,40 +234,59 @@ class _MessageScreenState extends State<MessageScreen> {
                     childCount: controller.messages.length,
                   ),
                 ),
+                // Load more button
+                SliverToBoxAdapter(
+                  child: Obx(() => controller.hasNextPage
+                      ? Container(
+                          padding: const EdgeInsets.all(16),
+                          child: Center(
+                            child: ElevatedButton(
+                              onPressed: () => controller.loadMoreMessages(),
+                              child: const Text('Load More Messages'),
+                            ),
+                          ),
+                        )
+                      : const SizedBox.shrink()),
+                ),
               ],
             ),
 
             // Fixed Message Input Area at Bottom
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: Container(
-                color: Colors.white,
-                padding: EdgeInsets.only(
-                  bottom: MediaQuery.of(context).padding.bottom,
-                  top: 8,
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Divider(
-                      color: Color(0xFF01B3B2).withOpacity(0.5),
-                    ),
-                    // Quick reply buttons above message input
-                    if (_showQuickReplies) _buildQuickReplyButtons(),
-                    // Message input field
-                    Padding(
-                      padding: const EdgeInsets.only(left: 10, right: 10),
-                      child: _buildMessageInput(),
-                    ),
-                  ],
-                ),
-              ),
+            Obx(
+              () => controller.canSendMessages.value
+                  ? Positioned(
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      child: Container(
+                        color: Colors.white,
+                        padding: EdgeInsets.only(
+                          bottom: MediaQuery.of(context).padding.bottom,
+                          top: 8,
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Divider(
+                              color: Color(0xFF01B3B2).withOpacity(0.5),
+                            ),
+                            // Quick reply buttons above message input
+                            if (_showQuickReplies) _buildQuickReplyButtons(),
+                            // Message input field
+                            Padding(
+                              padding:
+                                  const EdgeInsets.only(left: 10, right: 10),
+                              child: _buildMessageInput(),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  : const SizedBox.shrink(),
             ),
 
             // Important Message Overlay
-            if (_showImportantMessage)
+            if (_showImportantMessage && controller.canSendMessages.value)
               Positioned.fill(
                 child: Stack(
                   children: [

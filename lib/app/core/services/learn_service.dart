@@ -13,21 +13,59 @@ class LearnService extends GetxService {
     try {
       isLoading.value = true;
       print(
-          '🚀 LearnService - Getting main categories from: ${ApiConstants.learnMainCategories}');
+          '🚀 LearnService - Getting main categories from: ${ApiConstant.learnMainCategories}');
       print(
-          '🔗 Full URL: ${ApiConstants.baseUrl}${ApiConstants.learnMainCategories}');
+          '🔗 Full URL: ${ApiConstant.baseUrl}${ApiConstant.learnMainCategories}');
 
-      final res = await _api.get(ApiConstants.learnMainCategories);
+      final res = await _api.get(ApiConstant.learnMainCategories);
       print('✅ LearnService - Raw response: ${res.data}');
       print('✅ LearnService - Response status: ${res.statusCode}');
 
-      final data = _unwrap(res.data);
-      print('🔍 LearnService - Unwrapped data: $data');
+      // Handle different response formats
+      List<Map<String, dynamic>> categories = [];
 
-      final list = _asListOfMap(data);
-      print('📋 LearnService - Parsed list length: ${list.length}');
+      if (res.data is List) {
+        // Direct array response
+        categories = (res.data as List).cast<Map<String, dynamic>>();
+        print(
+            '📋 LearnService - Direct array response, categories count: ${categories.length}');
+      } else if (res.data is Map<String, dynamic>) {
+        final data = res.data as Map<String, dynamic>;
 
-      return ApiResponse.success({'items': list});
+        // Check for common response patterns
+        if (data.containsKey('data') && data['data'] is List) {
+          categories = (data['data'] as List).cast<Map<String, dynamic>>();
+          print(
+              '📋 LearnService - Data array response, categories count: ${categories.length}');
+        } else if (data.containsKey('items') && data['items'] is List) {
+          categories = (data['items'] as List).cast<Map<String, dynamic>>();
+          print(
+              '📋 LearnService - Items array response, categories count: ${categories.length}');
+        } else if (data.containsKey('categories') &&
+            data['categories'] is List) {
+          categories =
+              (data['categories'] as List).cast<Map<String, dynamic>>();
+          print(
+              '📋 LearnService - Categories array response, categories count: ${categories.length}');
+        } else {
+          // Try to extract any array from the response
+          for (var key in data.keys) {
+            if (data[key] is List) {
+              categories = (data[key] as List).cast<Map<String, dynamic>>();
+              print(
+                  '📋 LearnService - Found array in key "$key", categories count: ${categories.length}');
+              break;
+            }
+          }
+        }
+      }
+
+      print('📋 LearnService - Final categories count: ${categories.length}');
+      if (categories.isNotEmpty) {
+        print('📋 LearnService - First category: ${categories.first}');
+      }
+
+      return ApiResponse.success({'items': categories});
     } catch (e) {
       print('❌ LearnService - Error: $e');
       print('❌ LearnService - Error type: ${e.runtimeType}');
@@ -44,7 +82,7 @@ class LearnService extends GetxService {
       isLoading.value = true;
       print('🚀 LearnService - Getting main category by ID: $id');
 
-      final res = await _api.get(ApiConstants.learnMainCategoryById(id));
+      final res = await _api.get(ApiConstant.learnMainCategoryById(id));
       print('✅ LearnService - Category response: ${res.data}');
 
       final data = _unwrap(res.data);
@@ -66,7 +104,7 @@ class LearnService extends GetxService {
           '🚀 LearnService - Getting subcategories for mainCategoryId: $mainCategoryId');
 
       final res =
-          await _api.get(ApiConstants.learnSubCategories(mainCategoryId));
+          await _api.get(ApiConstant.learnSubCategories(mainCategoryId));
       print('✅ LearnService - Subcategories response: ${res.data}');
 
       final data = _unwrap(res.data);
@@ -96,7 +134,7 @@ class LearnService extends GetxService {
           '🚀 LearnService - Getting topics for mainId: $mainCategoryId, subId: $subCategoryId');
 
       final res = await _api
-          .get(ApiConstants.learnTopics(mainCategoryId, subCategoryId));
+          .get(ApiConstant.learnTopics(mainCategoryId, subCategoryId));
       print('✅ LearnService - Topics response: ${res.data}');
 
       final data = _unwrap(res.data);
@@ -127,7 +165,7 @@ class LearnService extends GetxService {
           '🚀 LearnService - Getting entries for mainId: $mainCategoryId, subId: $subCategoryId, topicId: $topicId');
 
       final url =
-          ApiConstants.learnEntries(mainCategoryId, subCategoryId, topicId);
+          ApiConstant.learnEntries(mainCategoryId, subCategoryId, topicId);
       print('🌐 LearnService - API URL: $url');
 
       final res = await _api.get(url);
@@ -283,7 +321,7 @@ class LearnService extends GetxService {
       isLoading.value = true;
       print('🚀 LearnService - Getting entry content by ID: $entryId');
 
-      final res = await _api.get(ApiConstants.learnEntryContent(entryId));
+      final res = await _api.get(ApiConstant.learnEntryContent(entryId));
       print('✅ LearnService - Entry content response: ${res.data}');
 
       final data = _unwrap(res.data);
@@ -307,7 +345,7 @@ class LearnService extends GetxService {
       print(
           '🚀 LearnService - Getting content with details for: $mainCategoryId/$subCategoryId/$topicId/$entryId');
 
-      final res = await _api.get(ApiConstants.learnContentWithDetails(
+      final res = await _api.get(ApiConstant.learnContentWithDetails(
           mainCategoryId, subCategoryId, topicId, entryId));
       print('✅ LearnService - Content with details response: ${res.data}');
 
@@ -330,7 +368,7 @@ class LearnService extends GetxService {
           '🚀 LearnService - Searching content in subcategory: $subCategoryId, searchQuery: $searchQuery');
 
       final res = await _api
-          .get(ApiConstants.learnSearchContent(subCategoryId, searchQuery));
+          .get(ApiConstant.learnSearchContent(subCategoryId, searchQuery));
 
       final data = _unwrap(res.data);
       final list = _asListOfMap(data);
@@ -351,7 +389,7 @@ class LearnService extends GetxService {
       isLoading.value = true;
       print('🚀 LearnService - Getting related content for entry: $entryId');
 
-      final res = await _api.get(ApiConstants.learnRelatedContent(entryId));
+      final res = await _api.get(ApiConstant.learnRelatedContent(entryId));
       print('✅ LearnService - Related content response: ${res.data}');
 
       final data = _unwrap(res.data);

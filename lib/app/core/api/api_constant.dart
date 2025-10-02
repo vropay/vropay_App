@@ -1,7 +1,13 @@
-class ApiConstants {
+class ApiConstant {
   // Base URLs
   static const String baseUrl = 'http://10.0.2.2:3000';
   static const String apiVersion = '/api';
+
+  // Socket.IO Configuration
+  static const String socketUrl =
+      baseUrl; // CRITICAL: Your Socket.IO server URL
+  static const int socketTimeout = 5000; // 5 seconds
+  static const List<String> socketTransports = ['websocket'];
 
   // Authentication Endpoints
   static const String signUp = '$apiVersion/signup';
@@ -107,4 +113,17 @@ class ApiConstants {
 
   static String communityMainCategoryById(String mainCategoryId) =>
       '$apiVersion/main-category/$mainCategoryId';
+
+  // Message Endpoints
+  static const String sendMessage = '$apiVersion/messages';
+  static const String getInterestMessages =
+      '$apiVersion/messages'; // GET /api/messages/:interestId
+  static const String getInterestUserCount =
+      '$apiVersion/user-count'; // GET /api/user-count/:interestId
+
+// User Interest Endpoints (for checking user permissions)
+  static const String getUserInterests =
+      '$apiVersion/users'; // GET /api/users/:userId/interests
+  static const String getUserCommunityAccess =
+      '$apiVersion/users'; // GET /api/users/:userId/community-access
 }

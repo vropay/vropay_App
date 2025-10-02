@@ -196,7 +196,14 @@ class ConsentScreen extends GetView<ConsentController> {
                         if (onConsentAccepted != null) {
                           onConsentAccepted();
                         } else {
-                          Get.toNamed(Routes.MESSAGE_SCREEN);
+                          final args = Get.arguments as Map<String, dynamic>?;
+                          Get.toNamed(Routes.MESSAGE_SCREEN, arguments: {
+                            'interestId': args?['subCategoryId'], // ✅ ADD THIS
+                            'interestName':
+                                args?['subCategoryName'], // ✅ ADD THIS
+                            'subCategoryId': args?['subCategoryId'],
+                            'subCategoryName': args?['subCategoryName'],
+                          });
                         }
                       },
                       style: ElevatedButton.styleFrom(

@@ -15,7 +15,7 @@ class KnowledgeService extends GetxService {
       isLoading.value = true;
       print('🚀 Getting knowledge center topics/subtopics');
 
-      final response = await _apiClient.get(ApiConstants.learnMainCategories);
+      final response = await _apiClient.get(ApiConstant.learnMainCategories);
 
       print('✅ Knowledge center response: ${response.data}');
 
@@ -74,7 +74,7 @@ class KnowledgeService extends GetxService {
       print('🚀 Getting content for subtopic: $subtopicId');
 
       final response = await _apiClient
-          .get('${ApiConstants.subtopicContents}/$subtopicId/contents');
+          .get('${ApiConstant.subtopicContents}/$subtopicId/contents');
 
       print('✅ Content for subtopic response: ${response.data}');
 
@@ -96,7 +96,7 @@ class KnowledgeService extends GetxService {
       print('🚀 Getting particular content: $contentId');
 
       final response =
-          await _apiClient.get('${ApiConstants.contentDetails}/$contentId');
+          await _apiClient.get('${ApiConstant.contentDetails}/$contentId');
 
       print('✅ Particular content response: ${response.data}');
 
