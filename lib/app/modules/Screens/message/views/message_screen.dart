@@ -93,14 +93,15 @@ class _MessageScreenState extends State<MessageScreen> {
                       shadowColor: Colors.transparent,
                       flexibleSpace: null,
                       leading: IconButton(
-                          onPressed: () {
-                            Get.back();
-                          },
-                          icon: Padding(
-                            padding: const EdgeInsets.only(left: 10),
-                            child: const BackIcon(),
-                          )),
-                      leadingWidth: 10,
+                        onPressed: () {
+                          Get.back();
+                        },
+                        icon: Padding(
+                          padding: const EdgeInsets.only(left: 10),
+                          child: BackIcon(isInsideButton: true),
+                        ),
+                      ),
+                      leadingWidth: 48,
                       title: Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         crossAxisAlignment: CrossAxisAlignment.center,
@@ -278,7 +279,11 @@ class _MessageScreenState extends State<MessageScreen> {
                       ),
                     ),
                     // Important Message Overlay - Simple Input Popup
-                    Positioned.fill(
+                    Positioned(
+                      top: kToolbarHeight,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
                       child: Stack(
                         children: [
                           // Full screen gesture detector to dismiss on outside tap
@@ -652,7 +657,11 @@ class _MessageScreenState extends State<MessageScreen> {
                               ),
                             ),
                           ),
-                          Positioned.fill(
+                          Positioned(
+                            top: kToolbarHeight,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
                             child: GestureDetector(
                               onTap: () {
                                 setState(() {
