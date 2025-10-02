@@ -171,6 +171,101 @@ class KnowledgeCenterScreenView
                     }),
 
                     SizedBox(height: ScreenUtils.height * 0.050),
+                    Card(
+                      color: Color(0xFFF9E4D7),
+                      elevation: 2,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "today's",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                        color: Color(0xFFE93A47),
+                                        fontSize: 25,
+                                      ),
+                                    ),
+                                    SizedBox(height: 4),
+                                    Container(
+                                      width: ScreenUtils.width * 0.4,
+                                      height: 1,
+                                      color: Color(0xFFE93A47),
+                                    ),
+                                    SizedBox(height: 4),
+                                    Text(
+                                      "readings",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                        color: Color(0xFFE93A47),
+                                        fontSize: 25,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(
+                                  width: ScreenUtils.width * 0.1,
+                                ),
+                                Image.asset(
+                                  'assets/icons/communitybox.png',
+                                  height: 30,
+                                )
+                              ],
+                            ),
+                            SizedBox(height: ScreenUtils.height * 0.02),
+                            GridView.count(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              crossAxisCount: 2,
+                              crossAxisSpacing: 8,
+                              mainAxisSpacing: 29,
+                              padding: EdgeInsets.only(
+                                bottom: 37,
+                              ),
+                              children: const [
+                                _CommunityBox(
+                                  label: 'HEALTH',
+                                  color: Color(0xFFFF4F4E),
+                                  colorText: Color(0xFF8E2100),
+                                ),
+                                _CommunityBox(
+                                  label: 'ASTRO',
+                                  color: Color(0xFF8E2100),
+                                  colorText: Color(0xFFFF0017),
+                                ),
+                                _CommunityBox(
+                                  label: 'TRAVEL',
+                                  color: Color(0xFFFF692D),
+                                  colorText: Color(0xFFD80031),
+                                ),
+                                _CommunityBox(
+                                  label: 'BOOKS',
+                                  color: Color(0xFFFF0017),
+                                  colorText: Color(0xFF690005),
+                                ),
+                                _CommunityBox(
+                                  label: 'FINANCE',
+                                  color: Color(0xFFFE8081),
+                                  colorText: Color(0xFF8E2100),
+                                ),
+                                _CommunityBox(
+                                  label: 'MUSIC',
+                                  color: Color(0xFFA65854),
+                                  colorText: Color(0xFFFF692D),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: ScreenUtils.height * 0.050),
                   ],
                 ),
               ),
