@@ -101,8 +101,20 @@ class CommunityForumController extends GetxController {
             duration: Duration(seconds: 2),
           );
         } else {
-          print('⚠️ CommunityForum - No subcategories found');
-          _showNoDataMessage();
+          print('⚠️ CommunityForum - No subcategories found for this category');
+          print('📋 CommunityForum - Category Name: $categoryName');
+          print('📋 CommunityForum - Category ID: $categoryId');
+
+          // Show helpful message
+          Get.snackbar(
+            'No Communities',
+            'No community subcategories are available for "$categoryName" yet. They will be added soon!',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.orange,
+            colorText: Colors.white,
+            duration: Duration(seconds: 3),
+            icon: Icon(Icons.info_outline, color: Colors.white),
+          );
         }
       } else {
         print(
@@ -199,36 +211,63 @@ class CommunityForumController extends GetxController {
             .data!['mainCategories'] as List<Map<String, dynamic>>;
 
         if (mainCategoriesList.isNotEmpty) {
-          // Use the first main category to load its subcategories
-          final firstCategory = mainCategoriesList.first;
-          final firstCategoryId = firstCategory['_id']?.toString();
+          // Load subcategories for ALL main categories (not just the first one)
+          print(
+              '🚀 CommunityForum - Found ${mainCategoriesList.length} main categories');
 
-          if (firstCategoryId != null) {
+          // Try each category until we find one with subcategories
+          bool foundSubCategories = false;
+          for (var mainCategory in mainCategoriesList) {
+            final mainCategoryId = mainCategory['_id']?.toString();
+            final mainCategoryName =
+                mainCategory['name']?.toString() ?? 'Unknown';
+
+            if (mainCategoryId != null) {
+              print('🚀 CommunityForum - Trying category: $mainCategoryName');
+
+              try {
+                final subCatResponse = await _communityService
+                    .fetchCommunityScreenData(mainCategoryId);
+
+                if (subCatResponse.success && subCatResponse.data != null) {
+                  final subs = subCatResponse.data!['subCategories']
+                      as List<Map<String, dynamic>>?;
+
+                  if (subs != null && subs.isNotEmpty) {
+                    this.subCategories.assignAll(subs);
+                    categoryId = mainCategoryId;
+                    categoryName = mainCategoryName;
+                    foundSubCategories = true;
+                    print(
+                        '✅ CommunityForum - Found ${subs.length} subcategories in $mainCategoryName');
+                    break;
+                  }
+                }
+              } catch (e) {
+                print(
+                    '⚠️ CommunityForum - Error loading $mainCategoryName: $e');
+                continue;
+              }
+            }
+          }
+
+          if (!foundSubCategories) {
             print(
-                '🚀 CommunityForum - Loading subcategories for first category: ${firstCategory['name']}');
-            await loadCommunityDataForCategory(firstCategoryId);
+                '⚠️ CommunityForum - No subcategories found in any main category');
+            _showNoDataMessage();
           }
         } else {
           print('⚠️ CommunityForum - No main categories found');
-          Get.snackbar(
-            'Info',
-            'No community categories available',
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.orange,
-            colorText: Colors.white,
-            duration: Duration(seconds: 3),
-          );
+          _showNoDataMessage();
         }
       } else {
         print(
             '❌ CommunityForum - Failed to load main categories: ${mainCategoriesResponse.message}');
-        // Fallback to forum categories
-        await loadForumCategories();
+        _showConnectivityError(mainCategoriesResponse.message);
       }
     } catch (e) {
       print('❌ CommunityForum - Error loading default community data: $e');
-      // Fallback to forum categories
-      await loadForumCategories();
+      _showConnectivityError(e.toString());
     } finally {
       isLoading.value = false;
     }

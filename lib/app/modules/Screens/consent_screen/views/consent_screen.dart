@@ -12,6 +12,11 @@ class ConsentScreen extends GetView<ConsentController> {
 
   @override
   Widget build(BuildContext context) {
+    // Get arguments passed from community screens
+    final args = Get.arguments as Map<String, dynamic>?;
+    final String subCategoryName = args?['subCategoryName'] ?? 'Community';
+    final VoidCallback? onConsentAccepted = args?['onConsentAccepted'];
+
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -187,7 +192,12 @@ class ConsentScreen extends GetView<ConsentController> {
                 Center(
                   child: ElevatedButton(
                       onPressed: () {
-                        Get.toNamed(Routes.MESSAGE_SCREEN);
+                        // Call the callback if provided, otherwise navigate to message screen
+                        if (onConsentAccepted != null) {
+                          onConsentAccepted();
+                        } else {
+                          Get.toNamed(Routes.MESSAGE_SCREEN);
+                        }
                       },
                       style: ElevatedButton.styleFrom(
                           fixedSize: Size(ScreenUtils.width * 0.5,

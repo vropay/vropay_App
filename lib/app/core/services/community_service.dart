@@ -233,6 +233,36 @@ class CommunityService extends GetxService {
     }
   }
 
+  // // Get topics for a specific subcategory
+  // Future<ApiResponse<List<Map<String, dynamic>>>> getTopics(
+  //     String mainCategoryId, String subCategoryId) async {
+  //   try {
+  //     isLoading.value = true;
+  //     print(
+  //         '🚀 CommunityService - Getting topics for mainCategoryId: $mainCategoryId, subCategoryId: $subCategoryId');
+
+  //     final res = await _apiClient.get(
+  //         '/api/main-category/$mainCategoryId/sub-category/$subCategoryId/topics');
+  //     print('✅ CommunityService - Topics response: ${res.data}');
+
+  //     final data = _unwrap(res.data);
+  //     print('🔍 CommunityService - Unwrapped topics data: $data');
+
+  //     List<Map<String, dynamic>> topics = [];
+  //     if (data is List) {
+  //       topics = data.whereType<Map<String, dynamic>>().toList();
+  //     }
+
+  //     print('📋 CommunityService - Parsed topics: ${topics.length}');
+  //     return ApiResponse.success(topics);
+  //   } catch (e) {
+  //     print('❌ CommunityService - Topics error: $e');
+  //     throw _handle(e);
+  //   } finally {
+  //     isLoading.value = false;
+  //   }
+  // }
+
   // Helper method to unwrap API response data
   dynamic _unwrap(dynamic data) {
     if (data is Map<String, dynamic>) {
@@ -290,6 +320,36 @@ class CommunityService extends GetxService {
   void _updateCache(String key, Map<String, dynamic> data) {
     _cache[key] = data;
     _cacheTimestamps[key] = DateTime.now();
+  }
+
+  // Get topics for a specific subcategory
+  Future<ApiResponse<List<Map<String, dynamic>>>> getTopics(
+      String mainCategoryId, String subCategoryId) async {
+    try {
+      isLoading.value = true;
+      print(
+          '🚀 CommunityService - Getting topics for mainCategoryId: $mainCategoryId, subCategoryId: $subCategoryId');
+
+      final res = await _apiClient.get(
+          '/api/main-category/$mainCategoryId/sub-category/$subCategoryId/topics');
+      print('✅ CommunityService - Topics response: ${res.data}');
+
+      final data = _unwrap(res.data);
+      print('🔍 CommunityService - Unwrapped topics data: $data');
+
+      List<Map<String, dynamic>> topics = [];
+      if (data is List) {
+        topics = data.whereType<Map<String, dynamic>>().toList();
+      }
+
+      print('📋 CommunityService - Parsed topics: ${topics.length}');
+      return ApiResponse.success(topics);
+    } catch (e) {
+      print('❌ CommunityService - Topics error: $e');
+      throw _handle(e);
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   // Clear cache method for memory management

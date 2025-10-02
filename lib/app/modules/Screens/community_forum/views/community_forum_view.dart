@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vropay_final/Utilities/constants/KImages.dart';
 import 'package:vropay_final/Utilities/screen_utils.dart';
 import 'package:vropay_final/app/modules/Screens/community_forum/controllers/community_forum_controller.dart';
@@ -178,7 +179,9 @@ class CommunityForumView extends GetView<CommunityForumController> {
                         return _buildApiContent();
                       }
 
-                      return SizedBox.shrink();
+                      return SizedBox.shrink(
+                        child: Text('No Data'),
+                      );
                     }),
 
                     SizedBox(height: ScreenUtils.height * 0.063),
@@ -308,35 +311,171 @@ class CommunityForumView extends GetView<CommunityForumController> {
   }
 
   // Handle subcategory tap - Navigate to appropriate topics screen
-  void _onSubCategoryTap(Map<String, dynamic> subCategory) {
+  void _onSubCategoryTap(Map<String, dynamic> subCategory) async {
     final subCategoryName = subCategory['name']?.toString() ?? 'Subcategory';
     final subCategoryId = subCategory['_id']?.toString();
 
     print(
         '🚀 CommunityForum - SubCategory tapped: $subCategoryName (ID: $subCategoryId)');
 
-    // Map subcategory names to route names
-    String routeName = _getRouteForSubCategory(subCategoryName);
+    // 1) Check API route first
+    final apiRoute = _getRouteForSubCategoryFromApi(subCategory);
 
-    if (routeName.isNotEmpty) {
-      // Navigate to the specific subcategory screen with data
-      Get.toNamed(routeName, arguments: {
-        'subCategoryId': subCategoryId,
-        'subCategoryName': subCategoryName,
-        'categoryId': controller.categoryId,
-        'categoryName': controller.categoryName,
-      });
+    if (apiRoute.isNotEmpty) {
+      // Use API route with first-time visit logic
+      await _handleApiRouteNavigation(subCategoryName, subCategoryId, apiRoute);
     } else {
-      // Fallback - show message if route not found
-      Get.snackbar(
-        'Coming Soon',
-        'Topics for $subCategoryName will be available soon',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Color(0xFF01B3B2),
-        colorText: Colors.white,
-        duration: Duration(seconds: 2),
-      );
+      // Fallback to static name-based mapping (no first-time logic)
+      final staticRoute = _getRouteForSubCategory(subCategoryName);
+
+      if (staticRoute.isNotEmpty) {
+        // Navigate directly to the static route
+        Get.toNamed(staticRoute, arguments: {
+          'subCategoryId': subCategoryId,
+          'subCategoryName': subCategoryName,
+          'categoryId': subCategoryId,
+          'categoryName': subCategoryName,
+          'mainCategoryId': controller.categoryId,
+        });
+      } else {
+        // Fallback - show message if route not found
+        Get.snackbar(
+          'Coming Soon',
+          'Topics for $subCategoryName will be available soon',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Color(0xFF01B3B2),
+          colorText: Colors.white,
+          duration: Duration(seconds: 2),
+        );
+      }
     }
+  }
+
+  // Handle API route navigation with first-time visit logic
+  Future<void> _handleApiRouteNavigation(
+      String subCategoryName, String? subCategoryId, String apiRoute) async {
+    // Check if this is the first time visiting this subcategory
+    final isFirstTime = await _isFirstTimeVisit(subCategoryId ?? '');
+
+    if (isFirstTime) {
+      // Show consent screen first for first-time visitors
+      _showConsentScreen(subCategoryName, subCategoryId, apiRoute);
+    } else {
+      // Navigate directly to message screen for returning visitors
+      _navigateToMessageScreen(subCategoryName, subCategoryId);
+    }
+  }
+
+// Check if this is the first time visiting a subcategory
+  Future<bool> _isFirstTimeVisit(String subCategoryId) async {
+    if (subCategoryId.isEmpty) return true;
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final key = 'subcategory_visited_$subCategoryId';
+      return !(prefs.getBool(key) ?? false);
+    } catch (e) {
+      print('❌ Error checking first time visit: $e');
+      return true; // Default to first time if error
+    }
+  }
+
+// Mark subcategory as visited
+  Future<void> _markAsVisited(String subCategoryId) async {
+    if (subCategoryId.isEmpty) return;
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final key = 'subcategory_visited_$subCategoryId';
+      await prefs.setBool(key, true);
+      print('✅ Marked subcategory $subCategoryId as visited');
+    } catch (e) {
+      print('❌ Error marking as visited: $e');
+    }
+  }
+
+// Show consent screen for first-time visitors
+  void _showConsentScreen(
+      String subCategoryName, String? subCategoryId, String apiRoute) {
+    Get.toNamed(Routes.CONSENT_SCREEN, arguments: {
+      'subCategoryName': subCategoryName,
+      'subCategoryId': subCategoryId,
+      'onConsentAccepted': () {
+        // Mark as visited and navigate to message screen
+        if (subCategoryId != null) {
+          _markAsVisited(subCategoryId);
+        }
+        _navigateToMessageScreen(subCategoryName, subCategoryId);
+      },
+    });
+  }
+
+// Navigate to message screen
+  void _navigateToMessageScreen(String subCategoryName, String? subCategoryId) {
+    Get.toNamed(Routes.MESSAGE_SCREEN, arguments: {
+      'subCategoryId': subCategoryId,
+      'subCategoryName': subCategoryName,
+      'categoryId': subCategoryId,
+      'categoryName': subCategoryName,
+      'mainCategoryId': controller.categoryId,
+    });
+  }
+
+  // Prefer server-provided route data on subcategory to avoid static mappings
+  String _getRouteForSubCategoryFromApi(Map<String, dynamic> subCategory) {
+    // Common potential keys from backend
+    final List<String> possibleKeys = [
+      'routePath', // preferred: absolute GetX route path, e.g. '/world-and-culture-community-screen'
+      'route',
+      'screenRoute',
+      'screen_path',
+      'path',
+    ];
+
+    for (final key in possibleKeys) {
+      final value = subCategory[key]?.toString().trim() ?? '';
+      if (value.isNotEmpty) {
+        // If it looks like a path, use directly
+        if (value.startsWith('/')) return value;
+
+        // If API returns a known constant alias, map here if needed
+        final alias = value.toLowerCase();
+        switch (alias) {
+          case 'world_and_culture_community':
+          case 'world-and-culture-community':
+            return Routes.WORLD_AND_CULTURE_COMMUNITY_SCREEN;
+          case 'personal_growth_community':
+          case 'personal-growth-community':
+            return Routes.PERSONAL_GROWTH_COMMUNITY_SCREEN;
+          case 'business_innovation_community':
+          case 'business-and-innovation-community':
+            return Routes.BUSINESS_INNOVATION_COMMUNITY_SCREEN;
+          default:
+            // Treat as absolute path if prefixed later or leave empty to fallback
+            break;
+        }
+      }
+    }
+
+    // Support a slug if provided (e.g., 'world-and-culture-community-screen')
+    final slug = subCategory['slug']?.toString().trim() ?? '';
+    if (slug.isNotEmpty) {
+      // If slug is a full path, return it; otherwise try to map
+      if (slug.startsWith('/')) return slug;
+      final normalized = slug.toLowerCase();
+      switch (normalized) {
+        case 'world-and-culture-community-screen':
+          return Routes.WORLD_AND_CULTURE_COMMUNITY_SCREEN;
+        case 'personal-growth-community-screen':
+          return Routes.PERSONAL_GROWTH_COMMUNITY_SCREEN;
+        case 'business-and-innovation-community-screen':
+          return Routes.BUSINESS_INNOVATION_COMMUNITY_SCREEN;
+        default:
+          return '';
+      }
+    }
+
+    return '';
   }
 
   // Map subcategory names to route names
@@ -345,12 +484,12 @@ class CommunityForumView extends GetView<CommunityForumController> {
 
     // Handle variations in naming (including typos from backend)
     if (normalized.contains('business') && normalized.contains('innovation')) {
-      return Routes.BUSINESS_INNOVATION_SCREEN;
+      return Routes.BUSINESS_INNOVATION_COMMUNITY_SCREEN;
     } else if (normalized.contains('world') && normalized.contains('culture')) {
-      return Routes.WORLD_AND_CULTURE_SCREEN;
+      return Routes.WORLD_AND_CULTURE_COMMUNITY_SCREEN;
     } else if (normalized.contains('personal') &&
         normalized.contains('growth')) {
-      return Routes.PERSONAL_GROWTH_SCREEN;
+      return Routes.PERSONAL_GROWTH_COMMUNITY_SCREEN;
     }
 
     // Exact matches as fallback
@@ -358,12 +497,12 @@ class CommunityForumView extends GetView<CommunityForumController> {
       case 'business & innovation':
       case 'business and innovation':
       case 'business innovation':
-        return Routes.BUSINESS_INNOVATION_SCREEN;
+        return Routes.BUSINESS_INNOVATION_COMMUNITY_SCREEN;
       case 'world & culture':
       case 'world and culture':
-        return Routes.WORLD_AND_CULTURE_SCREEN;
+        return Routes.WORLD_AND_CULTURE_COMMUNITY_SCREEN;
       case 'personal growth':
-        return Routes.PERSONAL_GROWTH_SCREEN;
+        return Routes.PERSONAL_GROWTH_COMMUNITY_SCREEN;
       default:
         return ''; // No specific route found
     }

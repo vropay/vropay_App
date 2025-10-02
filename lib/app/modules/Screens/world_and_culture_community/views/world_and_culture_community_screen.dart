@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vropay_final/Components/bottom_navbar.dart';
 import 'package:vropay_final/Components/top_navbar.dart';
 import 'package:vropay_final/Utilities/screen_utils.dart';
@@ -59,24 +60,39 @@ class WorldAndCultureCommunityScreen
               height: ScreenUtils.height * 0.03,
             ),
 
-            // Categories Grid View
+            // API Topics Grid View
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 43.0),
-              child: Obx(() => GridView.builder(
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 8,
-                      mainAxisSpacing: 29,
-                      childAspectRatio: 1.3,
+              child: Obx(() {
+                if (controller.isLoading.value) {
+                  return Center(
+                    child: CircularProgressIndicator(
+                      color: Color(0xFF18707C),
                     ),
-                    itemCount: controller.categories.length,
-                    itemBuilder: (context, index) {
-                      final category = controller.categories[index];
-                      return _buildCategoryCard(category, index);
-                    },
-                  )),
+                  );
+                }
+
+                if (controller.topics.isEmpty) {
+                  return Center(
+                    child: Text('No topics available'),
+                  );
+                }
+                return GridView.builder(
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 8,
+                    mainAxisSpacing: 29,
+                    childAspectRatio: 1.3,
+                  ),
+                  itemCount: controller.topics.length,
+                  itemBuilder: (context, index) {
+                    final topic = controller.topics[index];
+                    return _buildTopicCard(topic, index);
+                  },
+                );
+              }),
             ),
             SizedBox(height: ScreenUtils.height * 0.05),
           ],
@@ -85,14 +101,11 @@ class WorldAndCultureCommunityScreen
     );
   }
 
-  Widget _buildCategoryCard(String category, int index) {
+  Widget _buildTopicCard(Map<String, dynamic> topic, int index) {
+    final topicName = topic['name']?.toString() ?? 'Topic';
+    final topicId = topic['_id']?.toString();
     return GestureDetector(
-      onTap: () {
-        Get.toNamed(Routes.WORLD_AND_CULTURE_SCREEN, arguments: {
-          'categoryName': 'world and culture',
-          'subCategoryName': category,
-        });
-      },
+      onTap: () => _onTopicTap(topicName, topicId),
       child: Container(
         height: ScreenUtils.height * 0.5,
         width: ScreenUtils.width * 0.4,
@@ -106,7 +119,7 @@ class WorldAndCultureCommunityScreen
             children: [
               // Category Name
               Text(
-                category,
+                topicName,
                 style: TextStyle(
                   fontSize: 25,
                   fontWeight: FontWeight.w500,
@@ -119,6 +132,76 @@ class WorldAndCultureCommunityScreen
         ),
       ),
     );
+  }
+
+  // Handle topic tap with first time visit logic
+  void _onTopicTap(String topicName, String? topicId) async {
+    print(
+        '🚀 WorldAndCultureCommunity - Topic tapped: $topicName (ID: $topicId)');
+
+    // Check if this is the first time visiting this topic
+    final isFirstTime = await _isFirstTimeVisit(topicId ?? '');
+
+    if (isFirstTime) {
+      // Show consent screen first for first time visitors
+      _showConsentScreen(topicName, topicId);
+    } else {
+      // Navigate directly to message screen for returning visitor
+      _navigateToMessageScreen(topicName, topicId);
+    }
+  }
+
+  // Check if this is the first time visiting a topic
+  Future<bool> _isFirstTimeVisit(String topicId) async {
+    if (topicId.isEmpty) return true;
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final key = 'topic_visited_$topicId';
+      return !(prefs.getBool(key) ?? false);
+    } catch (e) {
+      print('❌ Error checking first time visit: $e');
+      return true; // Default to first time if error
+    }
+  }
+
+  // Mark topic as visited
+  Future<void> _markAsVisited(String topicId) async {
+    if (topicId.isEmpty) return;
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final key = 'topic_visited_$topicId';
+      await prefs.setBool(key, true);
+      print('✅ Marked topic $topicId as visited');
+    } catch (e) {
+      print('❌ Error marking as visited: $e');
+    }
+  }
+
+  // Show consent screen for first-time visitors
+  void _showConsentScreen(String topicName, String? topicId) {
+    Get.toNamed(Routes.CONSENT_SCREEN, arguments: {
+      'subCategoryName': topicName,
+      'subCategoryId': topicId,
+      'onConsentAccepted': () {
+        // Mark as visited and navigate to message screen
+        if (topicId != null) {
+          _markAsVisited(topicId);
+        }
+        _navigateToMessageScreen(topicName, topicId);
+      },
+    });
+  }
+
+  // Navigate to message screen
+  void _navigateToMessageScreen(String topicName, String? topicId) {
+    Get.toNamed(Routes.MESSAGE_SCREEN, arguments: {
+      'subCategoryId': topicId,
+      'subCategoryName': topicName,
+      'categoryId': controller.categoryId,
+      'categoryName': controller.categoryName,
+    });
   }
 
   Color _getCategoryColor(int index) {

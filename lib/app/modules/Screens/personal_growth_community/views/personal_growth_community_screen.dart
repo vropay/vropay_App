@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vropay_final/Components/bottom_navbar.dart';
 import 'package:vropay_final/Components/top_navbar.dart';
 import 'package:vropay_final/Utilities/screen_utils.dart';
@@ -57,23 +58,52 @@ class PersonalGrowthCommunityScreen
 
             SizedBox(height: ScreenUtils.height * 0.05),
 
-            // Categories Grid View
+            // API Topics Grid View
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 42),
-              child: Obx(() => GridView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 43.0),
+              child: Obx(() {
+                if (controller.isLoading.value) {
+                  return Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(20),
+                      child: CircularProgressIndicator(
+                        color: Color(0xFF01B3B2),
+                      ),
+                    ),
+                  );
+                }
+
+                if (controller.topics.isEmpty) {
+                  return Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(20),
+                      child: Text(
+                        'No topics available',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ),
+                  );
+                }
+
+                return GridView.builder(
                   shrinkWrap: true,
                   physics: NeverScrollableScrollPhysics(),
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
                     crossAxisSpacing: 8,
-                    mainAxisSpacing: 15,
+                    mainAxisSpacing: 29,
                     childAspectRatio: 1.3,
                   ),
-                  itemCount: controller.categories.length,
+                  itemCount: controller.topics.length,
                   itemBuilder: (context, index) {
-                    final category = controller.categories[index];
-                    return _buildCategoryCard(category, index);
-                  })),
+                    final topic = controller.topics[index];
+                    return _buildTopicCard(topic, index);
+                  },
+                );
+              }),
             ),
             SizedBox(height: ScreenUtils.height * 0.05),
           ],
@@ -82,18 +112,15 @@ class PersonalGrowthCommunityScreen
     );
   }
 
-  Widget _buildCategoryCard(String category, int index) {
+  Widget _buildTopicCard(Map<String, dynamic> topic, int index) {
+    final topicName = topic['name']?.toString() ?? 'Topic';
+    final topicId = topic['_id']?.toString();
+
     return GestureDetector(
-      onTap: () {
-        Get.toNamed(Routes.PERSONAL_GROWTH_SCREEN, arguments: {
-          'categoryName': 'personal growth',
-          'subCategoryName': category,
-        });
-      },
+      onTap: () => _onTopicTap(topicName, topicId),
       child: Container(
-        height: ScreenUtils.height * 0.2,
-        width: double.infinity,
-        padding: EdgeInsets.only(left: 9, right: 9),
+        height: ScreenUtils.height * 0.5,
+        width: ScreenUtils.width * 0.4,
         decoration: BoxDecoration(
           color: Color(0xFF3E9292).withOpacity(0.1),
           borderRadius: BorderRadius.circular(5),
@@ -102,14 +129,15 @@ class PersonalGrowthCommunityScreen
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Category Name
+              // Topic Name
               Text(
-                category,
+                topicName,
                 style: TextStyle(
-                  fontSize: _getCategoryFontSize(category),
+                  fontSize: 25,
                   fontWeight: FontWeight.w500,
-                  color: _getCategoryColor(index),
+                  color: _getTopicColor(index),
                 ),
+                textAlign: TextAlign.center,
               ),
             ],
           ),
@@ -118,44 +146,89 @@ class PersonalGrowthCommunityScreen
     );
   }
 
-  double _getCategoryFontSize(String category) {
-    switch (category) {
-      case 'entrepreneurship':
-        return 18;
-      case 'visionaries':
-        return 22;
-      case 'law':
-        return 22;
-      case 'books':
-        return 22;
-      case 'vocab':
-        return 22;
-      case 'health':
-        return 22;
-      case 'spirituality':
-        return 22;
-      case 'quantumleap':
-        return 22;
-      case 'geeta gyan':
-        return 22;
-      case 'vedic wise':
-        return 22;
-      default:
-        return 22;
+  // Handle topic tap with first-time visit logic
+  void _onTopicTap(String topicName, String? topicId) async {
+    print(
+        '🚀 PersonalGrowthCommunity - Topic tapped: $topicName (ID: $topicId)');
+
+    // Check if this is the first time visiting this topic
+    final isFirstTime = await _isFirstTimeVisit(topicId ?? '');
+
+    if (isFirstTime) {
+      // Show consent screen first for first-time visitors
+      _showConsentScreen(topicName, topicId);
+    } else {
+      // Navigate directly to message screen for returning visitors
+      _navigateToMessageScreen(topicName, topicId);
     }
   }
 
-  Color _getCategoryColor(int index) {
+  // Check if this is the first time visiting a topic
+  Future<bool> _isFirstTimeVisit(String topicId) async {
+    if (topicId.isEmpty) return true;
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final key = 'topic_visited_$topicId';
+      return !(prefs.getBool(key) ?? false);
+    } catch (e) {
+      print('❌ Error checking first time visit: $e');
+      return true; // Default to first time if error
+    }
+  }
+
+  // Mark topic as visited
+  Future<void> _markAsVisited(String topicId) async {
+    if (topicId.isEmpty) return;
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final key = 'topic_visited_$topicId';
+      await prefs.setBool(key, true);
+      print('✅ Marked topic $topicId as visited');
+    } catch (e) {
+      print('❌ Error marking as visited: $e');
+    }
+  }
+
+  // Show consent screen for first-time visitors
+  void _showConsentScreen(String topicName, String? topicId) {
+    Get.toNamed(Routes.CONSENT_SCREEN, arguments: {
+      'subCategoryName': topicName,
+      'subCategoryId': topicId,
+      'onConsentAccepted': () {
+        // Mark as visited and navigate to message screen
+        if (topicId != null) {
+          _markAsVisited(topicId);
+        }
+        _navigateToMessageScreen(topicName, topicId);
+      },
+    });
+  }
+
+  // Navigate to message screen
+  void _navigateToMessageScreen(String topicName, String? topicId) {
+    Get.toNamed(Routes.MESSAGE_SCREEN, arguments: {
+      'subCategoryId': topicId,
+      'subCategoryName': topicName,
+      'categoryId': controller.categoryId,
+      'categoryName': controller.categoryName,
+    });
+  }
+
+  Color _getTopicColor(int index) {
     final colors = [
-      Color(0xFF4B7C24), // Purple
-      Color(0xFF32CD32), // Dark Purple
-      Color(0xFF00A059), // Blue
-      Color(0xFF01451E), // Green
-      Color(0xFF01451E), // Orange
-      Color(0xFF32CD32), // Pink
-      Color(0xFF4B7C24), // Purple
-      Color(0xFF00A059), // Blue Grey
-      Color(0xFF4B7C24), // Brown
+      Color(0xFF4B7C24),
+      Color(0xFF32CD32),
+      Color(0xFF00A059),
+      Color(0xFF01451E),
+      Color(0xFF01451E),
+      Color(0xFF32CD32),
+      Color(0xFF4B7C24),
+      Color(0xFF00A059),
+      Color(0xFF4B7C24),
+      Color(0xFF32CD32),
+      Color(0xFF01451E),
     ];
     return colors[index % colors.length];
   }
