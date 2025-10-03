@@ -32,7 +32,8 @@ class _MessageScreenState extends State<MessageScreen> {
   void initState() {
     super.initState();
     controller.setScrollCallback(() {
-      if (_scrollController.hasClients) {
+      if (_scrollController.hasClients &&
+          _scrollController.position.maxScrollExtent > 0) {
         _scrollController.animateTo(
           _scrollController.position.maxScrollExtent,
           duration: const Duration(milliseconds: 300),
@@ -84,7 +85,7 @@ class _MessageScreenState extends State<MessageScreen> {
                       ),
                       leadingWidth: 48,
                       title: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Text(
@@ -96,51 +97,15 @@ class _MessageScreenState extends State<MessageScreen> {
                             ),
                           ),
                           SizedBox(width: ScreenUtils.width * 0.02),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "\n${controller.memberCount.value} members",
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  color: const Color(0xFF616161),
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              // Connection status indicator (can be hidden in production)
-                              if (controller.isRealTimeActive)
-                                Text(
-                                  "● Live",
-                                  style: TextStyle(
-                                    fontSize: 8,
-                                    color: const Color(0xFF4CAF50),
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              // Permission status indicator
-                              Container(
-                                margin: EdgeInsets.only(top: 2),
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 6, vertical: 1),
-                                decoration: BoxDecoration(
-                                  color: Color(0xFF4CAF50).withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(
-                                    color: Color(0xFF4CAF50),
-                                    width: 0.5,
-                                  ),
-                                ),
-                                child: Text(
-                                  "Open chat",
-                                  style: TextStyle(
-                                    fontSize: 7,
-                                    color: Color(0xFF4CAF50),
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          )
+                          Text(
+                            "${controller.memberCount.value} members",
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: const Color(0xFF616161),
+                              fontWeight: FontWeight.w500,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
                         ],
                       ),
                       actions: [

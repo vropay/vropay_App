@@ -70,6 +70,20 @@ class MessageController extends GetxController {
         // Auto-scroll to bottom when new messages arrive
         Future.delayed(const Duration(milliseconds: 200), () {
           _scrollToBottom();
+          print(
+              '📜 [MESSAGE CONTROLLER] Auto-scrolled due to new messages (total: ${newMessages.length})');
+        });
+      }
+    });
+
+    // Listen for message count changes (more specific for new messages)
+    ever(totalMessages, (int count) {
+      if (count > 0) {
+        // Auto-scroll when message count increases (new message added)
+        Future.delayed(const Duration(milliseconds: 150), () {
+          _scrollToBottom();
+          print(
+              '📜 [MESSAGE CONTROLLER] Auto-scrolled due to message count change: $count');
         });
       }
     });
@@ -283,6 +297,14 @@ class MessageController extends GetxController {
 
       print(
           '✅ [MESSAGE CONTROLLER] Message screen initialization completed successfully!');
+
+      // Final auto-scroll to ensure we're at the bottom after everything is loaded
+      if (messages.isNotEmpty) {
+        Future.delayed(const Duration(milliseconds: 500), () {
+          _scrollToBottom();
+          print('📜 [MESSAGE CONTROLLER] Final auto-scroll to latest message');
+        });
+      }
     } catch (e) {
       print('❌ [MESSAGE CONTROLLER] Error initializing message screen: $e');
       print('❌ [MESSAGE CONTROLLER] Stack trace: ${StackTrace.current}');
@@ -377,6 +399,14 @@ class MessageController extends GetxController {
       print(
           '✅ [MESSAGES] Messages loaded successfully: ${messages.length} messages');
       print('✅ [MESSAGES] Total messages: ${totalMessages.value}');
+
+      // Auto-scroll to bottom after initial messages are loaded
+      if (messages.isNotEmpty) {
+        Future.delayed(const Duration(milliseconds: 300), () {
+          _scrollToBottom();
+          print('📜 [MESSAGES] Auto-scrolled to latest message');
+        });
+      }
     } catch (e) {
       print('❌ [MESSAGES] Error loading messages: $e');
       print('❌ [MESSAGES] Stack trace: ${StackTrace.current}');
@@ -591,6 +621,7 @@ class MessageController extends GetxController {
       // Auto-scroll to new message after a brief delay to ensure UI is updated
       Future.delayed(const Duration(milliseconds: 100), () {
         _scrollToBottom();
+        print('📜 [MESSAGE CONTROLLER] Auto-scrolled after sending message');
       });
     } catch (e) {
       print('❌ [MESSAGE CONTROLLER] Error sending message: $e');
@@ -687,11 +718,25 @@ class MessageController extends GetxController {
     _scrollCallback = callback;
   }
 
-  // Scroll to bottom
+  // Scroll to bottom (private method)
   void _scrollToBottom() {
     if (_scrollCallback != null) {
       _scrollCallback!();
     }
+  }
+
+  // Public method to scroll to bottom (for manual triggers)
+  void scrollToBottom() {
+    _scrollToBottom();
+  }
+
+  // Immediate scroll to bottom for new messages from other users
+  void scrollToNewMessage() {
+    Future.delayed(const Duration(milliseconds: 100), () {
+      _scrollToBottom();
+      print(
+          '📜 [MESSAGE CONTROLLER] Immediate scroll to new message from other user');
+    });
   }
 
   // Toggle blur effect

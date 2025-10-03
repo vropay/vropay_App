@@ -8,6 +8,7 @@ import 'package:vropay_final/app/core/models/api_response.dart';
 import 'package:vropay_final/app/core/network/api_client.dart';
 import 'package:vropay_final/app/core/network/api_exception.dart';
 import 'package:vropay_final/app/core/services/socket_service.dart';
+import 'package:vropay_final/app/modules/Screens/message/controllers/message_controller.dart';
 
 class MessageService extends GetxService {
   final ApiClient _apiClient = ApiClient();
@@ -408,6 +409,23 @@ class MessageService extends GetxService {
     totalMessages.value = 0;
   }
 
+  // Trigger scroll to bottom for new messages from other users
+  void _triggerScrollToBottom() {
+    // Force a reactive update to trigger the ever() listener in MessageController
+    messages.refresh();
+
+    // Also try to call the MessageController directly if available
+    try {
+      final messageController = Get.find<MessageController>();
+      messageController.scrollToNewMessage();
+    } catch (e) {
+      print('⚠️ [MESSAGE SERVICE] Could not find MessageController: $e');
+    }
+
+    print(
+        '📜 [MESSAGE SERVICE] Triggered scroll to bottom for new message from other user');
+  }
+
   /// Enable real-time messaging for an interest
   Future<void> enableRealTimeMessaging(String interestId) async {
     if (!isRealTimeEnabled.value || _socketService == null) {
@@ -498,6 +516,9 @@ class MessageService extends GetxService {
             print('👥 [MESSAGE SERVICE] ✅ Message from other user added to UI');
             print(
                 '👥 [MESSAGE SERVICE] Total messages now: ${messages.length}');
+
+            // Trigger scroll to bottom for new message from other user
+            _triggerScrollToBottom();
           } else {
             // Update existing message (replace optimistic with real message)
             messages[existingIndex] = transformedMessage;
