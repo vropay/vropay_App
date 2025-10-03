@@ -165,10 +165,13 @@ class NewsScreen extends GetView<NewsController> {
                                           TextStyle(color: Color(0xFF797C7B))),
                                 ),
                                 onTap: () {
-                                  controller.searchText.value =
-                                      news['title'] ?? ''; // Add null check
+                                  print(
+                                      '🔍 SearchSuggestion - Tapped suggestion: ${news['title']}');
+                                  print(
+                                      '🔍 SearchSuggestion - News data: ${news.toString()}');
 
-                                  // You can add navigation or other action here
+                                  // Navigate directly to NewsDetailScreen
+                                  controller.navigateToNewsDetail(news);
                                 },
                               );
                             },

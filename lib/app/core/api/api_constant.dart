@@ -2,22 +2,22 @@ class ApiConstant {
   // Base URLs
   static const String baseUrl = 'http://10.0.2.2:3000';
   static const String apiVersion = '/api';
-  
+
   // Image/Upload URLs
   static const String uploadsPath = '/uploads';
-  
+
   // Dynamic image URL builder
   static String getImageUrl(String imagePath) {
     if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
       // Already a full URL, return as is
       return imagePath;
     }
-    
+
     if (imagePath.startsWith('assets/')) {
       // Asset path, return as is
       return imagePath;
     }
-    
+
     // Construct full backend URL for uploaded images
     return '$baseUrl$uploadsPath/$imagePath';
   }
