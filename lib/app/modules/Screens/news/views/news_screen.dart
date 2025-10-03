@@ -263,8 +263,7 @@ class NewsScreen extends GetView<NewsController> {
                                             "All",
                                             controller.selectedFilter.value ==
                                                 "All", () {
-                                          controller.selectedFilter.value =
-                                              "All";
+                                          controller.onFilterChanged("All");
                                           Navigator.of(context).pop();
                                         }),
                                         _buildFilterChip(
@@ -272,8 +271,7 @@ class NewsScreen extends GetView<NewsController> {
                                             "today",
                                             controller.selectedFilter.value ==
                                                 "today", () {
-                                          controller.selectedFilter.value =
-                                              "today";
+                                          controller.onFilterChanged("today");
                                           Navigator.of(context).pop();
                                         }),
                                         _buildFilterChip(
@@ -281,8 +279,8 @@ class NewsScreen extends GetView<NewsController> {
                                             "this week",
                                             controller.selectedFilter.value ==
                                                 "this week", () {
-                                          controller.selectedFilter.value =
-                                              "this week";
+                                          controller
+                                              .onFilterChanged("this week");
                                           Navigator.of(context).pop();
                                         }),
                                         _buildFilterChip(
@@ -290,8 +288,8 @@ class NewsScreen extends GetView<NewsController> {
                                             "this month",
                                             controller.selectedFilter.value ==
                                                 "this month", () {
-                                          controller.selectedFilter.value =
-                                              "this month";
+                                          controller
+                                              .onFilterChanged("this month");
                                           Navigator.of(context).pop();
                                         }),
                                         SizedBox(

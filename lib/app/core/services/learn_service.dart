@@ -120,7 +120,8 @@ class LearnService extends GetxService {
 
   // Get entries for a topic
   Future<ApiResponse<Map<String, dynamic>>> getEntries(
-      String mainCategoryId, String subCategoryId, String topicId) async {
+      String mainCategoryId, String subCategoryId, String topicId,
+      {String? dateFilter}) async {
     try {
       isLoading.value = true;
       print(
@@ -130,7 +131,30 @@ class LearnService extends GetxService {
           ApiConstant.learnEntries(mainCategoryId, subCategoryId, topicId);
       print('🌐 LearnService - API URL: $url');
 
-      final res = await _api.get(url);
+      // Prepare query parameters for date filtering
+      Map<String, String> queryParams = {};
+      print('📅 LearnService - Received dateFilter: $dateFilter');
+
+      if (dateFilter != null && dateFilter != 'All') {
+        final dateRange = _getDateRange(dateFilter);
+        print('📅 LearnService - Calculated dateRange: $dateRange');
+
+        if (dateRange != null) {
+          queryParams['startDate'] = dateRange['start']!;
+          queryParams['endDate'] = dateRange['end']!;
+          print('📅 LearnService - Query params: $queryParams');
+          print(
+              '📅 LearnService - Date range: ${dateRange['start']} to ${dateRange['end']}');
+        } else {
+          print('❌ LearnService - Date range calculation returned null');
+        }
+      } else {
+        print(
+            '📅 LearnService - No date filtering applied (filter: $dateFilter)');
+      }
+
+      print('📅 LearnService - Final query params: $queryParams');
+      final res = await _api.get(url, queryParameters: queryParams);
       print('✅ LearnService - Entries response: ${res.data}');
 
       final data = _unwrap(res.data);
@@ -481,6 +505,41 @@ class LearnService extends GetxService {
       return e;
     }
     return UnknownException('LearnService error: ${e.toString()}');
+  }
+
+  // Get date range based on filter
+  Map<String, String>? _getDateRange(String filter) {
+    final now = DateTime.now();
+    DateTime startDate;
+    DateTime endDate = now;
+
+    switch (filter.toLowerCase()) {
+      case 'today':
+        // Only today's news (from start of today to end of today)
+        startDate = DateTime(now.year, now.month, now.day);
+        endDate = DateTime(now.year, now.month, now.day, 23, 59, 59);
+        break;
+      case 'this week':
+        // Last 7 days including today (current day + previous 6 days)
+        startDate = now.subtract(Duration(days: 6));
+        startDate = DateTime(startDate.year, startDate.month, startDate.day);
+        endDate = DateTime(now.year, now.month, now.day, 23, 59, 59);
+        break;
+      case 'this month':
+        // Last 30 days including today (current day + previous 29 days)
+        startDate = now.subtract(Duration(days: 29));
+        startDate = DateTime(startDate.year, startDate.month, startDate.day);
+        endDate = DateTime(now.year, now.month, now.day, 23, 59, 59);
+        break;
+      default:
+        return null; // No filtering for 'All' or unknown filters
+    }
+
+    // Format dates as ISO 8601 strings (UTC)
+    return {
+      'start': startDate.toUtc().toIso8601String(),
+      'end': endDate.toUtc().toIso8601String(),
+    };
   }
 
   // Helper method to convert HTML to plain text

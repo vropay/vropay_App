@@ -55,13 +55,17 @@ class NewsController extends GetxController {
   }
 
   // Load topic-specific news from API
-  Future<void> loadTopicNews() async {
+  Future<void> loadTopicNews({String? dateFilter}) async {
     try {
       isLoading.value = true;
       print('🚀 News - Loading news for topic: $topicName');
+      if (dateFilter != null) {
+        print('📅 News - Date filter: $dateFilter');
+      }
 
-      final response =
-          await _learnService.getEntries(categoryId!, subCategoryId!, topicId!);
+      final response = await _learnService.getEntries(
+          categoryId!, subCategoryId!, topicId!,
+          dateFilter: dateFilter);
 
       print('🔍 News - Response success: ${response.success}');
       print('🔍 News - Response data: ${response.data}');
@@ -71,7 +75,22 @@ class NewsController extends GetxController {
         print('🔍 News - Items from response: ${items.length}');
 
         if (items.isNotEmpty) {
-          newsArticles.assignAll(items);
+          // Apply client-side filtering as fallback if backend doesn't support it
+          List<Map<String, dynamic>> filteredItems = items;
+          if (dateFilter != null && dateFilter != 'All') {
+            print('📅 News - Starting client-side filtering for: $dateFilter');
+            filteredItems = _filterItemsByDate(items, dateFilter);
+            print(
+                '📅 News - Client-side filtering: ${items.length} → ${filteredItems.length} items');
+
+            // If no items match the filter, show all items with a warning
+            if (filteredItems.isEmpty) {
+              print('⚠️ News - No items match date filter, showing all items');
+              filteredItems = items;
+            }
+          }
+
+          newsArticles.assignAll(filteredItems);
           print('✅ News - Loaded ${newsArticles.length} news articles');
 
           // Debug: Print first article content
@@ -285,6 +304,125 @@ class NewsController extends GetxController {
   // Toggle view mode
   void toggleViewMode() {
     isGridView.value = !isGridView.value;
+  }
+
+  // Handle date filter change
+  void onFilterChanged(String filter) {
+    selectedFilter.value = filter;
+    print('📅 News - Filter changed to: $filter');
+    print(
+        '📅 News - Topic context: topicId=$topicId, subCategoryId=$subCategoryId, categoryId=$categoryId');
+
+    // Reload news with the new filter
+    if (topicId != null && subCategoryId != null && categoryId != null) {
+      print('📅 News - Calling loadTopicNews with dateFilter: $filter');
+      loadTopicNews(dateFilter: filter);
+    } else {
+      print('❌ News - Cannot load news: missing topic context');
+    }
+  }
+
+  // Client-side date filtering as fallback
+  List<Map<String, dynamic>> _filterItemsByDate(
+      List<Map<String, dynamic>> items, String filter) {
+    final now = DateTime.now();
+    DateTime startDate;
+    DateTime endDate = now;
+
+    switch (filter.toLowerCase()) {
+      case 'today':
+        // Only today's news (from start of today to end of today)
+        startDate = DateTime(now.year, now.month, now.day);
+        endDate = DateTime(now.year, now.month, now.day, 23, 59, 59);
+        break;
+      case 'this week':
+        // Last 7 days including today (current day + previous 6 days)
+        startDate = now.subtract(Duration(days: 6));
+        startDate = DateTime(startDate.year, startDate.month, startDate.day);
+        endDate = DateTime(now.year, now.month, now.day, 23, 59, 59);
+        break;
+      case 'this month':
+        // Last 30 days including today (current day + previous 29 days)
+        startDate = now.subtract(Duration(days: 29));
+        startDate = DateTime(startDate.year, startDate.month, startDate.day);
+        endDate = DateTime(now.year, now.month, now.day, 23, 59, 59);
+        break;
+      default:
+        return items; // No filtering for unknown filters
+    }
+
+    print('📅 News - Client filtering: $startDate to $endDate');
+    print('📅 News - Current time: $now');
+    print('📅 News - Filter: $filter');
+    print(
+        '📅 News - Date range duration: ${endDate.difference(startDate).inDays + 1} days');
+
+    List<Map<String, dynamic>> filteredItems = [];
+    int processedCount = 0;
+    int matchCount = 0;
+
+    for (var item in items) {
+      processedCount++;
+
+      // Try different possible date field names
+      var createdAt = item['createdAt'] ??
+          item['created_at'] ??
+          item['date'] ??
+          item['timestamp'] ??
+          item['publishedAt'] ??
+          item['published_at'];
+
+      // Debug: Print item info
+      print('📅 News - Item $processedCount: ${item['title']}');
+      print('📅 News - Available fields: ${item.keys.toList()}');
+      print(
+          '📅 News - Date field found: $createdAt (type: ${createdAt.runtimeType})');
+
+      if (createdAt == null) {
+        print(
+            '⚠️ News - Item has no date field (tried: createdAt, created_at, date, timestamp, publishedAt, published_at)');
+        // For items without date, include them in "All" filter but exclude from date filters
+        if (filter.toLowerCase() == 'all') {
+          filteredItems.add(item);
+          matchCount++;
+        }
+        continue;
+      }
+
+      try {
+        DateTime itemDate;
+        if (createdAt is String) {
+          itemDate = DateTime.parse(createdAt);
+        } else if (createdAt is DateTime) {
+          itemDate = createdAt;
+        } else {
+          print('❌ News - Unsupported date type: ${createdAt.runtimeType}');
+          continue;
+        }
+
+        print('📅 News - Parsed item date: $itemDate');
+
+        final isInRange =
+            itemDate.isAfter(startDate.subtract(Duration(seconds: 1))) &&
+                itemDate.isBefore(endDate.add(Duration(seconds: 1)));
+
+        print('📅 News - Is in range ($startDate to $endDate): $isInRange');
+
+        if (isInRange) {
+          filteredItems.add(item);
+          matchCount++;
+          print(
+              '✅ News - Item matches filter: ${item['title']} (${itemDate.toIso8601String()})');
+        }
+      } catch (e) {
+        print('❌ News - Error parsing date for item: $createdAt, error: $e');
+        continue;
+      }
+    }
+
+    print(
+        '📅 News - Filtering complete: $processedCount processed, $matchCount matched');
+    return filteredItems;
   }
 
   // Navigate to news detail screen
