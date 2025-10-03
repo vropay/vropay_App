@@ -110,14 +110,14 @@ class ApiConstant {
 
   // Message Endpoints
   static const String sendMessage = '$apiVersion/messages';
-  static const String getInterestMessages =
-      '$apiVersion/messages'; // GET /api/messages/:interestId
-  static const String getInterestUserCount =
-      '$apiVersion/user-count'; // GET /api/user-count/:interestId
+  static String getInterestMessages(String interestId) =>
+      '$apiVersion/messages/$interestId'; // GET /api/messages/:interestId
+  static String getInterestUserCount(String interestId) =>
+      '$apiVersion/user-count/$interestId'; // GET /api/user-count/:interestId
 
 // User Interest Endpoints (for checking user permissions)
-  static const String getUserInterests =
-      '$apiVersion/users'; // GET /api/users/:userId/interests
-  static const String getUserCommunityAccess =
-      '$apiVersion/users'; // GET /api/users/:userId/community-access
+  static String getUserInterests(String userId) =>
+      '$apiVersion/users/$userId/interests'; // GET /api/users/:userId/interests
+  static String getUserCommunityAccess(String userId) =>
+      '$apiVersion/users/$userId/community-access'; // GET /api/users/:userId/community-access
 }

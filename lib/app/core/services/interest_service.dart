@@ -1,5 +1,4 @@
 import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart';
 import 'package:vropay_final/app/core/api/api_constant.dart';
 import 'package:vropay_final/app/core/models/api_response.dart';
 import 'package:vropay_final/app/core/network/api_client.dart';
@@ -8,7 +7,6 @@ import 'package:vropay_final/app/core/services/auth_service.dart';
 
 class InterestService extends GetxService {
   final ApiClient _apiClient = ApiClient();
-  final GetStorage _storage = GetStorage();
   final AuthService _authService = Get.find<AuthService>();
 
   // Observable variables
@@ -30,7 +28,7 @@ class InterestService extends GetxService {
           '🔢 [INTEREST SERVICE] Getting member count for interestId: "$interestId"');
       isLoading.value = true;
 
-      final apiUrl = '${ApiConstant.getInterestUserCount}/$interestId';
+      final apiUrl = ApiConstant.getInterestUserCount(interestId);
       print('🌐 [INTEREST SERVICE] API URL: $apiUrl');
 
       final response = await _apiClient.get(apiUrl);
@@ -64,6 +62,34 @@ class InterestService extends GetxService {
     }
   }
 
+  /// Resolve interest metadata by id using the user-count endpoint
+  /// Returns a map: { 'interestId': string, 'interestName': string, 'userCount': int }
+  /// or null if not found (404)
+  Future<Map<String, dynamic>?> resolveInterestMeta(String interestId) async {
+    try {
+      final apiUrl = ApiConstant.getInterestUserCount(interestId);
+      final response = await _apiClient.get(apiUrl);
+
+      if (response.statusCode == 200) {
+        final apiResponse = ApiResponse.fromJson(response.data, (data) => data);
+        if (apiResponse.success) {
+          final data = apiResponse.data ?? {};
+          return {
+            'interestId': data['interestId']?.toString(),
+            'interestName': data['interestName']?.toString(),
+            'userCount': data['userCount'] ?? 0,
+          };
+        }
+        return null;
+      }
+
+      // Not found or other error
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
   // Get interest details (name and user count) for an interest
   Future<Map<String, dynamic>> getInterestDetails(String interestId) async {
     try {
@@ -94,7 +120,7 @@ class InterestService extends GetxService {
       }
 
       // Then get the user count
-      final apiUrl = '${ApiConstant.getInterestUserCount}/$interestId';
+      final apiUrl = ApiConstant.getInterestUserCount(interestId);
       print('🌐 [INTEREST SERVICE] API URL: $apiUrl');
 
       final response = await _apiClient.get(apiUrl);
@@ -225,7 +251,7 @@ class InterestService extends GetxService {
       isLoading.value = true;
 
       final response = await _apiClient.get(
-        '${ApiConstant.getUserCommunityAccess}/$userId/community-access',
+        ApiConstant.getUserCommunityAccess(userId),
       );
 
       if (response.statusCode == 200) {
@@ -265,7 +291,7 @@ class InterestService extends GetxService {
       isLoading.value = true;
 
       final response = await _apiClient.get(
-        '${ApiConstant.getInterestUserCount}/$interestId',
+        ApiConstant.getInterestUserCount(interestId),
       );
 
       if (response.statusCode == 200) {

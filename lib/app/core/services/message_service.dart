@@ -53,6 +53,22 @@ class MessageService extends GetxService {
     return null;
   }
 
+  /// Test REST API directly (for debugging)
+  Future<Map<String, dynamic>> sendMessageViaRestApi({
+    required String interestId,
+    required String message,
+    String? replyToMessageId,
+    List<String>? taggedUsers,
+  }) async {
+    return await sendMessage(
+      interestId: interestId,
+      message: message,
+      replyToMessageId: replyToMessageId,
+      taggedUsers: taggedUsers,
+      forceRestApi: true,
+    );
+  }
+
   /// Initialize Socket.IO service
   void _initializeSocketService() {
     try {
@@ -78,12 +94,13 @@ class MessageService extends GetxService {
     required String message,
     String? replyToMessageId,
     List<String>? taggedUsers,
+    bool forceRestApi = false, // Add option to force REST API
   }) async {
     try {
       isLoading.value = true;
 
-      // Use Socket.IO for real-time messaging if available
-      if (isRealTimeEnabled.value && _socketService != null) {
+      // Use Socket.IO for real-time messaging if available (unless forced to use REST)
+      if (!forceRestApi && isRealTimeEnabled.value && _socketService != null) {
         print('📤 [MESSAGE SERVICE] Sending message via Socket.IO');
 
         // Get user ID from stored user data
@@ -113,7 +130,30 @@ class MessageService extends GetxService {
 
         print('📤 [MESSAGE SERVICE] Sending message to interest: $interestId');
         print('📤 [MESSAGE SERVICE] Message data: $messageData');
+        print(
+            '📤 [MESSAGE SERVICE] Socket connected: ${_socketService!.isConnected.value}');
+        print(
+            '📤 [MESSAGE SERVICE] Socket status: ${_socketService!.connectionStatus.value}');
+
+        // Check if socket is connected before trying to send
+        if (!_socketService!.isConnected.value) {
+          print(
+              '⚠️ [MESSAGE SERVICE] Socket not connected, falling back to REST API');
+          throw Exception('Socket not connected - falling back to REST API');
+        }
+
         _socketService!.sendMessage(messageData);
+
+        // Wait a moment to see if we get any response
+        await Future.delayed(const Duration(milliseconds: 500));
+        print('📤 [MESSAGE SERVICE] Message sent via Socket.IO');
+
+        // Check if socket is still connected after sending
+        if (!_socketService!.isConnected.value) {
+          print(
+              '⚠️ [MESSAGE SERVICE] Socket disconnected after sending, falling back to REST API');
+          // Don't throw exception, just continue to REST API fallback
+        }
 
         // Return optimistic message data
         final userData = _storage.read('user_data');
@@ -144,6 +184,10 @@ class MessageService extends GetxService {
       } else {
         // Fallback to REST API
         print('📤 [MESSAGE SERVICE] Sending message via REST API');
+        print('📤 [MESSAGE SERVICE] API URL: ${ApiConstant.sendMessage}');
+        print(
+            '📤 [MESSAGE SERVICE] Request data: {interestId: $interestId, message: $message}');
+
         final response = await _apiClient.post(
           ApiConstant.sendMessage,
           data: {
@@ -154,6 +198,10 @@ class MessageService extends GetxService {
               'taggedUsers': taggedUsers,
           },
         );
+
+        print(
+            '📤 [MESSAGE SERVICE] REST API Response status: ${response.statusCode}');
+        print('📤 [MESSAGE SERVICE] REST API Response data: ${response.data}');
 
         if (response.statusCode == 201) {
           final apiResponse =
@@ -168,7 +216,17 @@ class MessageService extends GetxService {
             throw ApiException(apiResponse.message);
           }
         } else {
-          throw ApiException('Failed to send message');
+          // Surface backend message if available
+          try {
+            final apiResponse =
+                ApiResponse.fromJson(response.data, (data) => data);
+            final serverMessage = apiResponse.message.isNotEmpty
+                ? apiResponse.message
+                : 'Failed to send message';
+            throw ApiException(serverMessage);
+          } catch (_) {
+            throw ApiException('Failed to send message');
+          }
         }
       }
     } catch (e) {
@@ -189,7 +247,7 @@ class MessageService extends GetxService {
       isLoading.value = true;
 
       final response = await _apiClient.get(
-        '${ApiConstant.getInterestMessages}/$interestId?page=$page&limit=$limit',
+        '${ApiConstant.getInterestMessages(interestId)}?page=$page&limit=$limit',
       );
 
       if (response.statusCode == 200) {

@@ -74,6 +74,61 @@ class MessageController extends GetxController {
     super.onClose();
   }
 
+  // Validate current interestId via GET /api/user-count/:id.
+  // If valid, updates interestId/interestName from server.
+  // If invalid, tries to resolve by interestName from /api/interests.
+  Future<void> _validateAndResolveInterest() async {
+    try {
+      final id = interestId.value;
+      if (id.isEmpty) return;
+
+      // 1) Try user-count endpoint to validate id quickly
+      final meta = await _interestService.resolveInterestMeta(id);
+      if (meta != null && (meta['interestId']?.isNotEmpty ?? false)) {
+        // Server-confirmed id/name
+        interestId.value = meta['interestId'];
+        if ((meta['interestName']?.isNotEmpty ?? false)) {
+          interestName.value = meta['interestName'];
+        }
+        print(
+            '🔎 [VALIDATION] Interest validated via server: id=${interestId.value}, name=${interestName.value}');
+        return;
+      }
+
+      // 2) Resolve by name from /api/interests as fallback
+      final interestsResp = await _authService.getInterests();
+      if (interestsResp['interests'] is List) {
+        final list = interestsResp['interests'] as List;
+        final match = list.firstWhere(
+          (i) =>
+              i is Map<String, dynamic> &&
+              (i['name']?.toString().toLowerCase() ?? '') ==
+                  interestName.value.toLowerCase(),
+          orElse: () => <String, dynamic>{},
+        );
+        if (match.isNotEmpty) {
+          final resolvedId = match['_id']?.toString();
+          final resolvedName = match['name']?.toString();
+          if (resolvedId != null && resolvedId.isNotEmpty) {
+            interestId.value = resolvedId;
+            if (resolvedName != null && resolvedName.isNotEmpty) {
+              interestName.value = resolvedName;
+            }
+            print(
+                '🧭 [VALIDATION] Interest resolved by name: id=${interestId.value}, name=${interestName.value}');
+            return;
+          }
+        }
+      }
+
+      // If still unresolved, keep existing values and continue (UI will show 0 members)
+      print(
+          '⚠️ [VALIDATION] Could not validate/resolve interest. Proceeding with provided id/name.');
+    } catch (e) {
+      print('❌ [VALIDATION] Error validating interest: $e');
+    }
+  }
+
   /// Disconnect from socket
   void _disconnectFromSocket() {
     if (_socketService != null) {
@@ -198,6 +253,9 @@ class MessageController extends GetxController {
         print('📥 [MESSAGE CONTROLLER] Parsed values:');
         print('   - interestId: "${interestId.value}"');
         print('   - interestName: "${interestName.value}"');
+        // One-line explicit log for selected interest
+        print(
+            '🎯 [MESSAGE CONTROLLER] Using interest -> id: ${interestId.value}, name: ${interestName.value}');
       } else {
         print('❌ [MESSAGE CONTROLLER] No arguments received!');
       }
@@ -222,6 +280,9 @@ class MessageController extends GetxController {
         _startBackgroundSocketConnection(); // Start connection in background
       }
 
+      // Validate/resolve interest before loading
+      await _validateAndResolveInterest();
+
       // Load critical data first (messages and permissions)
       print('🔄 [MESSAGE CONTROLLER] Loading critical data first...');
       await Future.wait([
@@ -231,6 +292,12 @@ class MessageController extends GetxController {
 
       // Load non-critical data in background
       _loadInterestDetails(); // Don't await - load in background
+
+      // Debug: List all available interests
+      listAllInterests(); // Don't await - run in background
+      // Note: Do not auto-switch interest. Keep the user-selected interest even
+      // if it's not in user's selected topics. Switching caused defaulting to
+      // another topic like "Manifestation" unexpectedly.
 
       // Enable real-time messaging after critical data is loaded
       if (isRealTimeEnabled.value) {
@@ -350,6 +417,164 @@ class MessageController extends GetxController {
     }
   }
 
+  // Debug method to list all available interests
+  Future<void> listAllInterests() async {
+    try {
+      print('🔍 [DEBUG] Fetching all available interests...');
+      final response = await _authService.getInterests();
+
+      if (response['interests'] is List) {
+        final interestsList = response['interests'] as List;
+        print('📋 [DEBUG] Available interests:');
+
+        for (int i = 0; i < interestsList.length; i++) {
+          final interest = interestsList[i];
+          if (interest is Map<String, dynamic>) {
+            final id = interest['_id'] ?? 'No ID';
+            final name = interest['name'] ?? 'No Name';
+            print('   ${i + 1}. ID: $id, Name: $name');
+          }
+        }
+
+        // Show current interest being used
+        print('🎯 [DEBUG] Current interest being used:');
+        print('   - ID: ${interestId.value}');
+        print('   - Name: ${interestName.value}');
+
+        // Check if current interest exists
+        final currentInterestExists = interestsList.any((interest) =>
+            interest is Map<String, dynamic> &&
+            interest['_id'] == interestId.value);
+
+        if (currentInterestExists) {
+          print('✅ [DEBUG] Current interest ID exists in database');
+        } else {
+          print('❌ [DEBUG] Current interest ID does NOT exist in database!');
+          print('💡 [DEBUG] Try using one of the valid IDs above');
+        }
+
+        // Show user's selected interests
+        final currentUser = _authService.currentUser.value;
+        if (currentUser != null && currentUser.selectedTopics != null) {
+          print('👤 [DEBUG] User\'s selected interests:');
+          final userSelectedIds = currentUser.selectedTopics!;
+
+          for (final selectedId in userSelectedIds) {
+            // Find the interest name for this ID
+            final matchingInterest = interestsList.firstWhere(
+              (interest) =>
+                  interest is Map<String, dynamic> &&
+                  interest['_id'] == selectedId,
+              orElse: () => <String, dynamic>{},
+            );
+
+            if (matchingInterest.isNotEmpty) {
+              final name = matchingInterest['name'] ?? 'Unknown';
+              print('   - ID: $selectedId, Name: $name');
+            } else {
+              print('   - ID: $selectedId, Name: NOT FOUND IN DATABASE');
+            }
+          }
+
+          // Check if current interest is in user's selected topics
+          if (userSelectedIds.contains(interestId.value)) {
+            print('✅ [DEBUG] Current interest is in user\'s selected topics');
+          } else {
+            print(
+                '⚠️ [DEBUG] Current interest is NOT in user\'s selected topics');
+            print(
+                '💡 [DEBUG] This is OK - user can still view messages in any interest');
+            print(
+                '💡 [DEBUG] Only switching will happen if interest doesn\'t exist in database');
+          }
+        } else {
+          print('❌ [DEBUG] User has no selected interests');
+        }
+      } else {
+        print('❌ [DEBUG] No interests found or invalid format');
+      }
+    } catch (e) {
+      print('❌ [DEBUG] Error fetching interests: $e');
+    }
+  }
+
+  // (Removed) Auto-switch helper intentionally not used to avoid overriding
+  // user-selected interests.
+
+  // Method to automatically use a valid interest from user's selected topics
+  Future<void> useValidInterestFromUserTopics() async {
+    try {
+      final currentUser = _authService.currentUser.value;
+      if (currentUser != null &&
+          currentUser.selectedTopics != null &&
+          currentUser.selectedTopics!.isNotEmpty) {
+        final userSelectedIds = currentUser.selectedTopics!;
+
+        // Get all interests to find names
+        final response = await _authService.getInterests();
+        if (response['interests'] is List) {
+          final interestsList = response['interests'] as List;
+
+          // Find the first valid interest from user's selected topics
+          for (final selectedId in userSelectedIds) {
+            final matchingInterest = interestsList.firstWhere(
+              (interest) =>
+                  interest is Map<String, dynamic> &&
+                  interest['_id'] == selectedId,
+              orElse: () => <String, dynamic>{},
+            );
+
+            if (matchingInterest.isNotEmpty) {
+              final name = matchingInterest['name'] ?? 'Unknown';
+              print(
+                  '🔄 [DEBUG] Switching to valid interest: $name ($selectedId)');
+
+              // Update the current interest
+              interestId.value = selectedId;
+              interestName.value = name;
+
+              // Reload messages for the new interest
+              await _loadMessages();
+
+              print('✅ [DEBUG] Successfully switched to valid interest');
+              return;
+            }
+          }
+        }
+      }
+
+      print('❌ [DEBUG] No valid interests found in user\'s selected topics');
+    } catch (e) {
+      print('❌ [DEBUG] Error switching to valid interest: $e');
+    }
+  }
+
+  // Debug method to test REST API directly
+  Future<void> sendMessageViaRestApi() async {
+    if (messageController.text.trim().isEmpty) return;
+
+    try {
+      print('🧪 [MESSAGE CONTROLLER] Testing REST API directly...');
+      await _messageService.sendMessageViaRestApi(
+        interestId: interestId.value,
+        message: messageController.text.trim(),
+      );
+
+      // Update local messages
+      messages.value = _messageService.messages;
+      totalMessages.value = _messageService.totalMessages.value;
+
+      // Clear input
+      messageController.clear();
+
+      Get.snackbar('Success', 'Message sent via REST API',
+          backgroundColor: Colors.green);
+    } catch (e) {
+      print('❌ [MESSAGE CONTROLLER] REST API Error: $e');
+      Get.snackbar('Error', 'REST API failed: $e', backgroundColor: Colors.red);
+    }
+  }
+
   // Send a message
   Future<void> sendMessage() async {
     if (messageController.text.trim().isEmpty) return;
@@ -364,11 +589,17 @@ class MessageController extends GetxController {
       // Send stop typing indicator
       _sendStopTypingIndicator();
 
+      print(
+          '🚀 [MESSAGE CONTROLLER] Sending message: "${messageController.text.trim()}"');
+      print('🚀 [MESSAGE CONTROLLER] To interest: ${interestId.value}');
+
+      // Force REST API for now since Socket.IO is not working
       await _messageService.sendMessage(
         interestId: interestId.value,
         message: messageController.text.trim(),
         replyToMessageId: replyToMessage.value?['id'],
         taggedUsers: taggedUsers.isNotEmpty ? taggedUsers : null,
+        forceRestApi: true, // Force REST API since Socket.IO is failing
       );
 
       // Update local messages
