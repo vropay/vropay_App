@@ -246,31 +246,35 @@ class _MessageScreenState extends State<MessageScreen> {
                       : const SizedBox.shrink()),
                 ),
 
-                // Chat messages
-                SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final message = controller.messages[index];
-                      if (message['isOwnMessage'] == true) {
-                        return Padding(
-                          padding: EdgeInsets.only(
-                            top: 10,
-                            right: 20,
-                          ),
-                          child: _buildOwnMessage(message, index),
-                        );
-                      } else {
-                        return Padding(
-                          padding: EdgeInsets.only(
-                            left: 20,
-                          ),
-                          child: _buildMessageItem(message, index),
-                        );
-                      }
-                    },
-                    childCount: controller.messages.length,
-                  ),
-                ),
+                // Chat messages (reactive)
+                Obx(() => SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                          final message = controller.messages[index];
+                          if (message['isOwnMessage'] == true) {
+                            return Padding(
+                              padding: const EdgeInsets.only(
+                                top: 8,
+                                right: 16,
+                                left: 60, // Add left margin to push to right
+                              ),
+                              child: _buildOwnMessage(message, index),
+                            );
+                          } else {
+                            return Padding(
+                              padding: const EdgeInsets.only(
+                                left: 16,
+                                right:
+                                    60, // Add right margin for other messages
+                                top: 8,
+                              ),
+                              child: _buildMessageItem(message, index),
+                            );
+                          }
+                        },
+                        childCount: controller.messages.length,
+                      ),
+                    )),
                 // Typing indicator
                 Obx(() => controller.typingUsersText.value.isNotEmpty
                     ? SliverToBoxAdapter(
@@ -1515,7 +1519,9 @@ class _MessageScreenState extends State<MessageScreen> {
               _buildOwnSharedArticle(message, index)
             else
               Container(
-                margin: EdgeInsets.only(left: 154),
+                constraints: BoxConstraints(
+                  maxWidth: MediaQuery.of(context).size.width * 0.7,
+                ),
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
@@ -1523,7 +1529,7 @@ class _MessageScreenState extends State<MessageScreen> {
                         message['quickReplyColor'] ?? const Color(0xFF007DB9),
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(20),
-                      topRight: Radius.circular(0),
+                      topRight: Radius.circular(4),
                       bottomLeft: Radius.circular(20),
                       bottomRight: Radius.circular(20),
                     )),

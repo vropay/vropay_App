@@ -173,10 +173,9 @@ class MessageService extends GetxService {
           'isOptimistic': true,
         };
 
-        // Add optimistic message to UI immediately (fast path)
+        // Add optimistic message to UI immediately at bottom (newest at bottom)
         final transformedMessage = _transformMessage(optimisticMessage);
-        messages.insert(
-            0, transformedMessage); // Insert at top for immediate visibility
+        messages.add(transformedMessage);
         totalMessages.value++;
         print('⚡ [MESSAGE SERVICE] Optimistic message added immediately to UI');
 
@@ -207,9 +206,9 @@ class MessageService extends GetxService {
           final apiResponse =
               ApiResponse.fromJson(response.data, (data) => data);
           if (apiResponse.success) {
-            // Add the new message to the list
+            // Add the new message to the bottom of the list
             final transformedMessage = _transformMessage(apiResponse.data);
-            messages.insert(0, transformedMessage);
+            messages.add(transformedMessage);
             totalMessages.value++;
             return transformedMessage;
           } else {
@@ -263,15 +262,18 @@ class MessageService extends GetxService {
           hasNextPage.value = pagination['hasNext'] ?? false;
           totalMessages.value = pagination['totalMessages'] ?? 0;
 
-          // Transform messages to match your UI format
+          // Transform and order for top-to-bottom view (oldest at top, newest at bottom)
           final transformedMessages = messagesList
               .map((message) => _transformMessage(message))
               .toList();
+          final oldestFirst = transformedMessages.reversed.toList();
 
           if (page == 1) {
-            messages.value = transformedMessages;
+            // First page: replace with oldest->newest
+            messages.value = oldestFirst;
           } else {
-            messages.addAll(transformedMessages);
+            // Next pages (older messages): prepend above existing
+            messages.insertAll(0, oldestFirst);
           }
 
           return transformedMessages;
@@ -462,8 +464,8 @@ class MessageService extends GetxService {
               messages.indexWhere((msg) => msg['id'] == messageId);
 
           if (existingIndex == -1) {
-            // Add new message from other user
-            messages.insert(0, transformedMessage);
+            // Add new message from other user at bottom
+            messages.add(transformedMessage);
             totalMessages.value++;
             print('👥 [MESSAGE SERVICE] Message from other user added to UI');
           } else {
@@ -484,8 +486,8 @@ class MessageService extends GetxService {
             messages[existingIndex] = transformedMessage;
             print('✅ [MESSAGE SERVICE] Own message updated with server data');
           } else {
-            // Fallback: add message if not found
-            messages.insert(0, transformedMessage);
+            // Fallback: add message if not found (to bottom)
+            messages.add(transformedMessage);
             totalMessages.value++;
             print('➕ [MESSAGE SERVICE] Own message added as fallback');
           }

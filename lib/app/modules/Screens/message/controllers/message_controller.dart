@@ -63,6 +63,16 @@ class MessageController extends GetxController {
     super.onReady();
     _initializeSocketService();
     _initializeMessageScreen();
+
+    // Listen for new messages and auto-scroll
+    ever(messages, (List<Map<String, dynamic>> newMessages) {
+      if (newMessages.isNotEmpty) {
+        // Auto-scroll to bottom when new messages arrive
+        Future.delayed(const Duration(milliseconds: 200), () {
+          _scrollToBottom();
+        });
+      }
+    });
   }
 
   @override
@@ -240,7 +250,7 @@ class MessageController extends GetxController {
     try {
       print(
           '🚀 [MESSAGE CONTROLLER] Starting message screen initialization...');
-      isLoading.value = true;
+      // Do not toggle global spinner for send; UI stays responsive
 
       // Get interest data from arguments
       print('📥 [MESSAGE CONTROLLER] Getting arguments...');
@@ -311,7 +321,7 @@ class MessageController extends GetxController {
       print('❌ [MESSAGE CONTROLLER] Stack trace: ${StackTrace.current}');
       Get.snackbar('Error', 'Failed to load message data');
     } finally {
-      isLoading.value = false;
+      // Keep loading untouched for send operation
       print('🏁 [MESSAGE CONTROLLER] Loading state set to false');
     }
   }
@@ -584,7 +594,7 @@ class MessageController extends GetxController {
     }
 
     try {
-      isLoading.value = true;
+      // Do not toggle global spinner for send; UI stays responsive
 
       // Send stop typing indicator
       _sendStopTypingIndicator();
@@ -611,8 +621,10 @@ class MessageController extends GetxController {
       replyToMessage.value = null;
       taggedUsers.clear();
 
-      // Scroll to bottom
-      _scrollToBottom();
+      // Auto-scroll to new message after a brief delay to ensure UI is updated
+      Future.delayed(const Duration(milliseconds: 100), () {
+        _scrollToBottom();
+      });
     } catch (e) {
       print('❌ [MESSAGE CONTROLLER] Error sending message: $e');
       String errorMessage = 'Failed to send message';
@@ -631,7 +643,7 @@ class MessageController extends GetxController {
           colorText: Colors.white,
           duration: Duration(seconds: 3));
     } finally {
-      isLoading.value = false;
+      // Keep loading untouched for send operation
     }
   }
 
@@ -655,7 +667,11 @@ class MessageController extends GetxController {
 
       messages.value = _messageService.messages;
       totalMessages.value = _messageService.totalMessages.value;
-      _scrollToBottom();
+
+      // Auto-scroll to new message
+      Future.delayed(const Duration(milliseconds: 100), () {
+        _scrollToBottom();
+      });
     } catch (e) {
       print('Error sending important message: $e');
       Get.snackbar('Error', 'Failed to send important message');
@@ -686,7 +702,11 @@ class MessageController extends GetxController {
 
       messages.value = _messageService.messages;
       totalMessages.value = _messageService.totalMessages.value;
-      _scrollToBottom();
+
+      // Auto-scroll to new message
+      Future.delayed(const Duration(milliseconds: 100), () {
+        _scrollToBottom();
+      });
     } catch (e) {
       print('Error sending quick reply: $e');
       Get.snackbar('Error', 'Failed to send quick reply');
