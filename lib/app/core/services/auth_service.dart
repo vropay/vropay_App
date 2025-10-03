@@ -5,6 +5,7 @@ import 'package:vropay_final/app/core/models/api_response.dart';
 import 'package:vropay_final/app/core/models/user_model.dart';
 import 'package:vropay_final/app/core/network/api_client.dart';
 import 'package:vropay_final/app/core/network/api_exception.dart';
+import 'package:vropay_final/app/core/services/socket_service.dart';
 
 class AuthService extends GetxService {
   final ApiClient _apiClient = ApiClient();
@@ -52,6 +53,11 @@ class AuthService extends GetxService {
 
   // Check if user is authenticated
   bool get isAuthenticated => isLoggedIn.value && authToken.value.isNotEmpty;
+
+  // Get auth token
+  Future<String?> getAuthToken() async {
+    return _storage.read('auth_token');
+  }
 
   // Load authentication data from storage
   void _loadAuthData() {
@@ -546,9 +552,34 @@ class AuthService extends GetxService {
     await _storage.write('auth_token', token);
     await _storage.write('user_data', userData); // Verify token was saved
     final savedToken = _storage.read('auth_token');
+
+    // Connect to Socket.IO after successful authentication
+    _connectToSocket();
     print(
         '🔍 Token saved verification: ${savedToken != null ? 'SUCCESS' : 'FAILED'}');
     print('✅ Auth data saved successfully');
+  }
+
+  /// Connect to Socket.IO after authentication
+  void _connectToSocket() {
+    try {
+      final socketService = Get.find<SocketService>();
+      socketService.connect();
+      print('🔌 [AUTH SERVICE] Socket.IO connection initiated');
+    } catch (e) {
+      print('⚠️ [AUTH SERVICE] Socket service not available: $e');
+    }
+  }
+
+  /// Disconnect Socket.IO on logout
+  void _disconnectSocket() {
+    try {
+      final socketService = Get.find<SocketService>();
+      socketService.disconnect();
+      print('🔌 [AUTH SERVICE] Socket.IO disconnected');
+    } catch (e) {
+      print('⚠️ [AUTH SERVICE] Socket service not available: $e');
+    }
   }
 
   // Process signup response
@@ -656,6 +687,9 @@ class AuthService extends GetxService {
       // clear local storage
       await _storage.remove('auth_token');
       await _storage.remove('user_data');
+
+      // Disconnect Socket.IO
+      _disconnectSocket();
 
       // Reset state
       isLoggedIn.value = false;

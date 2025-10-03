@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:get/get.dart';
@@ -6,10 +7,12 @@ import 'package:vropay_final/app/core/api/api_constant.dart';
 import 'package:vropay_final/app/core/models/api_response.dart';
 import 'package:vropay_final/app/core/network/api_client.dart';
 import 'package:vropay_final/app/core/network/api_exception.dart';
+import 'package:vropay_final/app/core/services/socket_service.dart';
 
 class MessageService extends GetxService {
   final ApiClient _apiClient = ApiClient();
   final GetStorage _storage = GetStorage();
+  SocketService? _socketService;
 
   // Observable variables
   final RxBool isLoading = false.obs;
@@ -18,197 +21,129 @@ class MessageService extends GetxService {
   final RxInt currentPage = 1.obs;
   final RxBool hasNextPage = false.obs;
 
-  // Socket.IO related observables
+  // Real-time messaging
+  final RxBool isRealTimeEnabled = false.obs;
+  final RxString currentInterestId = ''.obs;
   final RxList<String> typingUsers = <String>[].obs;
-  final RxMap<String, dynamic> tempMessages = <String, dynamic>{}.obs;
+
+  // Stream subscriptions
+  StreamSubscription<Map<String, dynamic>>? _messageSubscription;
+  StreamSubscription<Map<String, dynamic>>? _typingSubscription;
+  StreamSubscription<Map<String, dynamic>>? _stopTypingSubscription;
 
   @override
   void onInit() {
     super.onInit();
     _apiClient.init();
+    _initializeSocketService();
   }
 
-  // Send a message to an interest group (REST API - backup method)
+  @override
+  void onClose() {
+    _disposeStreams();
+    super.onClose();
+  }
+
+  /// Initialize Socket.IO service
+  void _initializeSocketService() {
+    try {
+      _socketService = Get.find<SocketService>();
+      isRealTimeEnabled.value = true;
+      print('✅ [MESSAGE SERVICE] Socket service initialized');
+    } catch (e) {
+      print('⚠️ [MESSAGE SERVICE] Socket service not available: $e');
+      isRealTimeEnabled.value = false;
+    }
+  }
+
+  /// Dispose stream subscriptions
+  void _disposeStreams() {
+    _messageSubscription?.cancel();
+    _typingSubscription?.cancel();
+    _stopTypingSubscription?.cancel();
+  }
+
+  // Send a message to an interest group
   Future<Map<String, dynamic>> sendMessage({
     required String interestId,
     required String message,
+    String? replyToMessageId,
+    List<String>? taggedUsers,
   }) async {
     try {
       isLoading.value = true;
 
-      final response = await _apiClient.post(
-        ApiConstant.sendMessage,
-        data: {
+      // Use Socket.IO for real-time messaging if available
+      if (isRealTimeEnabled.value && _socketService != null) {
+        print('📤 [MESSAGE SERVICE] Sending message via Socket.IO');
+
+        // Prepare message data for socket
+        final messageData = {
           'interestId': interestId,
           'message': message,
-        },
-      );
+          'userId': _storage.read('user_id'),
+          'timestamp': DateTime.now().toIso8601String(),
+          if (replyToMessageId != null) 'replyToMessageId': replyToMessageId,
+          if (taggedUsers != null && taggedUsers.isNotEmpty)
+            'taggedUsers': taggedUsers,
+        };
 
-      if (response.statusCode == 201) {
-        final apiResponse = ApiResponse.fromJson(response.data, (data) => data);
-        if (apiResponse.success) {
-          // Add the new message to the list
-          final transformedMessage = _transformMessage(apiResponse.data);
-          messages.insert(0, apiResponse.data);
-          totalMessages.value++;
-          return transformedMessage;
-        } else {
-          throw ApiException(apiResponse.message);
-        }
+        _socketService!.sendMessage(messageData);
+
+        // Return optimistic message data
+        final optimisticMessage = {
+          'id': DateTime.now().millisecondsSinceEpoch.toString(),
+          'message': message,
+          'interestId': interestId,
+          'userId': {
+            '_id': _storage.read('user_id'),
+            'name': _storage.read('user_name') ?? 'You'
+          },
+          'createdAt': DateTime.now().toIso8601String(),
+          'isOptimistic': true,
+        };
+
+        // Add optimistic message to UI immediately
+        final transformedMessage = _transformMessage(optimisticMessage);
+        messages.insert(0, transformedMessage);
+        totalMessages.value++;
+
+        return transformedMessage;
       } else {
-        throw ApiException('Failed to send message');
+        // Fallback to REST API
+        print('📤 [MESSAGE SERVICE] Sending message via REST API');
+        final response = await _apiClient.post(
+          ApiConstant.sendMessage,
+          data: {
+            'interestId': interestId,
+            'message': message,
+            if (replyToMessageId != null) 'replyToMessageId': replyToMessageId,
+            if (taggedUsers != null && taggedUsers.isNotEmpty)
+              'taggedUsers': taggedUsers,
+          },
+        );
+
+        if (response.statusCode == 201) {
+          final apiResponse =
+              ApiResponse.fromJson(response.data, (data) => data);
+          if (apiResponse.success) {
+            // Add the new message to the list
+            final transformedMessage = _transformMessage(apiResponse.data);
+            messages.insert(0, transformedMessage);
+            totalMessages.value++;
+            return transformedMessage;
+          } else {
+            throw ApiException(apiResponse.message);
+          }
+        } else {
+          throw ApiException('Failed to send message');
+        }
       }
     } catch (e) {
       print('Error sending message: $e');
       throw ApiException('Failed to send message: ${e.toString()}');
     } finally {
       isLoading.value = false;
-    }
-  }
-
-  // Send message via Socket.IO (primary method)
-  Future<Map<String, dynamic>> sendMessageViaSocket({
-    required String interestId,
-    required String message,
-  }) async {
-    try {
-      // Create temporary message for immediate UI update
-      final tempId = DateTime.now().millisecondsSinceEpoch.toString();
-      final tempMessage = {
-        'id': tempId,
-        'message': message,
-        'sender': _storage.read('user_name') ?? 'You',
-        'timestamp': DateTime.now().toIso8601String(),
-        'isOwnMessage': true,
-        'avatarColor': _getAvatarColor(_storage.read('user_id')),
-        'interestName': 'Current Interest',
-        'isTemporary': true,
-        'status': 'sending',
-      };
-
-      // Store temporary message
-      tempMessages[tempId] = tempMessage;
-
-      // Add to messages list immediately
-      messages.insert(0, tempMessage);
-      totalMessages.value++;
-
-      return tempMessage;
-    } catch (e) {
-      print('Error sending message via socket: $e');
-      throw ApiException('Failed to send message via socket: ${e.toString()}');
-    }
-  }
-
-  // Socket.IO event handlers
-  void handleNewMessage(dynamic data) {
-    try {
-      final message = _transformMessage(data);
-
-      // Remove any temporary message with same content
-      messages.removeWhere((msg) =>
-          msg['isTemporary'] == true && msg['message'] == message['message']);
-
-      // Add the real message from server
-      messages.insert(0, message);
-      totalMessages.value++;
-
-      print('✅ [MESSAGE SERVICE] New message added to list');
-    } catch (e) {
-      print('❌ [MESSAGE SERVICE] Error handling new message: $e');
-    }
-  }
-
-  void handleMessageSent(dynamic data) {
-    try {
-      final messageId = data['_id'] ?? data['id'];
-      final message = _transformMessage(data);
-
-      // Find and replace temporary message
-      final tempIndex = messages.indexWhere((msg) =>
-          msg['isTemporary'] == true && msg['message'] == message['message']);
-
-      if (tempIndex != -1) {
-        messages[tempIndex] = message;
-        messages[tempIndex]['status'] = 'sent';
-        messages[tempIndex]['isTemporary'] = false;
-      }
-
-      print('✅ [MESSAGE SERVICE] Message sent confirmation received');
-    } catch (e) {
-      print('❌ [MESSAGE SERVICE] Error handling message sent: $e');
-    }
-  }
-
-  void handleMessageError(dynamic data) {
-    try {
-      final error = data['error'] ?? 'Unknown error';
-
-      // Find and update temporary message with error status
-      final tempIndex = messages.indexWhere(
-          (msg) => msg['isTemporary'] == true && msg['status'] == 'sending');
-
-      if (tempIndex != -1) {
-        messages[tempIndex]['status'] = 'error';
-        messages[tempIndex]['error'] = error;
-      }
-
-      print('❌ [MESSAGE SERVICE] Message error: $error');
-    } catch (e) {
-      print('❌ [MESSAGE SERVICE] Error handling message error: $e');
-    }
-  }
-
-  void handleMessageDeleted(dynamic data) {
-    try {
-      final messageId = data['messageId'] ?? data['_id'];
-      messages.removeWhere((msg) => msg['id'] == messageId);
-      totalMessages.value--;
-      print('✅ [MESSAGE SERVICE] Message deleted from list');
-    } catch (e) {
-      print('❌ [MESSAGE SERVICE] Error handling message deletion: $e');
-    }
-  }
-
-  void handleUserJoined(dynamic data) {
-    try {
-      final user = data['user'] ?? data['username'] ?? 'Unknown User';
-      print('✅ [MESSAGE SERVICE] User joined: $user');
-      // You can add UI notification here if needed
-    } catch (e) {
-      print('❌ [MESSAGE SERVICE] Error handling user joined: $e');
-    }
-  }
-
-  void handleUserLeft(dynamic data) {
-    try {
-      final user = data['user'] ?? data['username'] ?? 'Unknown User';
-      print('✅ [MESSAGE SERVICE] User left: $user');
-      // You can add UI notification here if needed
-    } catch (e) {
-      print('❌ [MESSAGE SERVICE] Error handling user left: $e');
-    }
-  }
-
-  void handleUserTyping(dynamic data) {
-    try {
-      final userId = data['userId'] ?? data['user'] ?? 'Unknown';
-      if (!typingUsers.contains(userId)) {
-        typingUsers.add(userId);
-      }
-      print('⌨️ [MESSAGE SERVICE] User typing: $userId');
-    } catch (e) {
-      print('❌ [MESSAGE SERVICE] Error handling user typing: $e');
-    }
-  }
-
-  void handleUserStopTyping(dynamic data) {
-    try {
-      final userId = data['userId'] ?? data['user'] ?? 'Unknown';
-      typingUsers.remove(userId);
-      print('⏹️ [MESSAGE SERVICE] User stopped typing: $userId');
-    } catch (e) {
-      print('❌ [MESSAGE SERVICE] Error handling user stop typing: $e');
     }
   }
 
@@ -324,8 +259,6 @@ class MessageService extends GetxService {
       'isOwnMessage': _isOwnMessage(user['_id']),
       'avatarColor': _getAvatarColor(user['_id']),
       'interestName': interest['name'] ?? 'Unknown Interest',
-      'status': 'sent',
-      'isTemporary': false,
     };
   }
 
@@ -360,16 +293,112 @@ class MessageService extends GetxService {
     currentPage.value = 1;
     hasNextPage.value = false;
     totalMessages.value = 0;
-    typingUsers.clear();
-    tempMessages.clear();
   }
 
-  // Get auth headers
-  Future<Map<String, String>> _getAuthHeaders() async {
-    final token = _storage.read('auth_token');
-    return {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token',
-    };
+  /// Enable real-time messaging for an interest
+  Future<void> enableRealTimeMessaging(String interestId) async {
+    if (!isRealTimeEnabled.value || _socketService == null) {
+      print('⚠️ [MESSAGE SERVICE] Real-time messaging not available');
+      return;
+    }
+
+    try {
+      currentInterestId.value = interestId;
+
+      // Join the interest room
+      await _socketService!.joinInterest(interestId);
+
+      // Setup real-time listeners
+      _setupRealTimeListeners();
+
+      print(
+          '✅ [MESSAGE SERVICE] Real-time messaging enabled for interest: $interestId');
+    } catch (e) {
+      print('❌ [MESSAGE SERVICE] Failed to enable real-time messaging: $e');
+    }
+  }
+
+  /// Disable real-time messaging
+  void disableRealTimeMessaging() {
+    if (_socketService != null && currentInterestId.value.isNotEmpty) {
+      _socketService!.leaveInterest();
+    }
+
+    _disposeStreams();
+    currentInterestId.value = '';
+    typingUsers.clear();
+
+    print('🔌 [MESSAGE SERVICE] Real-time messaging disabled');
+  }
+
+  /// Setup real-time event listeners
+  void _setupRealTimeListeners() {
+    if (_socketService == null) return;
+
+    // Listen for new messages
+    _messageSubscription = _socketService!.messageStream.listen((data) {
+      print('📨 [MESSAGE SERVICE] Real-time message received: $data');
+
+      // Check if message is for current interest
+      if (data['interestId'] == currentInterestId.value) {
+        final transformedMessage = _transformMessage(data);
+
+        // Check if message already exists (avoid duplicates)
+        final messageId = transformedMessage['id'];
+        final existingIndex =
+            messages.indexWhere((msg) => msg['id'] == messageId);
+
+        if (existingIndex == -1) {
+          // Add new message
+          messages.insert(0, transformedMessage);
+          totalMessages.value++;
+        } else {
+          // Update existing optimistic message
+          messages[existingIndex] = transformedMessage;
+        }
+      }
+    });
+
+    // Listen for typing indicators
+    _typingSubscription = _socketService!.typingStream.listen((data) {
+      if (data['interestId'] == currentInterestId.value) {
+        final userId = data['userId'];
+        if (userId != _storage.read('user_id') &&
+            !typingUsers.contains(userId)) {
+          typingUsers.add(userId);
+        }
+      }
+    });
+  }
+
+  /// Send typing indicator
+  void sendTypingIndicator() {
+    if (isRealTimeEnabled.value &&
+        _socketService != null &&
+        currentInterestId.value.isNotEmpty) {
+      _socketService!.sendTypingIndicator(currentInterestId.value);
+    }
+  }
+
+  /// Send stop typing indicator
+  void sendStopTypingIndicator() {
+    if (isRealTimeEnabled.value &&
+        _socketService != null &&
+        currentInterestId.value.isNotEmpty) {
+      _socketService!.sendStopTypingIndicator(currentInterestId.value);
+    }
+  }
+
+  /// Get typing users display text
+  String getTypingUsersText() {
+    if (typingUsers.isEmpty) return '';
+
+    if (typingUsers.length == 1) {
+      return '${typingUsers.first} is typing...';
+    } else if (typingUsers.length == 2) {
+      return '${typingUsers.join(' and ')} are typing...';
+    } else {
+      return '${typingUsers.length} people are typing...';
+    }
   }
 }

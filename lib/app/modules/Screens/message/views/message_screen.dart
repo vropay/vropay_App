@@ -96,13 +96,28 @@ class _MessageScreenState extends State<MessageScreen> {
                             ),
                           ),
                           SizedBox(width: ScreenUtils.width * 0.02),
-                          Text(
-                            "\n${controller.memberCount.value} members",
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: const Color(0xFF616161),
-                              fontWeight: FontWeight.w500,
-                            ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "\n${controller.memberCount.value} members",
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: const Color(0xFF616161),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              // Connection status indicator (can be hidden in production)
+                              if (controller.isRealTimeActive)
+                                Text(
+                                  "● Live",
+                                  style: TextStyle(
+                                    fontSize: 8,
+                                    color: const Color(0xFF4CAF50),
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                            ],
                           )
                         ],
                       ),
@@ -234,6 +249,39 @@ class _MessageScreenState extends State<MessageScreen> {
                     childCount: controller.messages.length,
                   ),
                 ),
+                // Typing indicator
+                Obx(() => controller.typingUsersText.value.isNotEmpty
+                    ? SliverToBoxAdapter(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 8,
+                          ),
+                          child: Row(
+                            children: [
+                              const SizedBox(width: 8),
+                              Container(
+                                width: 8,
+                                height: 8,
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFF9E9E9E),
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                controller.typingUsersText.value,
+                                style: const TextStyle(
+                                  color: Color(0xFF9E9E9E),
+                                  fontSize: 14,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    : const SliverToBoxAdapter(child: SizedBox.shrink())),
                 // Load more button
                 SliverToBoxAdapter(
                   child: Obx(() => controller.hasNextPage
@@ -1726,6 +1774,11 @@ class _MessageScreenState extends State<MessageScreen> {
                 style: const TextStyle(color: Colors.black),
                 maxLines: null,
                 textInputAction: TextInputAction.newline,
+                onChanged: (value) {
+                  controller
+                      .onTextChanged(value); // Add typing indicator support
+                  setState(() {}); // Update UI state
+                },
                 decoration: InputDecoration(
                   hintText: "Write your message",
                   hintStyle: const TextStyle(color: Color(0xFF9E9E9E)),
@@ -1763,7 +1816,6 @@ class _MessageScreenState extends State<MessageScreen> {
                     ),
                   ),
                 ),
-                onChanged: (value) => setState(() {}),
               ),
             ),
           ),

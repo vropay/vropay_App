@@ -3,12 +3,6 @@ class ApiConstant {
   static const String baseUrl = 'http://10.0.2.2:3000';
   static const String apiVersion = '/api';
 
-  // Socket.IO Configuration
-  static const String socketUrl =
-      baseUrl; // CRITICAL: Your Socket.IO server URL
-  static const int socketTimeout = 5000; // 5 seconds
-  static const List<String> socketTransports = ['websocket'];
-
   // Authentication Endpoints
   static const String signUp = '$apiVersion/signup';
   static const String signIn = '$apiVersion/signin';

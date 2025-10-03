@@ -4,12 +4,14 @@ import 'package:get/get.dart';
 import 'package:vropay_final/app/core/services/message_service.dart';
 import 'package:vropay_final/app/core/services/interest_service.dart';
 import 'package:vropay_final/app/core/services/auth_service.dart';
+import 'package:vropay_final/app/core/services/socket_service.dart';
 
 class MessageController extends GetxController {
   // Services
   final MessageService _messageService = Get.find<MessageService>();
   final InterestService _interestService = Get.find<InterestService>();
   final AuthService _authService = Get.find<AuthService>();
+  SocketService? _socketService;
 
   // UI State
   final selectedFilter = ''.obs;
@@ -21,6 +23,15 @@ class MessageController extends GetxController {
   final messageController = TextEditingController();
   final isImportantIconPressed = false.obs;
 
+  // Real-time messaging
+  final RxBool isRealTimeEnabled = false.obs;
+  final RxString typingUsersText = ''.obs;
+  final RxBool isTyping = false.obs;
+
+  // Typing timer
+  Timer? _typingTimer;
+  Timer? _stopTypingTimer;
+
   // Dynamic Data
   final RxString interestId = ''.obs;
   final RxString interestName = ''.obs;
@@ -28,11 +39,6 @@ class MessageController extends GetxController {
   final RxBool canSendMessages = false.obs;
   final RxBool hasUserInterest = false.obs;
   final RxString communityAccess = ''.obs;
-
-  // Socket.IO related
-  final RxBool isSocketConnected = false.obs;
-  final RxList<String> typingUsers = <String>[].obs;
-  final RxBool isTyping = false.obs;
 
   // Report options
   final List<String> reportOptions = [
@@ -52,20 +58,87 @@ class MessageController extends GetxController {
   // Scroll callback
   VoidCallback? _scrollCallback;
 
-  // Typing timer
-  Timer? _typingTimer;
-
   @override
   void onReady() {
     super.onReady();
+    _initializeSocketService();
     _initializeMessageScreen();
   }
 
   @override
   void onClose() {
-    _typingTimer?.cancel();
+    _disposeTimers();
+    _messageService.disableRealTimeMessaging();
+    _disconnectFromSocket();
     messageController.dispose();
     super.onClose();
+  }
+
+  /// Disconnect from socket
+  void _disconnectFromSocket() {
+    if (_socketService != null) {
+      _socketService!.disconnect();
+    }
+  }
+
+  /// Initialize Socket.IO service
+  void _initializeSocketService() {
+    try {
+      _socketService = Get.find<SocketService>();
+      isRealTimeEnabled.value = true;
+      print('✅ [MESSAGE CONTROLLER] Socket service initialized');
+
+      // Connect to socket if user is authenticated
+      _connectToSocket();
+    } catch (e) {
+      print('⚠️ [MESSAGE CONTROLLER] Socket service not available: $e');
+      isRealTimeEnabled.value = false;
+    }
+  }
+
+  /// Connect to socket with authentication
+  Future<void> _connectToSocket() async {
+    if (_socketService == null) return;
+
+    try {
+      final currentUser = _authService.currentUser.value;
+      if (currentUser != null) {
+        final authToken = await _authService.getAuthToken();
+        final connected = await _socketService!.connect(
+          authToken: authToken,
+          userId: currentUser.id,
+        );
+
+        if (connected) {
+          print('✅ [MESSAGE CONTROLLER] Connected to socket server');
+        } else {
+          print(
+              '⚠️ [MESSAGE CONTROLLER] Socket connection failed, using REST API fallback');
+          isRealTimeEnabled.value = false;
+        }
+      }
+    } catch (e) {
+      print('❌ [MESSAGE CONTROLLER] Failed to connect to socket: $e');
+      isRealTimeEnabled.value = false;
+    }
+  }
+
+  /// Retry socket connection
+  Future<void> retrySocketConnection() async {
+    if (_socketService != null && !isRealTimeEnabled.value) {
+      print('🔄 [MESSAGE CONTROLLER] Retrying socket connection...');
+      await _connectToSocket();
+
+      if (isRealTimeEnabled.value) {
+        await _enableRealTimeMessaging();
+      }
+    }
+  }
+
+  /// Dispose timers
+  void _disposeTimers() {
+    _typingTimer?.cancel();
+    _stopTypingTimer?.cancel();
   }
 
   // Initialize message screen with dynamic data
@@ -111,6 +184,11 @@ class MessageController extends GetxController {
         _checkUserPermissions(),
         _loadMessages(),
       ]);
+
+      // Enable real-time messaging after loading initial data
+      if (isRealTimeEnabled.value) {
+        await _enableRealTimeMessaging();
+      }
 
       print(
           '✅ [MESSAGE CONTROLLER] Message screen initialization completed successfully!');
@@ -216,7 +294,7 @@ class MessageController extends GetxController {
     }
   }
 
-  // Send a message (updated for Socket.IO)
+  // Send a message
   Future<void> sendMessage() async {
     if (messageController.text.trim().isEmpty) return;
     if (!canSendMessages.value) {
@@ -227,25 +305,29 @@ class MessageController extends GetxController {
     try {
       isLoading.value = true;
 
-      // Send via Socket.IO for real-time delivery
-      final tempMessage = await _messageService.sendMessageViaSocket(
+      // Send stop typing indicator
+      _sendStopTypingIndicator();
+
+      await _messageService.sendMessage(
         interestId: interestId.value,
         message: messageController.text.trim(),
+        replyToMessageId: replyToMessage.value?['id'],
+        taggedUsers: taggedUsers.isNotEmpty ? taggedUsers : null,
       );
 
       // Update local messages
       messages.value = _messageService.messages;
       totalMessages.value = _messageService.totalMessages.value;
 
-      // Clear input
+      // Clear input and reply
       messageController.clear();
+      replyToMessage.value = null;
+      taggedUsers.clear();
 
       // Scroll to bottom
       _scrollToBottom();
-
-      print('✅ [MESSAGE CONTROLLER] Message sent via Socket.IO');
     } catch (e) {
-      print('❌ [MESSAGE CONTROLLER] Error sending message: $e');
+      print('Error sending message: $e');
       Get.snackbar('Error', 'Failed to send message');
     } finally {
       isLoading.value = false;
@@ -263,8 +345,9 @@ class MessageController extends GetxController {
     try {
       isLoading.value = true;
 
-      // Send via Socket.IO
-      await _messageService.sendMessageViaSocket(
+      // For now, send as regular message
+      // You can extend this to have a special important message API
+      await _messageService.sendMessage(
         interestId: interestId.value,
         message: message.trim(),
       );
@@ -295,7 +378,7 @@ class MessageController extends GetxController {
     try {
       isLoading.value = true;
 
-      await _messageService.sendMessageViaSocket(
+      await _messageService.sendMessage(
         interestId: interestId.value,
         message: message,
       );
@@ -349,4 +432,109 @@ class MessageController extends GetxController {
   }
 
   bool get hasNextPage => _messageService.hasNextPage.value;
+
+  /// Enable real-time messaging
+  Future<void> _enableRealTimeMessaging() async {
+    if (!isRealTimeEnabled.value) return;
+
+    try {
+      await _messageService.enableRealTimeMessaging(interestId.value);
+
+      // Listen for typing indicators
+      _listenToTypingIndicators();
+
+      // Listen for socket errors
+      _listenToSocketErrors();
+
+      print('✅ [MESSAGE CONTROLLER] Real-time messaging enabled');
+    } catch (e) {
+      print('❌ [MESSAGE CONTROLLER] Failed to enable real-time messaging: $e');
+      _handleSocketError(e.toString());
+    }
+  }
+
+  /// Listen to socket errors
+  void _listenToSocketErrors() {
+    if (_socketService != null) {
+      _socketService!.errorStream.listen((errorData) {
+        _handleSocketError(errorData['error']?.toString() ?? 'Unknown error');
+      });
+    }
+  }
+
+  /// Listen to typing indicators
+  void _listenToTypingIndicators() {
+    // Update typing users text whenever it changes
+    ever(_messageService.typingUsers, (List<String> typingUsers) {
+      typingUsersText.value = _messageService.getTypingUsersText();
+    });
+  }
+
+  /// Handle text input changes for typing indicators
+  void onTextChanged(String text) {
+    if (!isRealTimeEnabled.value) return;
+
+    // Cancel previous timers
+    _typingTimer?.cancel();
+    _stopTypingTimer?.cancel();
+
+    if (text.isNotEmpty) {
+      // Send typing indicator if not already typing
+      if (!isTyping.value) {
+        _messageService.sendTypingIndicator();
+        isTyping.value = true;
+      }
+
+      // Set timer to send stop typing after 2 seconds of inactivity
+      _stopTypingTimer = Timer(const Duration(seconds: 2), () {
+        _sendStopTypingIndicator();
+      });
+    } else {
+      // Send stop typing immediately if text is empty
+      _sendStopTypingIndicator();
+    }
+  }
+
+  /// Send stop typing indicator
+  void _sendStopTypingIndicator() {
+    if (isTyping.value) {
+      _messageService.sendStopTypingIndicator();
+      isTyping.value = false;
+    }
+  }
+
+  /// Get connection status
+  String get connectionStatus {
+    if (!isRealTimeEnabled.value) return 'REST API';
+    if (_socketService == null) return 'Socket Unavailable';
+    return _socketService!.statusText;
+  }
+
+  /// Check if real-time messaging is active
+  bool get isRealTimeActive =>
+      isRealTimeEnabled.value && _socketService?.isConnected.value == true;
+
+  /// Handle socket errors
+  void _handleSocketError(String error) {
+    print('❌ [MESSAGE CONTROLLER] Socket error: $error');
+
+    // Show user-friendly error message
+    Get.snackbar(
+      'Connection Issue',
+      'Real-time messaging temporarily unavailable. Messages will still be sent.',
+      backgroundColor: Colors.orange.withOpacity(0.8),
+      colorText: Colors.white,
+      duration: const Duration(seconds: 3),
+    );
+
+    // Disable real-time features but keep messaging functional
+    isRealTimeEnabled.value = false;
+  }
+
+  /// Get connection status for debugging
+  String get connectionStatusDebug {
+    if (!isRealTimeEnabled.value) return 'REST API Mode';
+    if (_socketService == null) return 'Socket Service Unavailable';
+    return _socketService!.statusText;
+  }
 }

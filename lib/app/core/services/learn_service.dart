@@ -21,51 +21,13 @@ class LearnService extends GetxService {
       print('✅ LearnService - Raw response: ${res.data}');
       print('✅ LearnService - Response status: ${res.statusCode}');
 
-      // Handle different response formats
-      List<Map<String, dynamic>> categories = [];
+      final data = _unwrap(res.data);
+      print('🔍 LearnService - Unwrapped data: $data');
 
-      if (res.data is List) {
-        // Direct array response
-        categories = (res.data as List).cast<Map<String, dynamic>>();
-        print(
-            '📋 LearnService - Direct array response, categories count: ${categories.length}');
-      } else if (res.data is Map<String, dynamic>) {
-        final data = res.data as Map<String, dynamic>;
+      final list = _asListOfMap(data);
+      print('📋 LearnService - Parsed list length: ${list.length}');
 
-        // Check for common response patterns
-        if (data.containsKey('data') && data['data'] is List) {
-          categories = (data['data'] as List).cast<Map<String, dynamic>>();
-          print(
-              '📋 LearnService - Data array response, categories count: ${categories.length}');
-        } else if (data.containsKey('items') && data['items'] is List) {
-          categories = (data['items'] as List).cast<Map<String, dynamic>>();
-          print(
-              '📋 LearnService - Items array response, categories count: ${categories.length}');
-        } else if (data.containsKey('categories') &&
-            data['categories'] is List) {
-          categories =
-              (data['categories'] as List).cast<Map<String, dynamic>>();
-          print(
-              '📋 LearnService - Categories array response, categories count: ${categories.length}');
-        } else {
-          // Try to extract any array from the response
-          for (var key in data.keys) {
-            if (data[key] is List) {
-              categories = (data[key] as List).cast<Map<String, dynamic>>();
-              print(
-                  '📋 LearnService - Found array in key "$key", categories count: ${categories.length}');
-              break;
-            }
-          }
-        }
-      }
-
-      print('📋 LearnService - Final categories count: ${categories.length}');
-      if (categories.isNotEmpty) {
-        print('📋 LearnService - First category: ${categories.first}');
-      }
-
-      return ApiResponse.success({'items': categories});
+      return ApiResponse.success({'items': list});
     } catch (e) {
       print('❌ LearnService - Error: $e');
       print('❌ LearnService - Error type: ${e.runtimeType}');

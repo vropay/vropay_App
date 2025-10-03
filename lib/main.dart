@@ -8,7 +8,9 @@ import 'package:vropay_final/app/core/services/community_service.dart';
 import 'package:vropay_final/app/core/services/forum_service.dart';
 import 'package:vropay_final/app/core/services/knowledge_service.dart';
 import 'package:vropay_final/app/core/services/learn_service.dart';
+import 'package:vropay_final/app/core/services/message_service.dart';
 import 'package:vropay_final/app/core/services/user_service.dart';
+import 'package:vropay_final/app/core/services/socket_service.dart';
 
 import 'Themes/themes.dart';
 import 'app/modules/common/controller/bottom_navbar_controller.dart';
@@ -36,6 +38,8 @@ void main() async {
   Get.put(ForumService(), permanent: true);
   Get.put(LearnService(), permanent: true);
   Get.put(CommunityService(), permanent: true);
+  Get.put(SocketService(), permanent: true);
+  Get.put(MessageService(), permanent: true);
 
   // Debug: Verify CommunityService is registered
   print(
