@@ -102,6 +102,11 @@ class ApiConstant {
   static String learnRelatedContent(String entryId) =>
       '$apiVersion/entries/$entryId/related';
 
+  // Topic search endpoint
+  static String learnSearchInTopic(
+          String mainCategoryId, String subCategoryId, String topicId) =>
+      '$apiVersion/main-category/$mainCategoryId/sub-category/$subCategoryId/topic/$topicId/search';
+
   // Community endpoints
   static String communityMainCategories = '$apiVersion/main-categories';
 

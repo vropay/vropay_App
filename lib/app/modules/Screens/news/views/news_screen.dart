@@ -18,7 +18,6 @@ class NewsScreen extends GetView<NewsController> {
     // Set the context for ScreenUtils
     ScreenUtils.setContext(context);
 
-    final GlobalKey moreButtonKey = GlobalKey();
     final GlobalKey moreVertButtonKey = GlobalKey();
     final GlobalKey filterButtonKey = GlobalKey();
 
@@ -91,17 +90,34 @@ class NewsScreen extends GetView<NewsController> {
                                 color: Color(0xFF172B75),
                                 fontSize: ScreenUtils.x(3.5),
                                 fontWeight: FontWeight.w300),
-                            prefixIcon: Image.asset(
-                              KImages.searchIcon,
-                              color: Color(0xFF172B75),
-                            ),
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                Icons.clear,
-                                color: Color(0xFF172B75),
-                              ),
-                              onPressed: () => controller.clearSearch(),
-                            ),
+                            prefixIcon: controller.isSearching.value
+                                ? SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: Padding(
+                                      padding: EdgeInsets.all(12),
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                          Color(0xFF172B75),
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                : Image.asset(
+                                    KImages.searchIcon,
+                                    color: Color(0xFF172B75),
+                                  ),
+                            suffixIcon: controller.searchText.value.isNotEmpty
+                                ? IconButton(
+                                    icon: Icon(
+                                      Icons.clear,
+                                      color: Color(0xFF172B75),
+                                    ),
+                                    onPressed: () => controller.clearSearch(),
+                                  )
+                                : null,
                             border: InputBorder.none,
                             contentPadding: EdgeInsets.symmetric(
                                 horizontal: 20, vertical: 15),
@@ -498,7 +514,8 @@ class NewsScreen extends GetView<NewsController> {
 
             // News Articles List/Grid
             Obx(() {
-              if (controller.isLoading.value) {
+              if (controller.isLoading.value &&
+                  controller.searchText.value.isEmpty) {
                 return const Center(
                   child: CircularProgressIndicator(
                     color: Color(0xFF18707C),
@@ -506,28 +523,37 @@ class NewsScreen extends GetView<NewsController> {
                 );
               }
 
-              final filteredNews = controller.filteredNews;
-
-              if (filteredNews.isEmpty &&
+              // Show search error if there's an error
+              if (controller.searchError.value.isNotEmpty &&
                   controller.searchText.value.isNotEmpty) {
                 return Center(
                   child: Column(
                     children: [
                       Icon(
-                        Icons.search_off,
+                        Icons.error_outline,
                         size: 60,
-                        color: Colors.grey[400],
+                        color: Colors.red[400],
                       ),
                       SizedBox(height: 16),
                       Text(
-                        'No news found for "${controller.searchText.value}"',
+                        'Search Error',
                         style: TextStyle(
                           fontSize: ScreenUtils.x(4),
-                          color: Colors.grey[600],
+                          color: Colors.red[600],
+                          fontWeight: FontWeight.w500,
                         ),
                         textAlign: TextAlign.center,
                       ),
                       SizedBox(height: 8),
+                      Text(
+                        controller.searchError.value,
+                        style: TextStyle(
+                          fontSize: ScreenUtils.x(3.5),
+                          color: Colors.grey[600],
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      SizedBox(height: 16),
                       TextButton(
                         onPressed: () => controller.clearSearch(),
                         child: Text(
@@ -543,14 +569,101 @@ class NewsScreen extends GetView<NewsController> {
                 );
               }
 
+              final filteredNews = controller.filteredNews;
+
+              // Show "no results" message for search
+              if (filteredNews.isEmpty &&
+                  controller.searchText.value.isNotEmpty) {
+                return Center(
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.search_off,
+                        size: 60,
+                        color: Colors.grey[400],
+                      ),
+                      SizedBox(height: 16),
+                      Text(
+                        'No results found for "${controller.searchText.value}"',
+                        style: TextStyle(
+                          fontSize: ScreenUtils.x(4),
+                          color: Colors.grey[600],
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        controller.hasSearchResults.value
+                            ? 'Try different keywords'
+                            : 'Search in this topic for relevant content',
+                        style: TextStyle(
+                          fontSize: ScreenUtils.x(3.2),
+                          color: Colors.grey[500],
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      SizedBox(height: 16),
+                      TextButton(
+                        onPressed: () => controller.clearSearch(),
+                        child: Text(
+                          'Clear search',
+                          style: TextStyle(
+                            color: Color(0xFF714FC0),
+                            fontSize: ScreenUtils.x(3),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              // Show search results count if searching
+              Widget content;
               if (controller.isGridView.value) {
-                return Padding(
+                content = Padding(
                   padding: const EdgeInsets.only(left: 46, right: 46),
                   child: _buildGridView(filteredNews),
                 );
               } else {
-                return _buildListView(filteredNews);
+                content = _buildListView(filteredNews);
               }
+
+              // Add search results header if we have search results
+              if (controller.hasSearchResults.value &&
+                  controller.searchText.value.isNotEmpty) {
+                return Column(
+                  children: [
+                    Padding(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      child: Row(
+                        children: [
+                          Text(
+                            'Search Results',
+                            style: TextStyle(
+                              fontSize: ScreenUtils.x(3.5),
+                              fontWeight: FontWeight.w500,
+                              color: Color(0xFF172B75),
+                            ),
+                          ),
+                          SizedBox(width: 8),
+                          Text(
+                            '(${filteredNews.length} found)',
+                            style: TextStyle(
+                              fontSize: ScreenUtils.x(3),
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    content,
+                  ],
+                );
+              }
+
+              return content;
             }),
             SizedBox(height: ScreenUtils.height * 0.04),
           ],
@@ -638,17 +751,7 @@ class NewsScreen extends GetView<NewsController> {
                       textAlign: TextAlign.center,
                     ),
                   ),
-            title: Text(
-              news['title'],
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w500,
-                color: Color(0xFF1E2025),
-              ),
-              textAlign: TextAlign.start,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
+            title: _buildNewsTitle(news),
           ),
         ),
       ),
@@ -723,27 +826,6 @@ class NewsScreen extends GetView<NewsController> {
     );
   }
 
-  Color _getNewsColor(int index) {
-    switch (index) {
-      case 0:
-        return Color(0xFFFF692D);
-      case 1:
-        return Color(0xFFAB272D);
-      case 2:
-        return Color(0xFFD80031);
-      case 3:
-        return Color(0xFFA65854);
-      case 4:
-        return Color(0xFFFF0017);
-      case 5:
-        return Color(0xFF690005);
-      case 6:
-        return Color(0xFFE50B5F);
-      default:
-        return Color(0xFF18707C);
-    }
-  }
-
   Widget _buildFilterChip(
       BuildContext context, String label, bool isSelected, VoidCallback onTap) {
     return GestureDetector(
@@ -760,6 +842,102 @@ class NewsScreen extends GetView<NewsController> {
         ),
       ),
     );
+  }
+
+  // Build news title with highlighting support for search results
+  Widget _buildNewsTitle(Map<String, dynamic> news) {
+    final title = news['title'] ?? '';
+    final highlightedTitle = news['highlightedTitle'];
+
+    // If we have a highlighted title from search results, use it
+    if (highlightedTitle != null && highlightedTitle.toString().isNotEmpty) {
+      return RichText(
+        text: TextSpan(
+          children: _parseHighlightedText(highlightedTitle.toString()),
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w500,
+            color: Color(0xFF1E2025),
+          ),
+        ),
+        textAlign: TextAlign.start,
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+      );
+    }
+
+    // Otherwise, use regular title
+    return Text(
+      title,
+      style: TextStyle(
+        fontSize: 15,
+        fontWeight: FontWeight.w500,
+        color: Color(0xFF1E2025),
+      ),
+      textAlign: TextAlign.start,
+      maxLines: 2,
+      overflow: TextOverflow.ellipsis,
+    );
+  }
+
+  // Parse highlighted text from backend (handles <mark> tags)
+  List<TextSpan> _parseHighlightedText(String highlightedText) {
+    final List<TextSpan> spans = [];
+    final RegExp markRegex = RegExp(r'<mark>(.*?)</mark>');
+
+    int lastIndex = 0;
+    markRegex.allMatches(highlightedText).forEach((match) {
+      // Add text before the mark
+      if (match.start > lastIndex) {
+        spans.add(TextSpan(
+          text: highlightedText.substring(lastIndex, match.start),
+          style: TextStyle(
+            color: Color(0xFF1E2025),
+            fontSize: 15,
+            fontWeight: FontWeight.w500,
+          ),
+        ));
+      }
+
+      // Add highlighted text
+      spans.add(TextSpan(
+        text: match.group(1),
+        style: TextStyle(
+          color: Color(0xFF714FC0),
+          fontSize: 15,
+          fontWeight: FontWeight.w600,
+          backgroundColor: Color(0xFF714FC0).withOpacity(0.1),
+        ),
+      ));
+
+      lastIndex = match.end;
+    });
+
+    // Add remaining text
+    if (lastIndex < highlightedText.length) {
+      spans.add(TextSpan(
+        text: highlightedText.substring(lastIndex),
+        style: TextStyle(
+          color: Color(0xFF1E2025),
+          fontSize: 15,
+          fontWeight: FontWeight.w500,
+        ),
+      ));
+    }
+
+    // If no marks were found, return the whole text as normal
+    if (spans.isEmpty) {
+      spans.add(TextSpan(
+        text: highlightedText,
+        style: TextStyle(
+          color: Color(0xFF1E2025),
+          fontSize: 15,
+          fontWeight: FontWeight.w500,
+        ),
+      ));
+    }
+
+    return spans;
   }
 
   List<TextSpan> _highlightOccurrences(String text, String query) {

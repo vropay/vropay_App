@@ -366,6 +366,67 @@ class LearnService extends GetxService {
     }
   }
 
+  // Search entries within a specific topic
+  Future<ApiResponse<Map<String, dynamic>>> searchEntriesInTopic(
+      String mainCategoryId, String subCategoryId, String topicId, String query,
+      {int page = 1, int limit = 10}) async {
+    try {
+      isLoading.value = true;
+      print(
+          '🚀 LearnService - Searching entries in topic: $topicId, query: $query');
+
+      final url = ApiConstant.learnSearchInTopic(
+          mainCategoryId, subCategoryId, topicId);
+      print('🌐 LearnService - Search API URL: $url');
+
+      final res = await _api.get(url, queryParameters: {
+        'query': query,
+        'page': page.toString(),
+        'limit': limit.toString(),
+      });
+
+      print('✅ LearnService - Search response: ${res.data}');
+
+      final data = _unwrap(res.data);
+
+      // The backend returns the search results with pagination info
+      if (data is Map<String, dynamic>) {
+        // Process search results to convert HTML to text
+        if (data['results'] is List) {
+          final results = data['results'] as List;
+          for (var entry in results) {
+            if (entry is Map<String, dynamic>) {
+              // Convert HTML content to plain text
+              if (entry['body'] != null &&
+                  entry['body'].toString().isNotEmpty) {
+                entry['body'] = _convertHtmlToText(entry['body'].toString());
+              }
+              if (entry['title'] != null &&
+                  entry['title'].toString().isNotEmpty) {
+                entry['title'] = _convertHtmlToText(entry['title'].toString());
+              }
+              // Also convert highlighted title if it exists
+              if (entry['highlightedTitle'] != null &&
+                  entry['highlightedTitle'].toString().isNotEmpty) {
+                entry['highlightedTitle'] =
+                    _convertHtmlToText(entry['highlightedTitle'].toString());
+              }
+            }
+          }
+        }
+
+        return ApiResponse.success(data);
+      } else {
+        return ApiResponse.error('Invalid search response format');
+      }
+    } catch (e) {
+      print('❌ LearnService - Search entries in topic error: $e');
+      throw _handle(e);
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   // Helpers to tolerate {success, data} and raw arrays
   dynamic _unwrap(dynamic raw) {
     print(

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:get/get.dart';
 import 'package:vropay_final/app/core/services/learn_service.dart';
 
@@ -10,6 +11,12 @@ class NewsController extends GetxController {
   final isGridView = false.obs;
   final selectedFilter = 'All'.obs;
   final showBlur = false.obs;
+
+  // Search-related observables
+  final isSearching = false.obs;
+  final searchResults = <Map<String, dynamic>>[].obs;
+  final hasSearchResults = false.obs;
+  final searchError = ''.obs;
 
   // Navigation arguments
   String? topicId;
@@ -149,6 +156,13 @@ class NewsController extends GetxController {
     if (searchText.value.isEmpty) {
       return newsArticles;
     }
+
+    // If we have search results, use them
+    if (hasSearchResults.value && searchResults.isNotEmpty) {
+      return searchResults;
+    }
+
+    // Otherwise, fall back to local filtering
     return newsArticles.where((news) {
       return news['title']
           .toString()
@@ -157,14 +171,111 @@ class NewsController extends GetxController {
     }).toList();
   }
 
-  // Update search text
+  // Update search text with debounced search
   void updateSearchText(String text) {
     searchText.value = text;
+
+    // Clear previous search results when text is empty
+    if (text.isEmpty) {
+      clearSearchResults();
+      return;
+    }
+
+    // Perform API search if we have topic context
+    if (text.length >= 2 &&
+        topicId != null &&
+        subCategoryId != null &&
+        categoryId != null) {
+      _performSearch(text);
+    }
+  }
+
+  // Perform API search with debouncing
+  Timer? _searchTimer;
+  void _performSearch(String query) {
+    // Cancel previous timer
+    _searchTimer?.cancel();
+
+    // Set new timer for debounced search
+    _searchTimer = Timer(Duration(milliseconds: 500), () {
+      if (query == searchText.value) {
+        // Ensure query hasn't changed
+        searchEntries(query);
+      }
+    });
+  }
+
+  // Search entries via API
+  Future<void> searchEntries(String query) async {
+    if (topicId == null || subCategoryId == null || categoryId == null) {
+      print('❌ News - Cannot search: missing topic context');
+      return;
+    }
+
+    try {
+      isSearching.value = true;
+      searchError.value = '';
+
+      print('🔍 News - Searching for: "$query" in topic: $topicId');
+
+      final response = await _learnService.searchEntriesInTopic(
+        categoryId!,
+        subCategoryId!,
+        topicId!,
+        query,
+        page: 1,
+        limit: 20,
+      );
+
+      print('🔍 News - Search response success: ${response.success}');
+      print('🔍 News - Search response data: ${response.data}');
+
+      if (response.success && response.data != null) {
+        final results = response.data!['results'] as List<dynamic>? ?? [];
+        final searchItems = results.cast<Map<String, dynamic>>();
+
+        searchResults.assignAll(searchItems);
+        hasSearchResults.value = true;
+
+        print('✅ News - Found ${searchItems.length} search results');
+
+        // Debug: Print first result if available
+        if (searchItems.isNotEmpty) {
+          final firstResult = searchItems.first;
+          print('🔍 News - First search result title: ${firstResult['title']}');
+          if (firstResult['highlightedTitle'] != null) {
+            print(
+                '🔍 News - Highlighted title: ${firstResult['highlightedTitle']}');
+          }
+        }
+      } else {
+        print('❌ News - Search failed: ${response.message}');
+        searchError.value = response.message;
+        searchResults.clear();
+        hasSearchResults.value = false;
+      }
+    } catch (e) {
+      print('❌ News - Search error: $e');
+      searchError.value = 'Search failed. Please try again.';
+      searchResults.clear();
+      hasSearchResults.value = false;
+    } finally {
+      isSearching.value = false;
+    }
+  }
+
+  // Clear search results and return to normal view
+  void clearSearchResults() {
+    searchResults.clear();
+    hasSearchResults.value = false;
+    searchError.value = '';
+    _searchTimer?.cancel();
   }
 
   // Clear search
   void clearSearch() {
     searchText.value = '';
+    clearSearchResults();
   }
 
   // Toggle view mode
