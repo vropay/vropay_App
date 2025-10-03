@@ -43,13 +43,19 @@ class NewsController extends GetxController {
 
       print('🚀 News - Topic ID: $topicId');
       print('🚀 News - Topic Name: $topicName');
+      print('🚀 News - SubCategory ID: $subCategoryId');
+      print('🚀 News - Category ID: $categoryId');
     }
 
     // Load topic-specific news from API
     if (topicId != null && subCategoryId != null && categoryId != null) {
+      print('✅ News - All topic parameters available, calling loadTopicNews()');
       loadTopicNews();
     } else {
       // Fallback to static data if no topic provided
+      print('⚠️ News - Missing topic parameters, using static data');
+      print(
+          '⚠️ News - topicId: $topicId, subCategoryId: $subCategoryId, categoryId: $categoryId');
       loadStaticNews();
     }
   }
@@ -59,6 +65,8 @@ class NewsController extends GetxController {
     try {
       isLoading.value = true;
       print('🚀 News - Loading news for topic: $topicName');
+      print(
+          '🚀 News - API Parameters: categoryId=$categoryId, subCategoryId=$subCategoryId, topicId=$topicId');
       if (dateFilter != null) {
         print('📅 News - Date filter: $dateFilter');
       }
@@ -73,6 +81,7 @@ class NewsController extends GetxController {
       if (response.success && response.data != null) {
         final items = response.data!['items'] as List<Map<String, dynamic>>;
         print('🔍 News - Items from response: ${items.length}');
+        print('🔍 News - Response data structure: ${response.data}');
 
         if (items.isNotEmpty) {
           // Apply client-side filtering as fallback if backend doesn't support it
@@ -101,6 +110,14 @@ class NewsController extends GetxController {
             print(
                 '🔍 News - First article thumbnail: ${firstArticle['thumbnail']}');
             print('🔍 News - First article image: ${firstArticle['image']}');
+            print(
+                '🔍 News - First article topic context: topicId=${firstArticle['topicId']}, categoryId=${firstArticle['categoryId']}');
+
+            // Print all article titles to see if they're different
+            print('🔍 News - All article titles:');
+            for (int i = 0; i < items.length && i < 3; i++) {
+              print('  ${i + 1}. ${items[i]['title']}');
+            }
           }
         } else {
           // Database is empty - show user-friendly message
@@ -135,6 +152,7 @@ class NewsController extends GetxController {
 
   // Fallback static news data
   void loadStaticNews() {
+    print('📰 News - Loading static news data (fallback)');
     newsArticles.assignAll([
       {
         'title': 'Trump greenlights "massive" arms deal for Ukraine',
