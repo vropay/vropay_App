@@ -212,8 +212,23 @@ class SocketService extends GetxService {
 
     // Message events
     _socket!.on('newMessage', (data) {
-      print('📨 [SOCKET SERVICE] New message received: ${data['id']}');
-      _messageStream.add(data);
+      print('📨 [SOCKET SERVICE] New message received: $data');
+
+      // Handle different data structures from backend
+      Map<String, dynamic> messageData;
+      if (data['success'] == true && data['message'] != null) {
+        // Backend sends: {success: true, message: {...}}
+        messageData = data['message'];
+        print(
+            '📨 [SOCKET SERVICE] Extracted message data: ${messageData['_id']}');
+      } else {
+        // Backend sends message data directly
+        messageData = data;
+        print(
+            '📨 [SOCKET SERVICE] Using direct message data: ${messageData['_id']}');
+      }
+
+      _messageStream.add(messageData);
     });
 
     _socket!.on('messageUpdated', (data) {

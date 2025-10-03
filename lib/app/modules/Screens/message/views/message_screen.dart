@@ -25,7 +25,7 @@ class _MessageScreenState extends State<MessageScreen> {
   bool _showImportantMessage = false;
   bool _showSearchOverlay = false; // Add this
   bool _showConfirmationOptions = false;
-  bool _showQuickReplies = false;
+  final RxBool _showQuickReplies = false.obs;
   final ScrollController _scrollController = ScrollController();
 
   @override
@@ -246,35 +246,37 @@ class _MessageScreenState extends State<MessageScreen> {
                       : const SizedBox.shrink()),
                 ),
 
-                // Chat messages (reactive)
-                Obx(() => SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                          final message = controller.messages[index];
-                          if (message['isOwnMessage'] == true) {
-                            return Padding(
-                              padding: const EdgeInsets.only(
-                                top: 8,
-                                right: 16,
-                                left: 60, // Add left margin to push to right
-                              ),
-                              child: _buildOwnMessage(message, index),
-                            );
-                          } else {
-                            return Padding(
-                              padding: const EdgeInsets.only(
-                                left: 16,
-                                right:
-                                    60, // Add right margin for other messages
-                                top: 8,
-                              ),
-                              child: _buildMessageItem(message, index),
-                            );
-                          }
-                        },
-                        childCount: controller.messages.length,
-                      ),
-                    )),
+                // Chat messages (efficient reactive list)
+                Obx(() {
+                  final messages = controller.messages;
+                  return SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        final message = messages[index];
+                        if (message['isOwnMessage'] == true) {
+                          return Padding(
+                            padding: const EdgeInsets.only(
+                              top: 8,
+                              right: 16,
+                              left: 16, // Minimal left margin
+                            ),
+                            child: _buildOwnMessage(message, index),
+                          );
+                        } else {
+                          return Padding(
+                            padding: const EdgeInsets.only(
+                              left: 16,
+                              right: 16, // Minimal right margin
+                              top: 8,
+                            ),
+                            child: _buildMessageItem(message, index),
+                          );
+                        }
+                      },
+                      childCount: messages.length,
+                    ),
+                  );
+                }),
                 // Typing indicator
                 Obx(() => controller.typingUsersText.value.isNotEmpty
                     ? SliverToBoxAdapter(
@@ -322,6 +324,12 @@ class _MessageScreenState extends State<MessageScreen> {
                         )
                       : const SizedBox.shrink()),
                 ),
+
+                // Bottom padding to prevent messages from being hidden behind input field
+                SliverToBoxAdapter(
+                  child: SizedBox(
+                      height: 120), // Space for message input + quick replies
+                ),
               ],
             ),
 
@@ -345,7 +353,9 @@ class _MessageScreenState extends State<MessageScreen> {
                               color: Color(0xFF01B3B2).withOpacity(0.5),
                             ),
                             // Quick reply buttons above message input
-                            if (_showQuickReplies) _buildQuickReplyButtons(),
+                            Obx(() => _showQuickReplies.value
+                                ? _buildQuickReplyButtons()
+                                : const SizedBox.shrink()),
                             // Message input field
                             Padding(
                               padding:
@@ -876,19 +886,6 @@ class _MessageScreenState extends State<MessageScreen> {
         ));
   }
 
-  int _calculateMaxLines(String text) {
-    // Count actual lines (including line breaks from Enter key)
-    int actualLines = text.split('\n').length;
-
-    // Set minimum and maximum bounds
-    if (actualLines < 2) return 2;
-    if (actualLines > 6) return 6;
-    if (actualLines > 8) return 8;
-    if (actualLines > 10) return 10;
-    if (actualLines > 12) return 12;
-    return actualLines;
-  }
-
   Widget _buildReplyIndicator() {
     final replyMessage = controller.replyToMessage.value!;
     return Container(
@@ -937,51 +934,9 @@ class _MessageScreenState extends State<MessageScreen> {
     );
   }
 
-  Widget _buildTaggedUsers() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Wrap(
-        spacing: 8,
-        children: controller.taggedUsers.map((username) {
-          return Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: const BoxDecoration(
-              color: Color(0xFF2196F3),
-              borderRadius: BorderRadius.all(Radius.circular(12)),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  '@$username',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                  ),
-                ),
-                const SizedBox(width: 4),
-                GestureDetector(
-                  onTap: () => controller.removeTag(username),
-                  child: const Icon(
-                    Icons.close,
-                    color: Colors.white,
-                    size: 14,
-                  ),
-                ),
-              ],
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
-
   Widget _buildMessageItem(Map<String, dynamic> message, int index) {
     final uniqueKey = GlobalKey();
-    final messages = controller.messages;
-    final isFirstMessage = index == 0;
-    final isPreviousFromSameUser =
-        !isFirstMessage && messages[index - 1]['sender'] == message['sender'];
+    // Removed unused variables
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
@@ -989,7 +944,10 @@ class _MessageScreenState extends State<MessageScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Only show avatar if it's the first message from this user
-          if (!isPreviousFromSameUser)
+          if (index == 0 ||
+              (index > 0 &&
+                  controller.messages[index - 1]['sender'] !=
+                      message['sender']))
             CircleAvatar(
               radius: 20,
               backgroundColor:
@@ -1013,7 +971,10 @@ class _MessageScreenState extends State<MessageScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Show sender name only for first message from this user
-                if (!isPreviousFromSameUser) ...[
+                if (index == 0 ||
+                    (index > 0 &&
+                        controller.messages[index - 1]['sender'] !=
+                            message['sender'])) ...[
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -1313,10 +1274,7 @@ class _MessageScreenState extends State<MessageScreen> {
   }
 
   Widget _buildSharedArticle(Map<String, dynamic> message, int index) {
-    final messages = controller.messages;
-    final isFirstMessage = index == 0;
-    final isPreviousFromSameUser =
-        !isFirstMessage && messages[index - 1]['sender'] == message['sender'];
+    // Removed unused variables
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1411,73 +1369,6 @@ class _MessageScreenState extends State<MessageScreen> {
     );
   }
 
-  Widget _buildRepliesIndicator(Map<String, dynamic> message) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.grey[200],
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey[300]!, width: 1),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                Icons.reply,
-                size: 16,
-                color: Colors.grey[600],
-              ),
-              const SizedBox(width: 6),
-              Text(
-                '${message['replies'].length} replies',
-                style: TextStyle(
-                  color: Colors.grey[600],
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          if (message['isSharedArticle'] == true) ...[
-            const SizedBox(height: 4),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.article,
-                    size: 14,
-                    color: Colors.grey[600],
-                  ),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(
-                      '${message['sender']} shared: ${message['articleTitle']}',
-                      style: TextStyle(
-                        color: Colors.grey[700],
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
   Widget _buildMessageTags(List<String> tags) {
     return Wrap(
       spacing: 4,
@@ -1495,68 +1386,75 @@ class _MessageScreenState extends State<MessageScreen> {
   }
 
   Widget _buildOwnMessage(Map<String, dynamic> message, int index) {
-    final messages = controller.messages;
-    final isFirstMessage = index == 0;
-    final isPreviousFromSameUser =
-        !isFirstMessage && messages[index - 1]['sender'] == message['sender'];
+    // Removed unused variables
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Align(
-        alignment: Alignment.centerRight,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            // Check if this is a reply to a shared article
-            if (message['replyTo'] != null &&
-                message['replyTo']['isSharedArticle'] == true) ...[
-              _buildReplyToSharedArticle(message, index),
-              const SizedBox(height: 8),
-            ],
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end, // Push to right side
+        children: [
+          Flexible(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                // Check if this is a reply to a shared article
+                if (message['replyTo'] != null &&
+                    message['replyTo']['isSharedArticle'] == true) ...[
+                  _buildReplyToSharedArticle(message, index),
+                  const SizedBox(height: 8),
+                ],
 
-            // Check if it's a shared article
-            if (message['isSharedArticle'] == true)
-              _buildOwnSharedArticle(message, index)
-            else
-              Container(
-                constraints: BoxConstraints(
-                  maxWidth: MediaQuery.of(context).size.width * 0.7,
-                ),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                    color:
-                        message['quickReplyColor'] ?? const Color(0xFF007DB9),
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(20),
-                      topRight: Radius.circular(4),
-                      bottomLeft: Radius.circular(20),
-                      bottomRight: Radius.circular(20),
-                    )),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      message['message'] ?? '',
-                      style: const TextStyle(color: Colors.white, fontSize: 16),
+                // Check if it's a shared article
+                if (message['isSharedArticle'] == true)
+                  _buildOwnSharedArticle(message, index)
+                else
+                  Container(
+                    constraints: BoxConstraints(
+                      maxWidth: MediaQuery.of(context).size.width * 0.75,
                     ),
-                    if (message['tags'] != null && message['tags'].isNotEmpty)
-                      _buildOwnMessageTags(message['tags']),
-                  ],
-                ),
-              ),
-            const SizedBox(height: 8),
-          ],
-        ),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                        color: message['quickReplyColor'] ??
+                            const Color(0xFF007DB9),
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(18),
+                          topRight: Radius.circular(4),
+                          bottomLeft: Radius.circular(18),
+                          bottomRight: Radius.circular(18),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 2,
+                            offset: const Offset(0, 1),
+                          ),
+                        ]),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          message['message'] ?? '',
+                          style: const TextStyle(
+                              color: Colors.white, fontSize: 16),
+                        ),
+                        if (message['tags'] != null &&
+                            message['tags'].isNotEmpty)
+                          _buildOwnMessageTags(message['tags']),
+                      ],
+                    ),
+                  ),
+                const SizedBox(height: 40),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildOwnSharedArticle(Map<String, dynamic> message, int index) {
-    final messages = controller.messages;
-    final isFirstMessage = index == 0;
-    final isPreviousFromSameUser =
-        !isFirstMessage && messages[index - 1]['sender'] == message['sender'];
+    // Removed unused variables
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -1684,20 +1582,6 @@ class _MessageScreenState extends State<MessageScreen> {
     );
   }
 
-  String _formatTimestamp(DateTime? timestamp) {
-    if (timestamp == null) return '';
-    final now = DateTime.now();
-    final difference = now.difference(timestamp);
-
-    if (difference.inMinutes < 60) {
-      return '${difference.inMinutes}m ago';
-    } else if (difference.inHours < 24) {
-      return '${difference.inHours}h ago';
-    } else {
-      return '${difference.inDays}d ago';
-    }
-  }
-
   Widget _buildQuickReplyButton(String text, Color color) {
     return Expanded(
       child: GestureDetector(
@@ -1779,15 +1663,17 @@ class _MessageScreenState extends State<MessageScreen> {
         children: [
           GestureDetector(
             onTap: () {
-              setState(() {
-                _showQuickReplies = !_showQuickReplies;
-              });
+              _showQuickReplies.value = !_showQuickReplies.value;
             },
-            child: Icon(
-              _showQuickReplies ? Iconsax.arrow_down_1 : Iconsax.arrow_up_2,
-              color: _showQuickReplies ? Color(0xFFFFA000) : Color(0xFF172B75),
-              size: 30,
-            ),
+            child: Obx(() => Icon(
+                  _showQuickReplies.value
+                      ? Iconsax.arrow_down_1
+                      : Iconsax.arrow_up_2,
+                  color: _showQuickReplies.value
+                      ? Color(0xFFFFA000)
+                      : Color(0xFF172B75),
+                  size: 30,
+                )),
           ),
           SizedBox(width: ScreenUtils.width * 0.02),
           Expanded(
@@ -1808,7 +1694,7 @@ class _MessageScreenState extends State<MessageScreen> {
                 onChanged: (value) {
                   controller
                       .onTextChanged(value); // Add typing indicator support
-                  setState(() {}); // Update UI state
+                  // Removed setState to prevent screen refresh
                 },
                 decoration: InputDecoration(
                   hintText: "Write your message",
@@ -1817,9 +1703,11 @@ class _MessageScreenState extends State<MessageScreen> {
                   ),
                   border: InputBorder.none,
                   suffixIcon: GestureDetector(
-                    onTap: controller.messageController.text.trim().isNotEmpty
-                        ? controller.sendMessage
-                        : null,
+                    onTap: () {
+                      if (controller.messageController.text.trim().isNotEmpty) {
+                        controller.sendMessage();
+                      }
+                    },
                     child: Container(
                       margin: const EdgeInsets.all(8),
                       width: 40,
@@ -1828,23 +1716,15 @@ class _MessageScreenState extends State<MessageScreen> {
                         color: Colors.transparent,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: controller.messageController.text
-                                  .trim()
-                                  .isNotEmpty
-                              ? const Color(0xFFFFA000)
-                              : Color(0xFF9E9E9E),
+                          color: const Color(0xFFFFA000),
                           width: 1,
                         ),
                       ),
-                      child: Align(
+                      child: const Align(
                         alignment: Alignment.center,
                         child: Icon(
                           Iconsax.arrow_up_3,
-                          color: controller.messageController.text
-                                  .trim()
-                                  .isNotEmpty
-                              ? const Color(0xFFFFA000)
-                              : Color(0xFF9E9E9E),
+                          color: Color(0xFFFFA000),
                           size: 24,
                         ),
                       ),
@@ -2214,30 +2094,6 @@ class _MessageScreenState extends State<MessageScreen> {
   }
 
   // Add this method to calculate dynamic height in steps
-  double _calculateDynamicHeight(String text) {
-    if (text.isEmpty) return ScreenUtils.height * 0.08;
-
-    // Count lines and characters
-    int lines = text.split('\n').length;
-    int characters = text.length;
-
-    // Base height
-    double baseHeight = ScreenUtils.height * 0.08;
-
-    // Add height based on lines (small steps)
-    if (lines > 1) {
-      baseHeight += (lines - 1) * 20.0; // 20px per additional line
-    }
-
-    // Add height based on characters (very small steps)
-    if (characters > 50) {
-      baseHeight += (characters - 50) * 0.5; // 0.5px per character after 50
-    }
-
-    // Cap the maximum height
-    double maxHeight = ScreenUtils.height * 0.6;
-    return baseHeight.clamp(ScreenUtils.height * 0.05, maxHeight);
-  }
 }
 
 class _DottedCirclePainter extends CustomPainter {

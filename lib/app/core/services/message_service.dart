@@ -372,8 +372,13 @@ class MessageService extends GetxService {
 
   // Check if message is from current user
   bool _isOwnMessage(String? userId) {
-    final currentUserId = _storage.read('user_id');
-    return userId == currentUserId;
+    final currentUserId = _getCurrentUserId();
+    final isOwn = userId == currentUserId;
+    print('🔍 [MESSAGE SERVICE] Checking if own message:');
+    print('   - Message userId: $userId');
+    print('   - Current userId: $currentUserId');
+    print('   - Is own message: $isOwn');
+    return isOwn;
   }
 
   // Get avatar color based on user ID
@@ -448,7 +453,25 @@ class MessageService extends GetxService {
       print('📨 [MESSAGE SERVICE] Real-time message received: $data');
 
       // Check if message is for current interest
-      if (data['interestId'] == currentInterestId.value) {
+      // Handle both string and object interestId formats
+      String messageInterestId;
+      if (data['interestId'] is String) {
+        messageInterestId = data['interestId'];
+      } else if (data['interestId'] is Map &&
+          data['interestId']['_id'] != null) {
+        messageInterestId = data['interestId']['_id'];
+      } else {
+        messageInterestId = data['interestId']?.toString() ?? '';
+      }
+
+      print('🔍 [MESSAGE SERVICE] Interest ID comparison:');
+      print('   - Message interestId: $messageInterestId');
+      print('   - Current interestId: ${currentInterestId.value}');
+
+      if (messageInterestId == currentInterestId.value) {
+        print(
+            '✅ [MESSAGE SERVICE] Message is for current interest: ${currentInterestId.value}');
+
         final transformedMessage = _transformMessage(data);
         final messageId = transformedMessage['id'];
         // Get current user ID from stored user data
@@ -457,6 +480,11 @@ class MessageService extends GetxService {
         // Check if this is a message from another user (not our own optimistic message)
         final messageUserId = data['userId']?['_id'] ?? data['userId'];
         final isFromOtherUser = messageUserId != currentUserId;
+
+        print('🔍 [MESSAGE SERVICE] Message analysis:');
+        print('   - Message userId: $messageUserId');
+        print('   - Current userId: $currentUserId');
+        print('   - Is from other user: $isFromOtherUser');
 
         if (isFromOtherUser) {
           // Check if message already exists (avoid duplicates from other users)
@@ -467,7 +495,9 @@ class MessageService extends GetxService {
             // Add new message from other user at bottom
             messages.add(transformedMessage);
             totalMessages.value++;
-            print('👥 [MESSAGE SERVICE] Message from other user added to UI');
+            print('👥 [MESSAGE SERVICE] ✅ Message from other user added to UI');
+            print(
+                '👥 [MESSAGE SERVICE] Total messages now: ${messages.length}');
           } else {
             // Update existing message (replace optimistic with real message)
             messages[existingIndex] = transformedMessage;
@@ -492,6 +522,9 @@ class MessageService extends GetxService {
             print('➕ [MESSAGE SERVICE] Own message added as fallback');
           }
         }
+      } else {
+        print(
+            '⚠️ [MESSAGE SERVICE] Message is for different interest: $messageInterestId (current: ${currentInterestId.value})');
       }
     });
 

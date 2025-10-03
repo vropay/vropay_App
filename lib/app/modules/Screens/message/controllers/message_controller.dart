@@ -158,34 +158,6 @@ class MessageController extends GetxController {
     }
   }
 
-  /// Start socket connection in background for faster real-time updates
-  void _startBackgroundSocketConnection() {
-    if (_socketService == null) return;
-
-    try {
-      print('🚀 [MESSAGE CONTROLLER] Starting background socket connection...');
-
-      // Connect to socket if user is authenticated
-      final currentUser = _authService.currentUser.value;
-      if (currentUser != null) {
-        // Get auth token asynchronously
-        _authService.getAuthToken().then((token) {
-          if (token != null) {
-            _socketService!.connect(
-              authToken: token,
-              userId: currentUser.id,
-            );
-            print(
-                '✅ [MESSAGE CONTROLLER] Background socket connection initiated');
-          }
-        });
-      }
-    } catch (e) {
-      print('⚠️ [MESSAGE CONTROLLER] Socket service not available: $e');
-      isRealTimeEnabled.value = false;
-    }
-  }
-
   /// Connect to socket with authentication
   Future<void> _connectToSocket() async {
     if (_socketService == null) return;
@@ -285,11 +257,6 @@ class MessageController extends GetxController {
       }
       print('✅ [MESSAGE CONTROLLER] User authenticated: ${currentUser.id}');
 
-      // Start socket connection immediately for faster real-time updates
-      if (isRealTimeEnabled.value) {
-        _startBackgroundSocketConnection(); // Start connection in background
-      }
-
       // Validate/resolve interest before loading
       await _validateAndResolveInterest();
 
@@ -309,9 +276,9 @@ class MessageController extends GetxController {
       // if it's not in user's selected topics. Switching caused defaulting to
       // another topic like "Manifestation" unexpectedly.
 
-      // Enable real-time messaging after critical data is loaded
+      // Connect to socket and enable real-time messaging after critical data is loaded
       if (isRealTimeEnabled.value) {
-        await _enableRealTimeMessaging();
+        await _connectToSocketAndEnableRealTime();
       }
 
       print(
@@ -753,6 +720,36 @@ class MessageController extends GetxController {
   }
 
   bool get hasNextPage => _messageService.hasNextPage.value;
+
+  /// Connect to socket and enable real-time messaging
+  Future<void> _connectToSocketAndEnableRealTime() async {
+    if (!isRealTimeEnabled.value) return;
+
+    try {
+      print(
+          '🔌 [MESSAGE CONTROLLER] Connecting to socket and enabling real-time messaging...');
+
+      // First, ensure socket connection is established
+      await _connectToSocket();
+
+      // Wait a bit for connection to be fully ready
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      // Check if socket is connected before enabling real-time messaging
+      if (_socketService?.isConnected.value == true) {
+        await _enableRealTimeMessaging();
+        print('✅ [MESSAGE CONTROLLER] Real-time messaging fully enabled');
+      } else {
+        print(
+            '⚠️ [MESSAGE CONTROLLER] Socket not connected, real-time messaging disabled');
+        isRealTimeEnabled.value = false;
+      }
+    } catch (e) {
+      print(
+          '❌ [MESSAGE CONTROLLER] Failed to connect and enable real-time messaging: $e');
+      _handleSocketError(e.toString());
+    }
+  }
 
   /// Enable real-time messaging
   Future<void> _enableRealTimeMessaging() async {
