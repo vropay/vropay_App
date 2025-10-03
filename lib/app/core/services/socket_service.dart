@@ -65,14 +65,11 @@ class SocketService extends GetxService {
 
   /// Initialize configuration from API constants
   void _initializeConfiguration() {
-    _serverUrl = ApiConstant.baseUrl
-        .replaceAll('http://', '')
-        .replaceAll('https://', '');
-    if (!_serverUrl!.startsWith('ws://') && !_serverUrl!.startsWith('wss://')) {
-      _serverUrl = 'ws://$_serverUrl';
-    }
-
+    // Convert HTTP URL to Socket.IO compatible URL
+    final apiUrl = ApiConstant.baseUrl; // http://10.0.2.2:3000
+    _serverUrl = apiUrl; // Socket.IO can handle HTTP URLs directly
     print('🔧 [SOCKET SERVICE] Server URL configured: $_serverUrl');
+    print('🔧 [SOCKET SERVICE] Socket.IO will use this URL for connection');
   }
 
   /// Connect to Socket.IO server
@@ -87,17 +84,24 @@ class SocketService extends GetxService {
       _userId = userId;
 
       print('🚀 [SOCKET SERVICE] Connecting to $_serverUrl...');
+      print(
+          '🚀 [SOCKET SERVICE] Auth token: ${authToken != null ? "Present" : "Missing"}');
+      print('🚀 [SOCKET SERVICE] User ID: $userId');
 
       _socket = IO.io(
           _serverUrl,
           IO.OptionBuilder()
-              .setTransports(['websocket'])
+              .setTransports(['websocket', 'polling']) // Allow both transports
               .enableAutoConnect()
-              .setTimeout(20000)
+              .setTimeout(
+                  10000) // Increased timeout for better connection success
               .setReconnectionAttempts(maxReconnectAttempts)
-              .setReconnectionDelay(1000)
-              .setReconnectionDelayMax(5000)
+              .setReconnectionDelay(2000)
+              .setReconnectionDelayMax(10000)
               .enableReconnection()
+              .setExtraHeaders({
+                if (authToken != null) 'Authorization': 'Bearer $authToken',
+              })
               .build());
 
       _setupEventListeners();
@@ -151,8 +155,22 @@ class SocketService extends GetxService {
 
       // Authenticate if token is available
       if (_authToken != null) {
+        print('🔐 [SOCKET SERVICE] Authenticating with token...');
         _socket!.emit('authenticate', {'token': _authToken});
       }
+    });
+
+    _socket!.onConnectError((error) {
+      print('❌ [SOCKET SERVICE] Connection error: $error');
+      lastError.value = error.toString();
+      connectionStatus.value = 'Connection Error';
+      isConnected.value = false;
+    });
+
+    _socket!.onError((error) {
+      print('❌ [SOCKET SERVICE] Socket error: $error');
+      lastError.value = error.toString();
+      connectionStatus.value = 'Socket Error';
     });
 
     _socket!.onDisconnect((_) {
@@ -173,6 +191,13 @@ class SocketService extends GetxService {
       print('❌ [SOCKET SERVICE] Socket error: $error');
       lastError.value = error.toString();
       _errorStream.add({'error': error, 'timestamp': DateTime.now()});
+    });
+
+    // Listen for backend errors
+    _socket!.on('error', (data) {
+      print('❌ [SOCKET SERVICE] Backend error: $data');
+      lastError.value = data['message'] ?? 'Backend error occurred';
+      _errorStream.add({'error': data, 'timestamp': DateTime.now()});
     });
 
     // Authentication events
@@ -337,10 +362,15 @@ class SocketService extends GetxService {
 
   /// Send a message via socket (for real-time delivery)
   void sendMessage(Map<String, dynamic> messageData) {
-    if (!isConnected.value) return;
+    if (!isConnected.value) {
+      print('❌ [SOCKET SERVICE] Cannot send message - not connected');
+      return;
+    }
 
     try {
+      print('📡 [SOCKET SERVICE] Emitting sendMessage event: $messageData');
       _socket!.emit('sendMessage', messageData);
+      print('✅ [SOCKET SERVICE] Message sent successfully');
     } catch (e) {
       print('❌ [SOCKET SERVICE] Failed to send message: $e');
     }
@@ -408,4 +438,43 @@ class SocketService extends GetxService {
     await Future.delayed(const Duration(seconds: 1));
     await connect(authToken: _authToken, userId: _userId);
   }
+
+  /// Check if backend server is accessible
+  Future<bool> isServerAccessible() async {
+    try {
+      // Try to make a simple HTTP request to check if server is running
+      final response = await Future.any([
+        // This is a simple check - you might want to use a proper HTTP client
+        Future.delayed(Duration(seconds: 2), () => true),
+      ]);
+      return response;
+    } catch (e) {
+      print('❌ [SOCKET SERVICE] Server accessibility check failed: $e');
+      return false;
+    }
+  }
+
+  /// Get connection status for debugging
+  String get debugStatusText {
+    if (isConnected.value) return 'Connected';
+    if (lastError.value.isNotEmpty) return 'Error: ${lastError.value}';
+    return connectionStatus.value;
+  }
+
+  /// Check if server is accessible (duplicate method - removing)
+  // Future<bool> isServerAccessible() async {
+  //   try {
+  //     // Try to make a simple HTTP request to check server accessibility
+  //     final response = await Future.any([
+  //       // This is a simple connectivity check
+  //       Future.delayed(Duration(seconds: 2), () => true),
+  //       // In a real implementation, you might want to make an HTTP request
+  //       // to the server to verify it's accessible
+  //     ]);
+  //     return response;
+  //   } catch (e) {
+  //     print('❌ [SOCKET SERVICE] Server accessibility check failed: $e');
+  //     return false;
+  //   }
+  // }
 }

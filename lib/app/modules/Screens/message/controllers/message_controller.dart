@@ -87,9 +87,34 @@ class MessageController extends GetxController {
       _socketService = Get.find<SocketService>();
       isRealTimeEnabled.value = true;
       print('✅ [MESSAGE CONTROLLER] Socket service initialized');
+    } catch (e) {
+      print('❌ [MESSAGE CONTROLLER] Failed to initialize socket service: $e');
+      isRealTimeEnabled.value = false;
+    }
+  }
+
+  /// Start socket connection in background for faster real-time updates
+  void _startBackgroundSocketConnection() {
+    if (_socketService == null) return;
+
+    try {
+      print('🚀 [MESSAGE CONTROLLER] Starting background socket connection...');
 
       // Connect to socket if user is authenticated
-      _connectToSocket();
+      final currentUser = _authService.currentUser.value;
+      if (currentUser != null) {
+        // Get auth token asynchronously
+        _authService.getAuthToken().then((token) {
+          if (token != null) {
+            _socketService!.connect(
+              authToken: token,
+              userId: currentUser.id,
+            );
+            print(
+                '✅ [MESSAGE CONTROLLER] Background socket connection initiated');
+          }
+        });
+      }
     } catch (e) {
       print('⚠️ [MESSAGE CONTROLLER] Socket service not available: $e');
       isRealTimeEnabled.value = false;
@@ -104,9 +129,19 @@ class MessageController extends GetxController {
       final currentUser = _authService.currentUser.value;
       if (currentUser != null) {
         final authToken = await _authService.getAuthToken();
-        final connected = await _socketService!.connect(
+
+        // Add timeout for socket connection
+        final connected = await _socketService!
+            .connect(
           authToken: authToken,
           userId: currentUser.id,
+        )
+            .timeout(
+          Duration(seconds: 10),
+          onTimeout: () {
+            print('⏰ [MESSAGE CONTROLLER] Socket connection timeout');
+            return false;
+          },
         );
 
         if (connected) {
@@ -114,11 +149,15 @@ class MessageController extends GetxController {
         } else {
           print(
               '⚠️ [MESSAGE CONTROLLER] Socket connection failed, using REST API fallback');
+          print(
+              '⚠️ [MESSAGE CONTROLLER] Socket status: ${_socketService!.debugStatusText}');
           isRealTimeEnabled.value = false;
         }
       }
     } catch (e) {
       print('❌ [MESSAGE CONTROLLER] Failed to connect to socket: $e');
+      print(
+          '❌ [MESSAGE CONTROLLER] Socket status: ${_socketService?.debugStatusText ?? "Unknown"}');
       isRealTimeEnabled.value = false;
     }
   }
@@ -178,15 +217,22 @@ class MessageController extends GetxController {
       }
       print('✅ [MESSAGE CONTROLLER] User authenticated: ${currentUser.id}');
 
-      // Load all dynamic data in parallel
-      print('🔄 [MESSAGE CONTROLLER] Loading data in parallel...');
+      // Start socket connection immediately for faster real-time updates
+      if (isRealTimeEnabled.value) {
+        _startBackgroundSocketConnection(); // Start connection in background
+      }
+
+      // Load critical data first (messages and permissions)
+      print('🔄 [MESSAGE CONTROLLER] Loading critical data first...');
       await Future.wait([
-        _loadInterestDetails(),
-        _checkUserPermissions(),
-        _loadMessages(),
+        _loadMessages(), // Load messages first
+        _checkUserPermissions(), // Check permissions
       ]);
 
-      // Enable real-time messaging after loading initial data
+      // Load non-critical data in background
+      _loadInterestDetails(); // Don't await - load in background
+
+      // Enable real-time messaging after critical data is loaded
       if (isRealTimeEnabled.value) {
         await _enableRealTimeMessaging();
       }
@@ -238,7 +284,7 @@ class MessageController extends GetxController {
     }
   }
 
-  // Check user permissions (interest + community access)
+  // Check user permissions (allow all users to send messages)
   Future<void> _checkUserPermissions() async {
     try {
       print('🔐 [PERMISSIONS] Starting permission check...');
@@ -246,7 +292,7 @@ class MessageController extends GetxController {
       print(
           '🔐 [PERMISSIONS] Checking permissions for user: ${currentUser.id}');
 
-      // Check if user has this interest
+      // Check if user has this interest (for display purposes only)
       print(
           '🔐 [PERMISSIONS] Checking if user has interest: ${interestId.value}');
       final hasInterest = await _interestService.checkUserHasInterest(
@@ -254,21 +300,23 @@ class MessageController extends GetxController {
       hasUserInterest.value = hasInterest;
       print('🔐 [PERMISSIONS] User has interest: $hasInterest');
 
-      // Get community access preference
+      // Get community access preference (for display purposes only)
       print('🔐 [PERMISSIONS] Getting community access preference...');
       final access =
           await _interestService.getUserCommunityAccess(currentUser.id);
       communityAccess.value = access;
       print('🔐 [PERMISSIONS] Community access: $access');
 
-      // Determine if user can send messages
-      canSendMessages.value = hasInterest && access == 'IN';
-      print('🔐 [PERMISSIONS] Can send messages: ${canSendMessages.value}');
+      // Allow all users to send messages regardless of interest or community access
+      canSendMessages.value = true;
+      print(
+          '🔐 [PERMISSIONS] Can send messages: ${canSendMessages.value} (All users allowed)');
       print('✅ [PERMISSIONS] Permission check completed successfully');
     } catch (e) {
       print('❌ [PERMISSIONS] Error checking user permissions: $e');
       print('❌ [PERMISSIONS] Stack trace: ${StackTrace.current}');
-      canSendMessages.value = false;
+      // Even on error, allow users to send messages
+      canSendMessages.value = true;
       hasUserInterest.value = false;
       communityAccess.value = 'OUT';
     }
@@ -335,8 +383,22 @@ class MessageController extends GetxController {
       // Scroll to bottom
       _scrollToBottom();
     } catch (e) {
-      print('Error sending message: $e');
-      Get.snackbar('Error', 'Failed to send message');
+      print('❌ [MESSAGE CONTROLLER] Error sending message: $e');
+      String errorMessage = 'Failed to send message';
+
+      // Check if it's a specific error type
+      if (e.toString().contains('User not authenticated')) {
+        errorMessage = 'Please log in again to send messages';
+      } else if (e.toString().contains('Database error')) {
+        errorMessage = 'Server error occurred. Please try again.';
+      } else if (e.toString().contains('Connection timeout')) {
+        errorMessage = 'Connection timeout. Please check your internet.';
+      }
+
+      Get.snackbar('Error', errorMessage,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+          duration: Duration(seconds: 3));
     } finally {
       isLoading.value = false;
     }
@@ -465,7 +527,9 @@ class MessageController extends GetxController {
   void _listenToSocketErrors() {
     if (_socketService != null) {
       _socketService!.errorStream.listen((errorData) {
-        _handleSocketError(errorData['error']?.toString() ?? 'Unknown error');
+        final error = errorData['error']?.toString() ?? 'Unknown error';
+        print('🚨 [MESSAGE CONTROLLER] Socket error received: $error');
+        _handleSocketError(error);
       });
     }
   }
@@ -515,7 +579,7 @@ class MessageController extends GetxController {
   String get connectionStatus {
     if (!isRealTimeEnabled.value) return 'REST API';
     if (_socketService == null) return 'Socket Unavailable';
-    return _socketService!.statusText;
+    return _socketService!.debugStatusText;
   }
 
   /// Check if real-time messaging is active
@@ -543,6 +607,6 @@ class MessageController extends GetxController {
   String get connectionStatusDebug {
     if (!isRealTimeEnabled.value) return 'REST API Mode';
     if (_socketService == null) return 'Socket Service Unavailable';
-    return _socketService!.statusText;
+    return _socketService!.debugStatusText;
   }
 }

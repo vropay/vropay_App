@@ -44,6 +44,15 @@ class MessageService extends GetxService {
     super.onClose();
   }
 
+  /// Get current user ID from storage
+  String? _getCurrentUserId() {
+    final userData = _storage.read('user_data');
+    if (userData != null && userData is Map<String, dynamic>) {
+      return userData['_id'] ?? userData['id'];
+    }
+    return null;
+  }
+
   /// Initialize Socket.IO service
   void _initializeSocketService() {
     try {
@@ -77,36 +86,59 @@ class MessageService extends GetxService {
       if (isRealTimeEnabled.value && _socketService != null) {
         print('📤 [MESSAGE SERVICE] Sending message via Socket.IO');
 
+        // Get user ID from stored user data
+        final userId = _getCurrentUserId();
+
+        if (userId == null) {
+          print('❌ [MESSAGE SERVICE] User ID not found in storage!');
+          print(
+              '❌ [MESSAGE SERVICE] Available storage keys: ${_storage.getKeys()}');
+          final userData = _storage.read('user_data');
+          print('❌ [MESSAGE SERVICE] User data: $userData');
+          throw Exception('User not authenticated - user ID not found');
+        }
+
+        print('✅ [MESSAGE SERVICE] User ID retrieved: $userId');
+
         // Prepare message data for socket
         final messageData = {
           'interestId': interestId,
           'message': message,
-          'userId': _storage.read('user_id'),
+          'userId': userId,
           'timestamp': DateTime.now().toIso8601String(),
           if (replyToMessageId != null) 'replyToMessageId': replyToMessageId,
           if (taggedUsers != null && taggedUsers.isNotEmpty)
             'taggedUsers': taggedUsers,
         };
 
+        print('📤 [MESSAGE SERVICE] Sending message to interest: $interestId');
+        print('📤 [MESSAGE SERVICE] Message data: $messageData');
         _socketService!.sendMessage(messageData);
 
         // Return optimistic message data
+        final userData = _storage.read('user_data');
         final optimisticMessage = {
-          'id': DateTime.now().millisecondsSinceEpoch.toString(),
+          '_id': DateTime.now().millisecondsSinceEpoch.toString(),
           'message': message,
-          'interestId': interestId,
+          'interestId': {
+            '_id': interestId,
+            'name':
+                'Current Interest' // Will be updated when real message arrives
+          },
           'userId': {
-            '_id': _storage.read('user_id'),
-            'name': _storage.read('user_name') ?? 'You'
+            '_id': userId,
+            'name': userData?['firstName'] ?? userData?['name'] ?? 'You'
           },
           'createdAt': DateTime.now().toIso8601String(),
           'isOptimistic': true,
         };
 
-        // Add optimistic message to UI immediately
+        // Add optimistic message to UI immediately (fast path)
         final transformedMessage = _transformMessage(optimisticMessage);
-        messages.insert(0, transformedMessage);
+        messages.insert(
+            0, transformedMessage); // Insert at top for immediate visibility
         totalMessages.value++;
+        print('⚡ [MESSAGE SERVICE] Optimistic message added immediately to UI');
 
         return transformedMessage;
       } else {
@@ -247,19 +279,35 @@ class MessageService extends GetxService {
 
   // Transform message from API to UI format
   Map<String, dynamic> _transformMessage(Map<String, dynamic> apiMessage) {
-    final user = apiMessage['userId'] ?? {};
-    final interest = apiMessage['interestId'] ?? {};
+    try {
+      final user = apiMessage['userId'] ?? {};
+      final interest = apiMessage['interestId'] ?? {};
 
-    return {
-      'id': apiMessage['_id'],
-      'message': apiMessage['message'],
-      'sender': user['name'] ??
-          '${user['firstName'] ?? ''} ${user['lastName'] ?? ''}'.trim(),
-      'timestamp': apiMessage['createdAt'],
-      'isOwnMessage': _isOwnMessage(user['_id']),
-      'avatarColor': _getAvatarColor(user['_id']),
-      'interestName': interest['name'] ?? 'Unknown Interest',
-    };
+      return {
+        'id': apiMessage['_id'] ?? '',
+        'message': apiMessage['message'] ?? '',
+        'sender': user['name'] ??
+            '${user['firstName'] ?? ''} ${user['lastName'] ?? ''}'.trim(),
+        'timestamp': apiMessage['createdAt'] ?? '',
+        'isOwnMessage': _isOwnMessage(user['_id']),
+        'avatarColor': _getAvatarColor(user['_id']),
+        'interestName': interest['name'] ?? 'Unknown Interest',
+      };
+    } catch (e) {
+      print('❌ [MESSAGE SERVICE] Error transforming message: $e');
+      print('❌ [MESSAGE SERVICE] Message data: $apiMessage');
+
+      // Return a safe fallback message
+      return {
+        'id': apiMessage['_id']?.toString() ?? 'unknown',
+        'message': apiMessage['message']?.toString() ?? 'Error loading message',
+        'sender': 'Unknown User',
+        'timestamp': DateTime.now().toIso8601String(),
+        'isOwnMessage': false,
+        'avatarColor': const Color(0xFF9E9E9E),
+        'interestName': 'Unknown Interest',
+      };
+    }
   }
 
   // Check if message is from current user
@@ -342,19 +390,47 @@ class MessageService extends GetxService {
       // Check if message is for current interest
       if (data['interestId'] == currentInterestId.value) {
         final transformedMessage = _transformMessage(data);
-
-        // Check if message already exists (avoid duplicates)
         final messageId = transformedMessage['id'];
-        final existingIndex =
-            messages.indexWhere((msg) => msg['id'] == messageId);
+        // Get current user ID from stored user data
+        final currentUserId = _getCurrentUserId();
 
-        if (existingIndex == -1) {
-          // Add new message
-          messages.insert(0, transformedMessage);
-          totalMessages.value++;
+        // Check if this is a message from another user (not our own optimistic message)
+        final messageUserId = data['userId']?['_id'] ?? data['userId'];
+        final isFromOtherUser = messageUserId != currentUserId;
+
+        if (isFromOtherUser) {
+          // Check if message already exists (avoid duplicates from other users)
+          final existingIndex =
+              messages.indexWhere((msg) => msg['id'] == messageId);
+
+          if (existingIndex == -1) {
+            // Add new message from other user
+            messages.insert(0, transformedMessage);
+            totalMessages.value++;
+            print('👥 [MESSAGE SERVICE] Message from other user added to UI');
+          } else {
+            // Update existing message (replace optimistic with real message)
+            messages[existingIndex] = transformedMessage;
+            print(
+                '🔄 [MESSAGE SERVICE] Optimistic message replaced with real message');
+          }
         } else {
-          // Update existing optimistic message
-          messages[existingIndex] = transformedMessage;
+          // This is our own message - it should already be in the list as optimistic
+          // Just update it with the real data from server
+          final existingIndex = messages.indexWhere((msg) =>
+              msg['id'] == messageId ||
+              (msg['isOptimistic'] == true &&
+                  msg['message'] == data['message']));
+
+          if (existingIndex != -1) {
+            messages[existingIndex] = transformedMessage;
+            print('✅ [MESSAGE SERVICE] Own message updated with server data');
+          } else {
+            // Fallback: add message if not found
+            messages.insert(0, transformedMessage);
+            totalMessages.value++;
+            print('➕ [MESSAGE SERVICE] Own message added as fallback');
+          }
         }
       }
     });
@@ -363,8 +439,10 @@ class MessageService extends GetxService {
     _typingSubscription = _socketService!.typingStream.listen((data) {
       if (data['interestId'] == currentInterestId.value) {
         final userId = data['userId'];
-        if (userId != _storage.read('user_id') &&
-            !typingUsers.contains(userId)) {
+        // Get current user ID from stored user data
+        final currentUserId = _getCurrentUserId();
+
+        if (userId != currentUserId && !typingUsers.contains(userId)) {
           typingUsers.add(userId);
         }
       }

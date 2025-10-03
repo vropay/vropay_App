@@ -85,12 +85,12 @@ class _MessageScreenState extends State<MessageScreen> {
                       leadingWidth: 48,
                       title: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.end,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Text(
                             controller.interestName.value,
                             style: TextStyle(
-                              fontSize: 50,
+                              fontSize: 22,
                               color: const Color(0xFFCC415D),
                               fontWeight: FontWeight.w300,
                             ),
@@ -117,6 +117,28 @@ class _MessageScreenState extends State<MessageScreen> {
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
+                              // Permission status indicator
+                              Container(
+                                margin: EdgeInsets.only(top: 2),
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 1),
+                                decoration: BoxDecoration(
+                                  color: Color(0xFF4CAF50).withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: Color(0xFF4CAF50),
+                                    width: 0.5,
+                                  ),
+                                ),
+                                child: Text(
+                                  "Open chat",
+                                  style: TextStyle(
+                                    fontSize: 7,
+                                    color: Color(0xFF4CAF50),
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
                             ],
                           )
                         ],
@@ -1765,13 +1787,16 @@ class _MessageScreenState extends State<MessageScreen> {
           Expanded(
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 color: Color(0xFFF3F6F6),
                 borderRadius: BorderRadius.all(Radius.circular(12)),
               ),
               child: TextField(
                 controller: controller.messageController,
-                style: const TextStyle(color: Colors.black),
+                enabled: true,
+                style: TextStyle(
+                  color: Colors.black,
+                ),
                 maxLines: null,
                 textInputAction: TextInputAction.newline,
                 onChanged: (value) {
@@ -1781,12 +1806,14 @@ class _MessageScreenState extends State<MessageScreen> {
                 },
                 decoration: InputDecoration(
                   hintText: "Write your message",
-                  hintStyle: const TextStyle(color: Color(0xFF9E9E9E)),
+                  hintStyle: TextStyle(
+                    color: Color(0xFF9E9E9E),
+                  ),
                   border: InputBorder.none,
                   suffixIcon: GestureDetector(
-                    onTap: controller.messageController.text.trim().isEmpty
-                        ? null
-                        : controller.sendMessage,
+                    onTap: controller.messageController.text.trim().isNotEmpty
+                        ? controller.sendMessage
+                        : null,
                     child: Container(
                       margin: const EdgeInsets.all(8),
                       width: 40,
@@ -1795,10 +1822,11 @@ class _MessageScreenState extends State<MessageScreen> {
                         color: Colors.transparent,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color:
-                              controller.messageController.text.trim().isEmpty
-                                  ? Color(0xFF172B75)
-                                  : const Color(0xFFFFA000),
+                          color: controller.messageController.text
+                                  .trim()
+                                  .isNotEmpty
+                              ? const Color(0xFFFFA000)
+                              : Color(0xFF9E9E9E),
                           width: 1,
                         ),
                       ),
@@ -1806,11 +1834,12 @@ class _MessageScreenState extends State<MessageScreen> {
                         alignment: Alignment.center,
                         child: Icon(
                           Iconsax.arrow_up_3,
-                          color:
-                              controller.messageController.text.trim().isEmpty
-                                  ? Color(0xFF172B75)
-                                  : const Color(0xFFFFA000),
-                          size: 24, // Changed from 20 to 24
+                          color: controller.messageController.text
+                                  .trim()
+                                  .isNotEmpty
+                              ? const Color(0xFFFFA000)
+                              : Color(0xFF9E9E9E),
+                          size: 24,
                         ),
                       ),
                     ),
