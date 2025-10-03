@@ -71,53 +71,70 @@ class InterestService extends GetxService {
           '📊 [INTEREST SERVICE] Getting interest details for interestId: "$interestId"');
       isLoading.value = true;
 
+      // First, try to get the interest name from the loaded interests
+      String interestName = 'Unknown Interest';
+      try {
+        final interestsResponse = await _authService.getInterests();
+        if (interestsResponse['interests'] is List) {
+          final interestsList = interestsResponse['interests'] as List;
+          for (final interest in interestsList) {
+            if (interest is Map<String, dynamic> &&
+                interest['_id'] == interestId &&
+                interest['name'] != null) {
+              interestName = interest['name'].toString();
+              print(
+                  '📊 [INTEREST SERVICE] Found interest name: "$interestName"');
+              break;
+            }
+          }
+        }
+      } catch (e) {
+        print(
+            '⚠️ [INTEREST SERVICE] Could not load interests for name lookup: $e');
+      }
+
+      // Then get the user count
       final apiUrl = '${ApiConstant.getInterestUserCount}/$interestId';
       print('🌐 [INTEREST SERVICE] API URL: $apiUrl');
 
       final response = await _apiClient.get(apiUrl);
       print('🌐 [INTEREST SERVICE] Response status: ${response.statusCode}');
       print('🌐 [INTEREST SERVICE] Response data: ${response.data}');
-      print('🌐 [INTEREST SERVICE] Response headers: ${response.headers}');
 
+      int userCount = 0;
       if (response.statusCode == 200) {
         final apiResponse = ApiResponse.fromJson(response.data, (data) => data);
         if (apiResponse.success) {
-          final data = apiResponse.data;
-          final interestName = data['interestName'] ?? 'Unknown';
-          final userCount = data['userCount'] ?? 0;
-
-          memberCount.value = userCount;
-
-          print(
-              '✅ [INTEREST SERVICE] Interest details retrieved successfully:');
-          print('   - interestName: "$interestName"');
-          print('   - userCount: $userCount');
-
-          return {
-            'interestName': interestName,
-            'userCount': userCount,
-          };
-        } else {
-          print(
-              '❌ [INTEREST SERVICE] API returned success: false, message: ${apiResponse.message}');
-          throw ApiException(apiResponse.message);
+          userCount = apiResponse.data['userCount'] ?? 0;
         }
       } else if (response.statusCode == 404) {
-        print(
-            '⚠️ [INTEREST SERVICE] Interest not found (404), using fallback data');
-        // Return fallback data for missing interests
-        return {
-          'interestName': 'Unknown Interest',
-          'userCount': 0,
-        };
+        print('⚠️ [INTEREST SERVICE] User count not found (404), using 0');
+        userCount = 0;
       } else {
-        print('❌ [INTEREST SERVICE] HTTP Error: ${response.statusCode}');
-        throw ApiException('Failed to get interest details');
+        print(
+            '⚠️ [INTEREST SERVICE] HTTP Error getting user count: ${response.statusCode}');
+        userCount = 0;
       }
+
+      memberCount.value = userCount;
+
+      print('✅ [INTEREST SERVICE] Interest details retrieved successfully:');
+      print('   - interestName: "$interestName"');
+      print('   - userCount: $userCount');
+
+      return {
+        'interestName': interestName,
+        'userCount': userCount,
+      };
     } catch (e) {
       print('❌ [INTEREST SERVICE] Error getting interest details: $e');
       print('❌ [INTEREST SERVICE] Stack trace: ${StackTrace.current}');
-      throw ApiException('Failed to get interest details: ${e.toString()}');
+
+      // Return fallback data
+      return {
+        'interestName': 'Unknown Interest',
+        'userCount': 0,
+      };
     } finally {
       isLoading.value = false;
       print('🏁 [INTEREST SERVICE] Loading state set to false');
@@ -281,14 +298,5 @@ class InterestService extends GetxService {
       print('Error checking message permissions: $e');
       return false;
     }
-  }
-
-  // Get auth headers
-  Future<Map<String, String>> _getAuthHeaders() async {
-    final token = _storage.read('auth_token');
-    return {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token',
-    };
   }
 }

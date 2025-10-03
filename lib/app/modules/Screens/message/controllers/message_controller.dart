@@ -153,7 +153,8 @@ class MessageController extends GetxController {
       if (Get.arguments != null) {
         print('📥 [MESSAGE CONTROLLER] Arguments received: ${Get.arguments}');
         interestId.value = Get.arguments['interestId'] ?? '';
-        interestName.value = Get.arguments['interestName'] ?? 'news';
+        interestName.value =
+            Get.arguments['interestName'] ?? 'Unknown Interest';
 
         print('📥 [MESSAGE CONTROLLER] Parsed values:');
         print('   - interestId: "${interestId.value}"');
@@ -210,12 +211,16 @@ class MessageController extends GetxController {
       final details =
           await _interestService.getInterestDetails(interestId.value);
 
-      // Update interest name from API if available
+      // Update interest name from API if available and not "Unknown Interest"
       if (details['interestName'] != null &&
-          details['interestName'].isNotEmpty) {
+          details['interestName'].isNotEmpty &&
+          details['interestName'] != 'Unknown Interest') {
         interestName.value = details['interestName'];
         print(
             '📊 [INTEREST DETAILS] Interest name updated from API: "${interestName.value}"');
+      } else {
+        print(
+            '📊 [INTEREST DETAILS] Keeping existing interest name: "${interestName.value}"');
       }
 
       // Update member count
@@ -227,6 +232,9 @@ class MessageController extends GetxController {
       print('❌ [INTEREST DETAILS] Error loading interest details: $e');
       print('❌ [INTEREST DETAILS] Stack trace: ${StackTrace.current}');
       memberCount.value = 0;
+      // Keep the existing interest name from arguments
+      print(
+          '📊 [INTEREST DETAILS] Keeping interest name from arguments: "${interestName.value}"');
     }
   }
 
