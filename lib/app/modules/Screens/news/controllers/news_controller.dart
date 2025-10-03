@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:get/get.dart';
 import 'package:vropay_final/app/core/services/learn_service.dart';
+import 'package:vropay_final/app/modules/Screens/news/views/news_detail_screen.dart';
 
 class NewsController extends GetxController {
   final LearnService _learnService = Get.find<LearnService>();
@@ -78,6 +79,9 @@ class NewsController extends GetxController {
             final firstArticle = items.first;
             print('🔍 News - First article title: ${firstArticle['title']}');
             print('🔍 News - First article body: ${firstArticle['body']}');
+            print(
+                '🔍 News - First article thumbnail: ${firstArticle['thumbnail']}');
+            print('🔍 News - First article image: ${firstArticle['image']}');
           }
         } else {
           // Database is empty - show user-friendly message
@@ -281,6 +285,17 @@ class NewsController extends GetxController {
   // Toggle view mode
   void toggleViewMode() {
     isGridView.value = !isGridView.value;
+  }
+
+  // Navigate to news detail screen
+  void navigateToNewsDetail(Map<String, dynamic> news) {
+    print('🚀 News - Navigating to detail screen');
+    print('🔍 News - News data: ${news.toString()}');
+    print('🔍 News - Title: ${news['title']}');
+    print('🔍 News - Has body: ${news['body'] != null}');
+    print('🔍 News - Has thumbnail: ${news['thumbnail'] != null}');
+
+    Get.to(() => NewsDetailScreen(news: news));
   }
 
   // Go back to the previous screen

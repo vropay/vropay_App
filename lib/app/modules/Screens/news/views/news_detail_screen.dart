@@ -5,6 +5,7 @@ import 'package:html/parser.dart' as html_parser;
 import 'package:vropay_final/Components/back_icon.dart';
 import 'package:vropay_final/Utilities/constants/KImages.dart';
 import 'package:vropay_final/Utilities/screen_utils.dart';
+import 'package:vropay_final/app/core/api/api_constant.dart';
 
 class NewsDetailScreen extends StatefulWidget {
   final Map<String, dynamic> news;
@@ -93,22 +94,11 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
                         child: (widget.news['thumbnail'] != null &&
                                 widget.news['thumbnail'].toString().isNotEmpty)
                             ? ClipRRect(
-                                child: Image.asset(
-                                  widget.news['thumbnail'],
+                                child: _buildNewsImage(
+                                  widget.news['thumbnail'].toString(),
                                   fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Container(
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(20),
-                                        color: Color(0xFFE0E0E0),
-                                      ),
-                                      child: Icon(
-                                        Icons.image_not_supported,
-                                        size: 60,
-                                        color: Colors.grey[400],
-                                      ),
-                                    );
-                                  },
+                                  height: ScreenUtils.height * 0.25,
+                                  width: double.infinity,
                                 ),
                               )
                             : Container(
@@ -444,6 +434,91 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
         ),
       ),
     );
+  }
+
+  // Build news image widget that handles both assets and network images
+  Widget _buildNewsImage(
+    String imagePath, {
+    double? height,
+    double? width,
+    BoxFit? fit,
+  }) {
+    print('🖼️ NewsDetail - Building image with path: $imagePath');
+    
+    // Use centralized URL builder
+    String finalImageUrl = ApiConstant.getImageUrl(imagePath);
+    print('🔗 NewsDetail - Final image URL: $finalImageUrl');
+    
+    // Check if it's an asset path
+    if (imagePath.startsWith('assets/')) {
+      print('📁 NewsDetail - Loading asset image: $imagePath');
+      return Image.asset(
+        imagePath,
+        height: height,
+        width: width,
+        fit: fit ?? BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            height: height,
+            width: width,
+            decoration: BoxDecoration(
+              color: Colors.grey[200],
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              Icons.image_not_supported,
+              color: Colors.grey[400],
+              size: height != null ? height * 0.4 : 24,
+            ),
+          );
+        },
+      );
+    }
+    
+    // For all other cases (network URLs and backend images), use Image.network
+    print('🌐 NewsDetail - Loading network image: $finalImageUrl');
+    return Image.network(
+      finalImageUrl,
+        height: height,
+        width: width,
+        fit: fit ?? BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            height: height,
+            width: width,
+            decoration: BoxDecoration(
+              color: Colors.grey[200],
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              Icons.image_not_supported,
+              color: Colors.grey[400],
+              size: height != null ? height * 0.4 : 24,
+            ),
+          );
+        },
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Container(
+            height: height,
+            width: width,
+            decoration: BoxDecoration(
+              color: Colors.grey[200],
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Center(
+              child: CircularProgressIndicator(
+                value: loadingProgress.expectedTotalBytes != null
+                    ? loadingProgress.cumulativeBytesLoaded /
+                        loadingProgress.expectedTotalBytes!
+                    : null,
+                strokeWidth: 2,
+                color: Colors.grey[400],
+              ),
+            ),
+          );
+        },
+      );
   }
 
   String _getNewsContent() {

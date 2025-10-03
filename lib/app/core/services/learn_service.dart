@@ -183,6 +183,26 @@ class LearnService extends GetxService {
                 '🔄 LearnService - Converted HTML title to text for entry: ${entry['title']}');
           }
         }
+
+        // Ensure all required fields for NewsDetailScreen are present
+        // Add fallback values if missing
+        entry['thumbnail'] = entry['thumbnail'] ?? entry['image'] ?? '';
+        entry['title'] = entry['title'] ?? 'No Title';
+        entry['body'] = entry['body'] ?? entry['description'] ?? '';
+
+        // Debug: Log image fields
+        if (entry['thumbnail'] != null &&
+            entry['thumbnail'].toString().isNotEmpty) {
+          print('🖼️ LearnService - Entry thumbnail: ${entry['thumbnail']}');
+        }
+        if (entry['image'] != null && entry['image'].toString().isNotEmpty) {
+          print('🖼️ LearnService - Entry image: ${entry['image']}');
+        }
+
+        // Add entry ID for reference if it exists
+        if (entry['_id'] != null) {
+          entry['entryId'] = entry['_id'];
+        }
       }
 
       return ApiResponse.success({'items': list});

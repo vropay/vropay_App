@@ -8,7 +8,7 @@ import 'package:vropay_final/Components/top_navbar.dart';
 import 'package:vropay_final/Utilities/constants/KImages.dart';
 import 'package:vropay_final/Utilities/screen_utils.dart';
 import 'package:vropay_final/app/modules/Screens/news/controllers/news_controller.dart';
-import 'package:vropay_final/app/modules/Screens/news/views/news_detail_screen.dart';
+import 'package:vropay_final/app/core/api/api_constant.dart';
 
 class NewsScreen extends GetView<NewsController> {
   const NewsScreen({super.key});
@@ -706,62 +706,110 @@ class NewsScreen extends GetView<NewsController> {
   }
 
   Widget _buildNewsCard(Map<String, dynamic> news, int index) {
+    // Debug: Print news data
+    print('🔍 NewsCard - Building card for news: ${news['title']}');
+    print('🔍 NewsCard - Thumbnail: ${news['thumbnail']}');
+    print('🔍 NewsCard - Image: ${news['image']}');
+    final bodyText = news['body']?.toString() ?? '';
+    print(
+        '🔍 NewsCard - Body: ${bodyText.length > 50 ? bodyText.substring(0, 50) : bodyText}...');
+
     return GestureDetector(
       onTap: () {
-        // Handle news tap
-        Get.to(() => NewsDetailScreen(news: news));
+        controller.navigateToNewsDetail(news);
       },
       child: Container(
-        height: ScreenUtils.height * 0.07,
+        height: ScreenUtils.height * 0.12,
         width: double.infinity,
-        margin: const EdgeInsets.only(bottom: 2, left: 20, right: 10),
-        padding: EdgeInsets.zero,
+        margin: const EdgeInsets.only(bottom: 8, left: 20, right: 20),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: Color(0xFFF7F7F7),
-          borderRadius: BorderRadius.circular(5.5),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.grey.withOpacity(0.2)),
         ),
-        child: Center(
-          child: ListTile(
-            leading: (news['thumbnail'] != null &&
-                    news['thumbnail'].toString().isNotEmpty)
-                ? Image.asset(
-                    news['thumbnail'],
-                    height: 50,
-                    width: 50,
-                    fit: BoxFit.fitWidth,
-                  )
-                : Container(
-                    height: ScreenUtils.height * 0.05,
-                    width: ScreenUtils.width * 0.1,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.black.withOpacity(0.1)),
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      news['thumbnail'] != null &&
-                              news['thumbnail'].toString().isNotEmpty
-                          ? news['thumbnail'].toString()
-                          : 'thumbnail',
-                      style: TextStyle(
-                        color: Color(0xFF616161),
-                        fontSize: ScreenUtils.x(1),
-                        fontWeight: FontWeight.w500,
+        child: Row(
+          children: [
+            // Thumbnail
+            Container(
+              height: ScreenUtils.height * 0.08,
+              width: ScreenUtils.width * 0.18,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: (news['thumbnail'] != null &&
+                      news['thumbnail'].toString().isNotEmpty)
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(6),
+                      child: _buildNewsImage(
+                        news['thumbnail'].toString(),
+                        fit: BoxFit.cover,
+                        height: ScreenUtils.height * 0.08,
+                        width: ScreenUtils.width * 0.18,
                       ),
-                      textAlign: TextAlign.center,
+                    )
+                  : Container(
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Icon(
+                        Icons.article,
+                        color: Colors.grey[600],
+                        size: 24,
+                      ),
                     ),
-                  ),
-            title: _buildNewsTitle(news),
-          ),
+            ),
+
+            // Spacing
+            SizedBox(width: 12),
+
+            // Title and content
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Title
+                  _buildNewsTitle(news),
+
+                  // Date (if available)
+                  if (news['createdAt'] != null) ...[
+                    SizedBox(height: 4),
+                    Text(
+                      _formatDate(news['createdAt']),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+
+            // Arrow icon
+            Icon(
+              Icons.arrow_forward_ios,
+              size: 16,
+              color: Colors.grey[400],
+            ),
+          ],
         ),
       ),
     );
   }
 
   Widget _buildGridNewsCard(Map<String, dynamic> news, int index) {
+    // Debug: Print grid news data
+    print('🔍 GridCard - Building grid card for news: ${news['title']}');
+    print('🔍 GridCard - Thumbnail: ${news['thumbnail']}');
+    print('🔍 GridCard - Image: ${news['image']}');
+
     return GestureDetector(
       onTap: () {
-        Get.to(() => NewsDetailScreen(news: news));
+        controller.navigateToNewsDetail(news);
       },
       child: Container(
         decoration: BoxDecoration(
@@ -780,9 +828,11 @@ class NewsScreen extends GetView<NewsController> {
               ),
               child: (news['thumbnail'] != null &&
                       news['thumbnail'].toString().isNotEmpty)
-                  ? Image.asset(
-                      news['thumbnail'],
+                  ? _buildNewsImage(
+                      news['thumbnail'].toString(),
                       fit: BoxFit.cover,
+                      height: ScreenUtils.height * 0.08,
+                      width: ScreenUtils.width * 0.744,
                     )
                   : Container(
                       decoration: BoxDecoration(
@@ -807,17 +857,7 @@ class NewsScreen extends GetView<NewsController> {
               width: double.infinity,
               padding: EdgeInsets.only(left: 10, right: 10, bottom: 10),
               child: Center(
-                child: Text(
-                  news['keyword'] ?? 'No Title',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xFF1E2025),
-                  ),
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
+                child: _buildGridNewsTitle(news),
               ),
             ),
           ],
@@ -841,6 +881,160 @@ class NewsScreen extends GetView<NewsController> {
           ),
         ),
       ),
+    );
+  }
+
+  // Build news image widget that handles both assets and network images
+  Widget _buildNewsImage(
+    String imagePath, {
+    double? height,
+    double? width,
+    BoxFit? fit,
+  }) {
+    print('🖼️ News - Building image with path: $imagePath');
+
+    // Use centralized URL builder
+    String finalImageUrl = ApiConstant.getImageUrl(imagePath);
+    print('🔗 News - Final image URL: $finalImageUrl');
+
+    // Check if it's an asset path
+    if (imagePath.startsWith('assets/')) {
+      print('📁 News - Loading asset image: $imagePath');
+      return Image.asset(
+        imagePath,
+        height: height,
+        width: width,
+        fit: fit ?? BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            height: height,
+            width: width,
+            decoration: BoxDecoration(
+              color: Colors.grey[200],
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              Icons.image_not_supported,
+              color: Colors.grey[400],
+              size: height != null ? height * 0.4 : 24,
+            ),
+          );
+        },
+      );
+    }
+
+    // For all other cases (network URLs and backend images), use Image.network
+    print('🌐 News - Loading network image: $finalImageUrl');
+    return Image.network(
+      finalImageUrl,
+      height: height,
+      width: width,
+      fit: fit ?? BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) {
+        print('❌ News - Failed to load image: $finalImageUrl');
+        return Container(
+          height: height,
+          width: width,
+          decoration: BoxDecoration(
+            color: Colors.grey[200],
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            Icons.image_not_supported,
+            color: Colors.grey[400],
+            size: height != null ? height * 0.4 : 24,
+          ),
+        );
+      },
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) return child;
+        return Container(
+          height: height,
+          width: width,
+          decoration: BoxDecoration(
+            color: Colors.grey[200],
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Center(
+            child: CircularProgressIndicator(
+              value: loadingProgress.expectedTotalBytes != null
+                  ? loadingProgress.cumulativeBytesLoaded /
+                      loadingProgress.expectedTotalBytes!
+                  : null,
+              strokeWidth: 2,
+              color: Colors.grey[400],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // Format date for display
+  String _formatDate(dynamic date) {
+    if (date == null) return '';
+
+    try {
+      DateTime dateTime;
+      if (date is String) {
+        dateTime = DateTime.parse(date);
+      } else if (date is DateTime) {
+        dateTime = date;
+      } else {
+        return '';
+      }
+
+      final now = DateTime.now();
+      final difference = now.difference(dateTime);
+
+      if (difference.inDays == 0) {
+        return 'Today';
+      } else if (difference.inDays == 1) {
+        return 'Yesterday';
+      } else if (difference.inDays < 7) {
+        return '${difference.inDays} days ago';
+      } else {
+        return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
+      }
+    } catch (e) {
+      print('❌ News - Error formatting date: $e');
+      return '';
+    }
+  }
+
+  // Build grid news title with highlighting support for search results
+  Widget _buildGridNewsTitle(Map<String, dynamic> news) {
+    final title = news['title'] ?? '';
+    final highlightedTitle = news['highlightedTitle'];
+
+    // If we have a highlighted title from search results, use it
+    if (highlightedTitle != null && highlightedTitle.toString().isNotEmpty) {
+      return RichText(
+        text: TextSpan(
+          children: _parseHighlightedText(highlightedTitle.toString()),
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w500,
+            color: Color(0xFF1E2025),
+          ),
+        ),
+        textAlign: TextAlign.center,
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+      );
+    }
+
+    // Otherwise, use regular title
+    return Text(
+      title,
+      style: TextStyle(
+        fontSize: 15,
+        fontWeight: FontWeight.w500,
+        color: Color(0xFF1E2025),
+      ),
+      textAlign: TextAlign.center,
+      maxLines: 2,
+      overflow: TextOverflow.ellipsis,
     );
   }
 
