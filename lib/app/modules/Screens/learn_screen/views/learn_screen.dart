@@ -124,20 +124,6 @@ class LearnScreenView extends GetView<LearnScreenController> {
                     );
                   }
 
-                  // if (controller.mainCategories.isEmpty) {
-                  //   return _infoCard(
-                  //     "Knowledge\n Center",
-                  //     "Articles, blogs, explainers &\nvisuals on tech, money,\nmindset & more.",
-                  //     Color(0xFFE93A47),
-                  //     "learn",
-                  //     'assets/images/cupboard.png',
-                  //     ScreenUtils.height * 0.128,
-                  //     ScreenUtils.width * 0.2,
-                  //     ScreenUtils.width * 0.08,
-                  //     () => Get.toNamed(Routes.KNOWLEDGE_CENTER_SCREEN),
-                  //   );
-                  // }
-
                   // Show first 2 categories from API
                   return Column(
                     children: [
@@ -151,27 +137,13 @@ class LearnScreenView extends GetView<LearnScreenController> {
                           controller.mainCategories[1],
                           1,
                         )
-                      // else
-                      //   _infoCard(
-                      //     "Community\n Forum",
-                      //     "Talk with the community\nfor real questions, real\nopinions, zero fluff.",
-                      //     Color(0xFF3E9292),
-                      //     "engage",
-                      //     'assets/images/communityForum.png',
-                      //     ScreenUtils.height * 0.122,
-                      //     ScreenUtils.width * 0.27,
-                      //     ScreenUtils.width * 0.3,
-                      //     () => Get.toNamed(Routes.COMMUNITY_FORUM),
-                      //   ),
                     ],
                   );
                 }),
 
                 // Info Cards
 
-                SizedBox(height: ScreenUtils.height * 0.058),
-
-                SizedBox(height: ScreenUtils.height * 0.03),
+                SizedBox(height: ScreenUtils.height * 0.056),
 
                 // Bottom Image
                 Image.asset(
@@ -180,7 +152,7 @@ class LearnScreenView extends GetView<LearnScreenController> {
                   width: ScreenUtils.width * 0.45,
                 ),
 
-                SizedBox(height: ScreenUtils.height * 0.02),
+                SizedBox(height: ScreenUtils.height * 0.057),
               ],
             ),
           ),
@@ -229,18 +201,16 @@ class LearnScreenView extends GetView<LearnScreenController> {
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    SizedBox(height: ScreenUtils.height * 0.02),
-                    Container(
-                      child: Text(
-                        subtitle,
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w300,
-                        ),
-                        overflow: TextOverflow.visible,
-                        softWrap: true,
+                    SizedBox(height: ScreenUtils.height * 0.04),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w300,
                       ),
+                      overflow: TextOverflow.visible,
+                      softWrap: true,
                     ),
                   ],
                 ),
@@ -248,16 +218,19 @@ class LearnScreenView extends GetView<LearnScreenController> {
 
               SizedBox(width: ScreenUtils.width * 0.08),
               Flexible(
-                child: Image.asset(
-                  imagePath,
-                  height: imageHeight,
-                  width: imageWidth,
-                  fit: BoxFit.contain,
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 18.0),
+                  child: Image.asset(
+                    imagePath,
+                    height: imageHeight,
+                    width: imageWidth,
+                    fit: BoxFit.contain,
+                  ),
                 ),
               ),
             ],
           ),
-          SizedBox(height: ScreenUtils.height * 0.04),
+          SizedBox(height: ScreenUtils.height * 0.055),
           Align(
             alignment: Alignment.center,
             child: SizedBox(
