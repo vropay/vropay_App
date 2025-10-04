@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:collection/collection.dart';
 import 'package:vropay_final/Components/bottom_navbar.dart';
 import 'package:vropay_final/Components/top_navbar.dart';
 import 'package:vropay_final/Utilities/screen_utils.dart';

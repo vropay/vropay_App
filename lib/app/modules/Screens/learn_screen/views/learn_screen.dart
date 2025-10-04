@@ -305,15 +305,6 @@ class LearnScreenView extends GetView<LearnScreenController> {
     if (categoryId != null) {
       // Load subcategories and navigate to detail view
       controller.onCategoryTap(category);
-
-      // You can navigate to a detail screen or show subcategories
-      Get.snackbar(
-        'Category Selected',
-        'Loading ${category['name']} content...',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Color(0xFF006DF4),
-        colorText: Colors.white,
-      );
     }
   }
 }

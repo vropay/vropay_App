@@ -123,16 +123,6 @@ class KnowledgeCenterScreenController extends GetxController {
 
           // Store the complete data for easy access
           _storeCompleteData(mainCategory, subCategories);
-
-          // Show success message
-          Get.snackbar(
-            'Success',
-            'Loaded ${this.subCategories.length} subcategories with content',
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.green,
-            colorText: Colors.white,
-            duration: Duration(seconds: 2),
-          );
         } else {
           print('⚠️ KnowledgeCenter - No subcategories found');
           _showNoDataMessage();

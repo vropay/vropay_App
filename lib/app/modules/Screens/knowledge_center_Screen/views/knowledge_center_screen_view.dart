@@ -297,7 +297,7 @@ class KnowledgeCenterScreenView
                 fontWeight: FontWeight.w400),
           ),
         ),
-        SizedBox(height: 20),
+        SizedBox(height: ScreenUtils.height * 0.042),
 
         // SUBCATEGORIES using your existing card style
         ...controller.subCategories
@@ -607,7 +607,7 @@ class KnowledgeCenterScreenView
             borderRadius: BorderRadius.circular(12),
           ),
           child: const Text(
-            "INVESTING (title of last topic read)",
+            "INVESTING (title of last topic read) Static content ",
             style: TextStyle(
               color: Color(0xFF4A4A4A),
               fontSize: 12,
@@ -754,7 +754,7 @@ class KnowledgeCenterScreenView
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Padding(
-                padding: const EdgeInsets.only(top: 16.5),
+                padding: const EdgeInsets.only(top: 16.5, left: 32, right: 32),
                 child: Text(
                   text,
                   textAlign: TextAlign.center,

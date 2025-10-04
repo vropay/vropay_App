@@ -707,14 +707,6 @@ class NewsScreen extends GetView<NewsController> {
   }
 
   Widget _buildNewsCard(Map<String, dynamic> news, int index) {
-    // Debug: Print news data
-    print('🔍 NewsCard - Building card for news: ${news['title']}');
-    print('🔍 NewsCard - Thumbnail: ${news['thumbnail']}');
-    print('🔍 NewsCard - Image: ${news['image']}');
-    final bodyText = news['body']?.toString() ?? '';
-    print(
-        '🔍 NewsCard - Body: ${bodyText.length > 50 ? bodyText.substring(0, 50) : bodyText}...');
-
     return GestureDetector(
       onTap: () {
         controller.navigateToNewsDetail(news);
@@ -723,11 +715,13 @@ class NewsScreen extends GetView<NewsController> {
         height: ScreenUtils.height * 0.12,
         width: double.infinity,
         margin: const EdgeInsets.only(bottom: 8, left: 20, right: 20),
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.only(
+          left: 0,
+          right: 0,
+        ),
         decoration: BoxDecoration(
           color: Color(0xFFF7F7F7),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.grey.withOpacity(0.2)),
         ),
         child: Row(
           children: [
@@ -744,7 +738,7 @@ class NewsScreen extends GetView<NewsController> {
                       borderRadius: BorderRadius.circular(6),
                       child: _buildNewsImage(
                         news['thumbnail'].toString(),
-                        fit: BoxFit.cover,
+                        fit: BoxFit.fitWidth,
                         height: ScreenUtils.height * 0.08,
                         width: ScreenUtils.width * 0.18,
                       ),
@@ -773,28 +767,8 @@ class NewsScreen extends GetView<NewsController> {
                 children: [
                   // Title
                   _buildNewsTitle(news),
-
-                  // Date (if available)
-                  if (news['createdAt'] != null) ...[
-                    SizedBox(height: 4),
-                    Text(
-                      _formatDate(news['createdAt']),
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[600],
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                  ],
                 ],
               ),
-            ),
-
-            // Arrow icon
-            Icon(
-              Icons.arrow_forward_ios,
-              size: 16,
-              color: Colors.grey[400],
             ),
           ],
         ),
@@ -803,11 +777,6 @@ class NewsScreen extends GetView<NewsController> {
   }
 
   Widget _buildGridNewsCard(Map<String, dynamic> news, int index) {
-    // Debug: Print grid news data
-    print('🔍 GridCard - Building grid card for news: ${news['title']}');
-    print('🔍 GridCard - Thumbnail: ${news['thumbnail']}');
-    print('🔍 GridCard - Image: ${news['image']}');
-
     return GestureDetector(
       onTap: () {
         controller.navigateToNewsDetail(news);

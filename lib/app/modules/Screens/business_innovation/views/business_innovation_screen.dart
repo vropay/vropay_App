@@ -70,14 +70,16 @@ class BusinessInnovationScreen extends GetView<BusinessInnovationController> {
                   );
                 }
 
-                return ListView.builder(
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  itemCount: controller.categories.length,
-                  itemBuilder: (context, index) {
-                    final category = controller.categories[index];
-                    return _buildCategoryCard(category);
-                  },
+                return Center(
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    itemCount: controller.categories.length,
+                    itemBuilder: (context, index) {
+                      final category = controller.categories[index];
+                      return _buildCategoryCard(category);
+                    },
+                  ),
                 );
               }),
             ),

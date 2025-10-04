@@ -34,15 +34,11 @@ class LearnScreenController extends GetxController {
       print('🚀 LearnScreenController - Loading main categories...');
 
       final resp = await _learn.getMainCategories();
-      print('✅ LearnScreenController - Response received: ${resp.success}');
-      print('📊 LearnScreenController - Response data: ${resp.data}');
 
       if (resp.success && resp.data != null) {
         final items = (resp.data!['items'] as List<Map<String, dynamic>>);
-        print('📋 LearnScreenController - Items count: ${items.length}');
 
         mainCategories.assignAll(items);
-        print('✅ LearnScreenController - Categories loaded successfully');
       } else {
         print(
             '❌ LearnScreenController - Response not successful: ${resp.message}');
@@ -69,16 +65,6 @@ class LearnScreenController extends GetxController {
       Get.snackbar('Error', 'Invalid category data');
       return;
     }
-
-    // Show loading snackbar
-    Get.snackbar(
-      'Loading...',
-      'Loading ${category['name']} content...',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Color(0xFF006DF4),
-      colorText: Colors.white,
-      duration: Duration(seconds: 2),
-    );
 
     // Navigate based on category name
     if (categoryName.contains('knowledge')) {
@@ -284,7 +270,7 @@ class LearnScreenController extends GetxController {
     Get.dialog(
       AlertDialog(
         title: Text('Content Entries'),
-        content: Container(
+        content: SizedBox(
           width: double.maxFinite,
           height: 400,
           child: ListView.builder(
