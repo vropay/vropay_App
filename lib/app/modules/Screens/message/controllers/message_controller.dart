@@ -5,12 +5,15 @@ import 'package:vropay_final/app/core/services/message_service.dart';
 import 'package:vropay_final/app/core/services/interest_service.dart';
 import 'package:vropay_final/app/core/services/auth_service.dart';
 import 'package:vropay_final/app/core/services/socket_service.dart';
+import 'package:vropay_final/app/modules/Screens/news/controllers/news_controller.dart';
+import 'package:vropay_final/app/core/services/learn_service.dart';
 
 class MessageController extends GetxController {
   // Services
   final MessageService _messageService = Get.find<MessageService>();
   final InterestService _interestService = Get.find<InterestService>();
   final AuthService _authService = Get.find<AuthService>();
+  final LearnService _learnService = Get.find<LearnService>();
   SocketService? _socketService;
 
   // UI State
@@ -39,6 +42,17 @@ class MessageController extends GetxController {
   final RxBool canSendMessages = false.obs;
   final RxBool hasUserInterest = false.obs;
   final RxString communityAccess = ''.obs;
+
+  // Search-related data from navigation arguments for highlighted content
+  final RxString categoryId = ''.obs;
+  final RxString subCategoryId = ''.obs;
+  final RxString topicId = ''.obs;
+
+  // Search functionality (similar to NewsController)
+  final RxString searchText = ''.obs;
+  final RxBool isSearching = false.obs;
+  final RxList<Map<String, dynamic>> searchResults =
+      <Map<String, dynamic>>[].obs;
 
   // Report options
   final List<String> reportOptions = [
@@ -246,9 +260,26 @@ class MessageController extends GetxController {
         interestName.value =
             Get.arguments['interestName'] ?? 'Unknown Interest';
 
+        // Extract search-related IDs for highlighted content sharing
+        // The navigation now correctly passes:
+        // - categoryId as mainCategoryId (for search API)
+        // - subCategoryId as subCategoryId (for search API)
+        // - topicId as topicId (for search API)
+        // - interestId for messaging
+
+        categoryId.value = Get.arguments['categoryId'] ??
+            Get.arguments['mainCategoryId'] ??
+            '';
+        subCategoryId.value = Get.arguments['subCategoryId'] ?? '';
+        topicId.value = Get.arguments['topicId'] ??
+            interestId.value; // Fallback to interestId if topicId not provided
+
         print('📥 [MESSAGE CONTROLLER] Parsed values:');
         print('   - interestId: "${interestId.value}"');
         print('   - interestName: "${interestName.value}"');
+        print('   - categoryId: "${categoryId.value}"');
+        print('   - subCategoryId: "${subCategoryId.value}"');
+        print('   - topicId: "${topicId.value}"');
         // One-line explicit log for selected interest
         print(
             '🎯 [MESSAGE CONTROLLER] Using interest -> id: ${interestId.value}, name: ${interestName.value}');
@@ -656,23 +687,50 @@ class MessageController extends GetxController {
     try {
       isLoading.value = true;
 
-      // For now, send as regular message
-      // You can extend this to have a special important message API
-      await _messageService.sendMessage(
+      print(
+          '🔥 [MESSAGE CONTROLLER] Sending important message: "${message.trim()}"');
+      print('🔥 [MESSAGE CONTROLLER] To interest: ${interestId.value}');
+
+      // Send important message via dedicated API
+      await _messageService.sendImportantMessage(
         interestId: interestId.value,
         message: message.trim(),
       );
 
+      // Update local messages
       messages.value = _messageService.messages;
       totalMessages.value = _messageService.totalMessages.value;
+
+      print('✅ [MESSAGE CONTROLLER] Important message sent successfully');
 
       // Auto-scroll to new message
       Future.delayed(const Duration(milliseconds: 100), () {
         _scrollToBottom();
       });
     } catch (e) {
-      print('Error sending important message: $e');
-      Get.snackbar('Error', 'Failed to send important message');
+      print('❌ [MESSAGE CONTROLLER] Error sending important message: $e');
+      String errorMessage = 'Failed to send important message';
+
+      // Check if it's a specific error type
+      if (e.toString().contains('User not authenticated')) {
+        errorMessage = 'Please log in again to send important messages';
+      } else if (e.toString().contains('Database error')) {
+        errorMessage = 'Server error occurred. Please try again.';
+      } else if (e.toString().contains('Connection timeout')) {
+        errorMessage = 'Connection timeout. Please check your internet.';
+      } else if (e.toString().contains('not a member')) {
+        errorMessage = 'You are not a member of this interest group';
+      } else if (e.toString().contains('Interest not found')) {
+        errorMessage = 'This interest group no longer exists';
+      }
+
+      Get.snackbar(
+        'Error',
+        errorMessage,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 3),
+      );
     } finally {
       isLoading.value = false;
     }
@@ -680,7 +738,337 @@ class MessageController extends GetxController {
 
   // Send normal message
   Future<void> sendNormalMessage(String message) async {
-    await sendImportantMessage(message);
+    if (message.trim().isEmpty) return;
+    if (!canSendMessages.value) {
+      Get.snackbar('Access Denied', 'You cannot send messages to this group');
+      return;
+    }
+
+    try {
+      isLoading.value = true;
+
+      print(
+          '📤 [MESSAGE CONTROLLER] Sending normal message: "${message.trim()}"');
+      print('📤 [MESSAGE CONTROLLER] To interest: ${interestId.value}');
+
+      // Send normal message via regular API
+      await _messageService.sendMessage(
+        interestId: interestId.value,
+        message: message.trim(),
+        forceRestApi: true, // Force REST API since Socket.IO is failing
+      );
+
+      // Update local messages
+      messages.value = _messageService.messages;
+      totalMessages.value = _messageService.totalMessages.value;
+
+      print('✅ [MESSAGE CONTROLLER] Normal message sent successfully');
+
+      // Auto-scroll to new message
+      Future.delayed(const Duration(milliseconds: 100), () {
+        _scrollToBottom();
+      });
+    } catch (e) {
+      print('❌ [MESSAGE CONTROLLER] Error sending normal message: $e');
+      String errorMessage = 'Failed to send message';
+
+      // Check if it's a specific error type
+      if (e.toString().contains('User not authenticated')) {
+        errorMessage = 'Please log in again to send messages';
+      } else if (e.toString().contains('Database error')) {
+        errorMessage = 'Server error occurred. Please try again.';
+      } else if (e.toString().contains('Connection timeout')) {
+        errorMessage = 'Connection timeout. Please check your internet.';
+      }
+
+      Get.snackbar(
+        'Error',
+        errorMessage,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 3),
+      );
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  // Share an entry as a message
+  Future<void> shareEntry({
+    required String message,
+    required String entryId,
+  }) async {
+    if (message.trim().isEmpty) return;
+    if (!canSendMessages.value) {
+      Get.snackbar('Access Denied', 'You cannot send messages to this group');
+      return;
+    }
+
+    try {
+      isLoading.value = true;
+
+      print('📚 [MESSAGE CONTROLLER] Sharing entry: $entryId');
+      print('📚 [MESSAGE CONTROLLER] Message: "${message.trim()}"');
+      print('📚 [MESSAGE CONTROLLER] To interest: ${interestId.value}');
+      print('📚 [MESSAGE CONTROLLER] CategoryId: ${categoryId.value}');
+      print('📚 [MESSAGE CONTROLLER] SubCategoryId: ${subCategoryId.value}');
+      print('📚 [MESSAGE CONTROLLER] TopicId: ${topicId.value}');
+
+      // Validate that we have the required IDs
+      if (categoryId.value.isEmpty ||
+          subCategoryId.value.isEmpty ||
+          topicId.value.isEmpty) {
+        throw Exception(
+            'Missing required IDs for sharing. Please ensure you navigated from a valid topic screen.');
+      }
+
+      // Share entry via dedicated API
+      await _messageService.shareEntry(
+        interestId: interestId.value,
+        message: message.trim(),
+        mainCategoryId: categoryId.value,
+        subCategoryId: subCategoryId.value,
+        topicId: topicId.value,
+        entryId: entryId,
+      );
+
+      // Update local messages
+      messages.value = _messageService.messages;
+      totalMessages.value = _messageService.totalMessages.value;
+
+      print('✅ [MESSAGE CONTROLLER] Entry shared successfully');
+
+      // Auto-scroll to new message
+      Future.delayed(const Duration(milliseconds: 100), () {
+        _scrollToBottom();
+      });
+
+      // Show success message
+      Get.snackbar(
+        'Entry Shared',
+        'Your entry has been shared with the community',
+        backgroundColor: const Color(0xFF714FC0),
+        colorText: Colors.white,
+        duration: const Duration(seconds: 2),
+        snackPosition: SnackPosition.TOP,
+      );
+    } catch (e) {
+      print('❌ [MESSAGE CONTROLLER] Error sharing entry: $e');
+      String errorMessage = 'Failed to share entry';
+
+      // Check if it's a specific error type
+      if (e.toString().contains('User not authenticated')) {
+        errorMessage = 'Please log in again to share entries';
+      } else if (e.toString().contains('Database error')) {
+        errorMessage = 'Server error occurred. Please try again.';
+      } else if (e.toString().contains('Connection timeout')) {
+        errorMessage = 'Connection timeout. Please check your internet.';
+      } else if (e.toString().contains('not a member')) {
+        errorMessage = 'You are not a member of this interest group';
+      } else if (e.toString().contains('Interest not found')) {
+        errorMessage = 'This interest group no longer exists';
+      } else if (e.toString().contains('Entry not found')) {
+        errorMessage = 'The selected entry no longer exists';
+      } else if (e.toString().contains('Topic not found')) {
+        errorMessage = 'The selected topic no longer exists';
+      } else if (e.toString().contains('Main category not found')) {
+        errorMessage = 'The selected category no longer exists';
+      }
+
+      Get.snackbar(
+        'Error',
+        errorMessage,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 3),
+      );
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  // Search entries in a topic using Knowledge Center (LearnService) API first,
+  // then fallback to NewsController data if needed
+  Future<List<Map<String, dynamic>>> searchEntriesInTopic({
+    required String query,
+    int page = 1,
+    int limit = 10,
+  }) async {
+    try {
+      print('🔍 [MESSAGE CONTROLLER] Searching entries via LearnService');
+      print('   - categoryId: ${categoryId.value}');
+      print('   - subCategoryId: ${subCategoryId.value}');
+      print('   - topicId: ${topicId.value}');
+      print('   - query: $query');
+
+      // Ensure required IDs
+      if (categoryId.value.isEmpty ||
+          subCategoryId.value.isEmpty ||
+          topicId.value.isEmpty) {
+        print(
+            '⚠️ [MESSAGE CONTROLLER] Missing IDs for LearnService search, falling back to NewsController');
+        return await _searchUsingNewsController(
+            query: query, page: page, limit: limit);
+      }
+
+      // Call the same Knowledge Center search API used by News screen
+      final response = await _learnService.searchEntriesInTopic(
+        categoryId.value,
+        subCategoryId.value,
+        topicId.value,
+        query,
+        page: page,
+        limit: limit,
+      );
+
+      if (response.success && response.data != null) {
+        final rawResults = response.data!['results'] as List<dynamic>? ?? [];
+        final results = rawResults.map((item) {
+          final map = item as Map<String, dynamic>;
+          final title = map['title']?.toString() ?? '';
+          final highlighted = map['highlightedTitle']?.toString();
+          return {
+            '_id': map['_id']?.toString() ?? map['entryId']?.toString() ?? '',
+            'title': title,
+            'highlightedTitle': highlighted?.isNotEmpty == true
+                ? highlighted
+                : _highlightSearchText(title, query),
+            'body':
+                map['body']?.toString() ?? map['description']?.toString() ?? '',
+            'image': map['thumbnail'] ?? map['image'] ?? '',
+            'footer': map['footer'] ?? '',
+            'createdAt': map['createdAt'] ?? '',
+            'updatedAt': map['updatedAt'] ?? '',
+          };
+        }).toList();
+
+        print(
+            '✅ [MESSAGE CONTROLLER] Found ${results.length} results from LearnService');
+        return results;
+      }
+
+      print(
+          '⚠️ [MESSAGE CONTROLLER] LearnService returned no data, falling back to NewsController');
+      return await _searchUsingNewsController(
+          query: query, page: page, limit: limit);
+    } catch (e) {
+      print('❌ [MESSAGE CONTROLLER] Error searching entries: $e');
+      // Fallback to NewsController approach on any error
+      return await _searchUsingNewsController(
+          query: query, page: page, limit: limit);
+    }
+  }
+
+  // Fallback: use NewsController in-memory articles
+  Future<List<Map<String, dynamic>>> _searchUsingNewsController({
+    required String query,
+    required int page,
+    required int limit,
+  }) async {
+    try {
+      NewsController newsController;
+
+      try {
+        newsController = Get.find<NewsController>();
+        print('📰 [MESSAGE CONTROLLER] Found existing NewsController');
+      } catch (_) {
+        print(
+            '📰 [MESSAGE CONTROLLER] Creating NewsController for fallback search');
+        newsController = Get.put(NewsController(), tag: 'search');
+        newsController.topicId = topicId.value;
+        newsController.topicName = interestName.value;
+        newsController.subCategoryId = subCategoryId.value;
+        newsController.categoryId = categoryId.value;
+      }
+
+      if (newsController.topicId != topicId.value ||
+          newsController.newsArticles.isEmpty) {
+        await newsController.loadTopicNews();
+      }
+
+      final filteredNews = newsController.newsArticles.where((news) {
+        final title = news['title']?.toString().toLowerCase() ?? '';
+        final body = news['body']?.toString().toLowerCase() ?? '';
+        final searchQuery = query.toLowerCase();
+        return title.contains(searchQuery) || body.contains(searchQuery);
+      }).toList();
+
+      final results = filteredNews.map((news) {
+        final title = news['title']?.toString() ?? '';
+        return {
+          '_id': news['_id']?.toString() ?? news['entryId']?.toString() ?? '',
+          'title': title,
+          'highlightedTitle': _highlightSearchText(title, query),
+          'body': news['body']?.toString() ?? '',
+          'image': news['thumbnail'] ?? news['image'] ?? '',
+          'footer': news['footer'] ?? '',
+          'createdAt': news['createdAt'] ?? '',
+          'updatedAt': news['updatedAt'] ?? '',
+        };
+      }).toList();
+
+      final startIndex = (page - 1) * limit;
+      final endIndex = startIndex + limit;
+      final paginatedResults = results.length > endIndex
+          ? results.sublist(startIndex, endIndex)
+          : results.sublist(startIndex);
+
+      print(
+          '✅ [MESSAGE CONTROLLER] Fallback found ${paginatedResults.length} results from NewsController');
+      return paginatedResults;
+    } catch (e) {
+      print('❌ [MESSAGE CONTROLLER] Fallback search failed: $e');
+      return <Map<String, dynamic>>[];
+    }
+  }
+
+  // Helper method to highlight search text
+  String _highlightSearchText(String text, String query) {
+    if (query.isEmpty) return text;
+
+    final regex = RegExp('(${RegExp.escape(query)})', caseSensitive: false);
+    return text.replaceAllMapped(
+        regex, (match) => '<mark>${match.group(0)}</mark>');
+  }
+
+  // Search methods (similar to NewsController)
+  void updateSearchText(String value) {
+    searchText.value = value;
+    if (value.trim().isNotEmpty && value.length >= 2) {
+      _performSearch(value.trim());
+    } else if (value.trim().isEmpty) {
+      _clearSearchResults();
+    }
+  }
+
+  void _performSearch(String query) async {
+    try {
+      isSearching.value = true;
+      print('🔍 [MESSAGE CONTROLLER] Performing search for: $query');
+
+      // Use the existing searchEntriesInTopic method
+      final results = await searchEntriesInTopic(query: query);
+
+      // Update search results
+      searchResults.value = results;
+      print(
+          '✅ [MESSAGE CONTROLLER] Search completed: ${results.length} results');
+    } catch (e) {
+      print('❌ [MESSAGE CONTROLLER] Search error: $e');
+      searchResults.clear();
+    } finally {
+      isSearching.value = false;
+    }
+  }
+
+  void clearSearch() {
+    searchText.value = '';
+    _clearSearchResults();
+  }
+
+  void _clearSearchResults() {
+    searchResults.clear();
+    print('🧹 [MESSAGE CONTROLLER] Clearing search results');
   }
 
   // Send quick reply message

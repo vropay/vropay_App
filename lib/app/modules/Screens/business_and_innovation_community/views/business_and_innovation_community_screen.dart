@@ -220,10 +220,13 @@ class BusinessAndInnovationCommunityScreen
     Get.toNamed(Routes.MESSAGE_SCREEN, arguments: {
       'interestId': topicId, // ✅ This will be used for the API call
       'interestName': topicName, // ✅ This will be shown in header
-      'subCategoryId': topicId,
+      'subCategoryId':
+          controller.subCategoryId, // ✅ Use the actual subCategoryId
       'subCategoryName': topicName,
-      'categoryId': controller.categoryId,
+      'categoryId':
+          controller.mainCategoryId, // ✅ Use mainCategoryId for search API
       'categoryName': controller.categoryName,
+      'topicId': topicId, // ✅ Explicitly pass topicId
     });
 
     print('✅ [BUSINESS COMMUNITY] Navigation initiated with arguments:');

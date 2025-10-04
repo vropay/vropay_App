@@ -514,14 +514,42 @@ class _MessageScreenState extends State<MessageScreen> {
                                             // Send button
                                             suffixIcon: GestureDetector(
                                               onTap: () {
-                                                if (_importantMessageController
-                                                    .text
-                                                    .trim()
-                                                    .isNotEmpty) {
+                                                final message =
+                                                    _importantMessageController
+                                                        .text
+                                                        .trim();
+                                                if (message.isNotEmpty) {
+                                                  // Validate message length (100 words max as per hint)
+                                                  final wordCount = message
+                                                      .split(RegExp(r'\s+'))
+                                                      .length;
+                                                  if (wordCount > 100) {
+                                                    Get.snackbar(
+                                                      'Message Too Long',
+                                                      'Please keep your message under 100 words',
+                                                      backgroundColor:
+                                                          Colors.orange,
+                                                      colorText: Colors.white,
+                                                      duration: const Duration(
+                                                          seconds: 2),
+                                                    );
+                                                    return;
+                                                  }
+
                                                   setState(() {
                                                     _showConfirmationOptions =
                                                         true;
                                                   });
+                                                } else {
+                                                  Get.snackbar(
+                                                    'Empty Message',
+                                                    'Please enter a message before sending',
+                                                    backgroundColor:
+                                                        Colors.orange,
+                                                    colorText: Colors.white,
+                                                    duration: const Duration(
+                                                        seconds: 2),
+                                                  );
                                                 }
                                               },
                                               child: Container(
@@ -587,17 +615,36 @@ class _MessageScreenState extends State<MessageScreen> {
                                         // Send as important message (Yes button)
                                         GestureDetector(
                                           onTap: () {
-                                            controller.sendImportantMessage(
-                                              _importantMessageController.text
-                                                  .trim(),
-                                            );
-                                            setState(() {
-                                              _showImportantMessage = false;
-                                              _importantMessageController
-                                                  .clear();
-                                              _showConfirmationOptions = false;
-                                            });
-                                            controller.disableBlurEffect();
+                                            final message =
+                                                _importantMessageController.text
+                                                    .trim();
+                                            if (message.isNotEmpty) {
+                                              // Final validation before sending
+                                              final wordCount = message
+                                                  .split(RegExp(r'\s+'))
+                                                  .length;
+                                              if (wordCount <= 100) {
+                                                controller.sendImportantMessage(
+                                                    message);
+                                                setState(() {
+                                                  _showImportantMessage = false;
+                                                  _importantMessageController
+                                                      .clear();
+                                                  _showConfirmationOptions =
+                                                      false;
+                                                });
+                                                controller.disableBlurEffect();
+                                              } else {
+                                                Get.snackbar(
+                                                  'Message Too Long',
+                                                  'Please keep your message under 100 words',
+                                                  backgroundColor: Colors.red,
+                                                  colorText: Colors.white,
+                                                  duration: const Duration(
+                                                      seconds: 2),
+                                                );
+                                              }
+                                            }
                                           },
                                           child: Container(
                                             height: 52,
@@ -632,17 +679,36 @@ class _MessageScreenState extends State<MessageScreen> {
                                         // Send as normal message (No button)
                                         GestureDetector(
                                           onTap: () {
-                                            controller.sendNormalMessage(
-                                              _importantMessageController.text
-                                                  .trim(),
-                                            );
-                                            setState(() {
-                                              _showImportantMessage = false;
-                                              _importantMessageController
-                                                  .clear();
-                                              _showConfirmationOptions = false;
-                                            });
-                                            controller.disableBlurEffect();
+                                            final message =
+                                                _importantMessageController.text
+                                                    .trim();
+                                            if (message.isNotEmpty) {
+                                              // Final validation before sending
+                                              final wordCount = message
+                                                  .split(RegExp(r'\s+'))
+                                                  .length;
+                                              if (wordCount <= 100) {
+                                                controller
+                                                    .sendNormalMessage(message);
+                                                setState(() {
+                                                  _showImportantMessage = false;
+                                                  _importantMessageController
+                                                      .clear();
+                                                  _showConfirmationOptions =
+                                                      false;
+                                                });
+                                                controller.disableBlurEffect();
+                                              } else {
+                                                Get.snackbar(
+                                                  'Message Too Long',
+                                                  'Please keep your message under 100 words',
+                                                  backgroundColor: Colors.red,
+                                                  colorText: Colors.white,
+                                                  duration: const Duration(
+                                                      seconds: 2),
+                                                );
+                                              }
+                                            }
                                           },
                                           child: Container(
                                             height: 52,
@@ -802,29 +868,63 @@ class _MessageScreenState extends State<MessageScreen> {
                                       mainAxisAlignment:
                                           MainAxisAlignment.center,
                                       children: [
-                                        TextField(
-                                          controller: _searchController,
-                                          autofocus: true,
-                                          decoration: InputDecoration(
-                                            hintText:
-                                                'Try searching the relevant keyword',
-                                            hintStyle: const TextStyle(
-                                                color: Color(0xFF797C7B),
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.w300),
-                                            prefixIcon:
-                                                Image.asset(KImages.searchIcon),
-                                            border: InputBorder.none,
-                                            contentPadding:
-                                                EdgeInsets.symmetric(
-                                                    horizontal: 20,
-                                                    vertical: 15),
-                                          ),
-                                          onChanged: (value) {
-                                            setState(() {});
-                                          },
-                                          onSubmitted: (_) => _performSearch(),
-                                        ),
+                                        Obx(() => TextField(
+                                              controller: _searchController,
+                                              autofocus: true,
+                                              onChanged: (value) =>
+                                                  _updateSearchText(value),
+                                              decoration: InputDecoration(
+                                                hintText:
+                                                    'Try searching the relevant keyword',
+                                                hintStyle: const TextStyle(
+                                                    color: Color(0xFF797C7B),
+                                                    fontSize: 14,
+                                                    fontWeight:
+                                                        FontWeight.w300),
+                                                prefixIcon: controller
+                                                        .isSearching.value
+                                                    ? SizedBox(
+                                                        width: 20,
+                                                        height: 20,
+                                                        child: Padding(
+                                                          padding:
+                                                              EdgeInsets.all(
+                                                                  12),
+                                                          child:
+                                                              CircularProgressIndicator(
+                                                            strokeWidth: 2,
+                                                            valueColor:
+                                                                AlwaysStoppedAnimation<
+                                                                    Color>(
+                                                              Color(0xFF172B75),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      )
+                                                    : Image.asset(
+                                                        KImages.searchIcon,
+                                                        color:
+                                                            Color(0xFF172B75),
+                                                      ),
+                                                suffixIcon: _searchController
+                                                        .text.isNotEmpty
+                                                    ? IconButton(
+                                                        icon: Icon(
+                                                          Icons.clear,
+                                                          color:
+                                                              Color(0xFF172B75),
+                                                        ),
+                                                        onPressed: () =>
+                                                            _clearSearch(),
+                                                      )
+                                                    : null,
+                                                border: InputBorder.none,
+                                                contentPadding:
+                                                    EdgeInsets.symmetric(
+                                                        horizontal: 20,
+                                                        vertical: 15),
+                                              ),
+                                            )),
                                       ],
                                     ),
                                   ),
@@ -1202,10 +1302,12 @@ class _MessageScreenState extends State<MessageScreen> {
                 // Check if it's a shared article
                 if (message['isSharedArticle'] == true)
                   _buildSharedArticle(message, index)
-                else if (message['isImportantMessage'] == true)
-                  _buildImportantMessage(message, index)
                 else if (message['isHighlightedContent'] == true)
                   _buildHighlightedContent(message, index)
+                else if (message['isSharedEntry'] == true)
+                  _buildSharedEntry(message, index)
+                else if (message['isImportantMessage'] == true)
+                  _buildImportantMessage(message, index)
                 else
                   Padding(
                     padding: const EdgeInsets.only(left: 16.0),
@@ -1401,6 +1503,12 @@ class _MessageScreenState extends State<MessageScreen> {
                 // Check if it's a shared article
                 if (message['isSharedArticle'] == true)
                   _buildOwnSharedArticle(message, index)
+                else if (message['isHighlightedContent'] == true)
+                  _buildOwnHighlightedContent(message, index)
+                else if (message['isSharedEntry'] == true)
+                  _buildOwnSharedEntry(message, index)
+                else if (message['isImportantMessage'] == true)
+                  _buildOwnImportantMessage(message, index)
                 else
                   Container(
                     constraints: BoxConstraints(
@@ -1506,6 +1614,320 @@ class _MessageScreenState extends State<MessageScreen> {
                   ),
                 ),
               ],
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSharedEntry(Map<String, dynamic> message, int index) {
+    final sharedEntry = message['sharedEntry'] ?? {};
+    final title = sharedEntry['title'] ?? 'Shared Entry';
+    final body = sharedEntry['body'] ?? '';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 40.0, bottom: 10),
+          child: Text(
+            'shared entry',
+            style: TextStyle(
+                color: Colors.black, fontSize: 12, fontWeight: FontWeight.w400),
+          ),
+        ),
+        Container(
+          margin: EdgeInsets.only(right: 76, left: 23),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: const Color(0xFF714FC0).withOpacity(0.1),
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(0),
+              topRight: Radius.circular(20),
+              bottomLeft: Radius.circular(20),
+              bottomRight: Radius.circular(20),
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  color: Color(0xFF172B75),
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              if (body.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Text(
+                  body,
+                  style: const TextStyle(
+                    color: Color(0xFF4A4A4A),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
+                  ),
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Text(
+                    'read..',
+                    style: TextStyle(
+                      color: Color(0xFF4A4A4A),
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Text(
+                    'reply',
+                    style: TextStyle(
+                      color: Color(0xFF4A4A4A),
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildOwnImportantMessage(Map<String, dynamic> message, int index) {
+    return Container(
+      constraints: BoxConstraints(
+        maxWidth: MediaQuery.of(context).size.width * 0.75,
+      ),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFFFF),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          // Important header
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: const BoxDecoration(
+              color: Color(0xFFFFC746),
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(16),
+                topRight: Radius.circular(16),
+              ),
+            ),
+            child: Center(
+              child: const Text(
+                'important',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ),
+          ),
+          // Message content
+          const SizedBox(height: 10),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF3F6F6),
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(16),
+                bottomRight: Radius.circular(16),
+              ),
+            ),
+            child: Text(
+              message['message'] ?? '',
+              style: const TextStyle(
+                color: Color(0xFF4A4A4A),
+                fontSize: 12,
+                height: 1,
+                fontWeight: FontWeight.w400,
+              ),
+              softWrap: true,
+              overflow: TextOverflow.visible,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOwnHighlightedContent(Map<String, dynamic> message, int index) {
+    // Get shared entry data if available
+    final sharedEntry = message['sharedEntry'] ?? {};
+    final title =
+        sharedEntry['title'] ?? message['highlightedTitle'] ?? 'Shared Content';
+    final body = sharedEntry['body'] ?? message['highlightedSummary'] ?? '';
+
+    return Container(
+      constraints: BoxConstraints(
+        maxWidth: MediaQuery.of(context).size.width * 0.75,
+      ),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFFFF),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          // Highlighted content header
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: message['highlightedColor'] ?? const Color(0xFF714FC0),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(16),
+                topRight: Radius.circular(16),
+              ),
+            ),
+            child: Center(
+              child: const Text(
+                'highlighted content',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ),
+          ),
+          // Content
+          const SizedBox(height: 10),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: const BoxDecoration(
+              color: Color(0xFFF3F6F6),
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(16),
+                bottomRight: Radius.circular(16),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                // Title
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: Color(0xFF172B75),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.right,
+                  softWrap: true,
+                  overflow: TextOverflow.visible,
+                ),
+                if (body.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  // Summary/Content
+                  Text(
+                    body,
+                    style: const TextStyle(
+                      color: Color(0xFF4A4A4A),
+                      fontWeight: FontWeight.w400,
+                      fontSize: 12,
+                      height: 1.4,
+                    ),
+                    textAlign: TextAlign.right,
+                    softWrap: true,
+                    overflow: TextOverflow.visible,
+                    maxLines: 5, // Limit to 5 lines to prevent excessive height
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOwnSharedEntry(Map<String, dynamic> message, int index) {
+    final sharedEntry = message['sharedEntry'] ?? {};
+    final title = sharedEntry['title'] ?? 'Shared Entry';
+    final body = sharedEntry['body'] ?? '';
+
+    return Container(
+      constraints: BoxConstraints(
+        maxWidth: MediaQuery.of(context).size.width * 0.75,
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF714FC0).withOpacity(0.1),
+        borderRadius: BorderRadius.all(Radius.circular(20)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              color: Color(0xFF172B75),
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+            textAlign: TextAlign.right,
+          ),
+          if (body.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              body,
+              style: const TextStyle(
+                color: Color(0xFF4A4A4A),
+                fontSize: 12,
+                fontWeight: FontWeight.w400,
+              ),
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.right,
+            ),
+          ],
+          const SizedBox(height: 8),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'read..',
+                style: TextStyle(
+                  color: Color(0xFF4A4A4A),
+                  fontSize: 12,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Text(
+                'reply',
+                style: TextStyle(
+                  color: Color(0xFF4A4A4A),
+                  fontSize: 12,
+                ),
+              ),
             ],
           ),
         ],
@@ -1793,6 +2215,12 @@ class _MessageScreenState extends State<MessageScreen> {
   }
 
   Widget _buildHighlightedContent(Map<String, dynamic> message, int index) {
+    // Get shared entry data if available
+    final sharedEntry = message['sharedEntry'] ?? {};
+    final title =
+        sharedEntry['title'] ?? message['highlightedTitle'] ?? 'Shared Content';
+    final body = sharedEntry['body'] ?? message['highlightedSummary'] ?? '';
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16, right: 46),
       decoration: BoxDecoration(
@@ -1843,7 +2271,7 @@ class _MessageScreenState extends State<MessageScreen> {
               children: [
                 // Title
                 Text(
-                  message['highlightedTitle'] ?? '',
+                  title,
                   style: const TextStyle(
                     color: Color(0xFF172B75),
                     fontSize: 12,
@@ -1852,19 +2280,22 @@ class _MessageScreenState extends State<MessageScreen> {
                   softWrap: true,
                   overflow: TextOverflow.visible,
                 ),
-                const SizedBox(height: 12),
-                // Summary
-                Text(
-                  message['highlightedSummary'] ?? '',
-                  style: const TextStyle(
-                    color: Color(0xFF4A4A4A),
-                    fontWeight: FontWeight.w400,
-                    fontSize: 12,
-                    height: 1,
+                if (body.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  // Summary/Content
+                  Text(
+                    body,
+                    style: const TextStyle(
+                      color: Color(0xFF4A4A4A),
+                      fontWeight: FontWeight.w400,
+                      fontSize: 12,
+                      height: 1.4,
+                    ),
+                    softWrap: true,
+                    overflow: TextOverflow.visible,
+                    maxLines: 5, // Limit to 5 lines to prevent excessive height
                   ),
-                  softWrap: true,
-                  overflow: TextOverflow.visible,
-                ),
+                ],
               ],
             ),
           ),
@@ -1874,131 +2305,95 @@ class _MessageScreenState extends State<MessageScreen> {
   }
 
   Widget _buildSearchResults() {
-    final searchQuery = _searchController.text.trim().toLowerCase();
+    return Obx(() {
+      final searchQuery = _searchController.text.trim().toLowerCase();
 
-    // Mock search results - in real app, this would come from API
-    final List<Map<String, String>> mockResults = [
-      {
-        'title': 'Trump Vows Revenge in 2024 Run',
-        'highlight': 'Trump',
-      },
-      {
-        'title': 'Court Delays Trump Sentencing Again',
-        'highlight': 'Trump',
-      },
-      {
-        'title': 'Trump Slams Biden on Economy',
-        'highlight': 'Trump',
-      },
-      {
-        'title': 'Biden Announces New Economic Policy',
-        'highlight': 'Biden',
-      },
-      {
-        'title': 'Biden Meets with World Leaders',
-        'highlight': 'Biden',
-      },
-      {
-        'title': 'Stock Market Reaches New Highs',
-        'highlight': 'Stock',
-      },
-      {
-        'title': 'Stock Trading Volume Increases',
-        'highlight': 'Stock',
-      },
-      {
-        'title': 'Technology Stocks Lead Market Rally',
-        'highlight': 'Technology',
-      },
-    ];
+      // Use real search results from controller
+      final filteredResults = controller.searchResults;
 
-    // Filter results based on search query
-    final filteredResults = mockResults
-        .where((result) => result['title']!.toLowerCase().contains(searchQuery))
-        .toList();
+      if (filteredResults.isEmpty) {
+        return Container(
+          margin: EdgeInsets.only(left: 25, right: 24),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF5F5F5),
+            borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(12),
+              bottomRight: Radius.circular(12),
+            ),
+          ),
+          child: const Column(
+            children: [
+              Icon(
+                Icons.search_off,
+                size: 48,
+                color: Color(0xFF797C7B),
+              ),
+              SizedBox(height: 12),
+              Text(
+                'No results found',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Color(0xFF797C7B),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        );
+      }
 
-    if (filteredResults.isEmpty) {
       return Container(
         margin: EdgeInsets.only(left: 25, right: 24),
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: const Color(0xFFF5F5F5),
+          color: const Color(0xFFFFFFFF),
           borderRadius: BorderRadius.only(
-            bottomLeft: Radius.circular(12),
-            bottomRight: Radius.circular(12),
+            bottomLeft: Radius.circular(5),
+            bottomRight: Radius.circular(5),
           ),
         ),
-        child: const Column(
-          children: [
-            Icon(
-              Icons.search_off,
-              size: 48,
-              color: Color(0xFF797C7B),
-            ),
-            SizedBox(height: 12),
-            Text(
-              'No results found',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Color(0xFF797C7B),
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return Container(
-      margin: EdgeInsets.only(left: 25, right: 24),
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFFFFF),
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(5),
-          bottomRight: Radius.circular(5),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: filteredResults.map((result) {
-          return GestureDetector(
-              onTap: () => _shareContent(result['title']!),
-              child: Container(
-                margin: const EdgeInsets.only(bottom: 12),
-                padding: const EdgeInsets.only(
-                    left: 28, top: 5, bottom: 5, right: 28),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFFFFF),
-                  borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(12),
-                    bottomRight: Radius.circular(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: filteredResults.map((result) {
+            return GestureDetector(
+                onTap: () => _shareEntryContent(result),
+                child: Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.only(
+                      left: 28, top: 5, bottom: 5, right: 28),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFFFFF),
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(12),
+                      bottomRight: Radius.circular(12),
+                    ),
                   ),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: RichText(
-                        text: TextSpan(
-                          style: const TextStyle(
-                            color: Color(0xFF797C7B),
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          children: _buildHighlightedText(
-                            result['title']!,
-                            searchQuery,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: RichText(
+                          text: TextSpan(
+                            style: const TextStyle(
+                              color: Color(0xFF797C7B),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            children: _buildHighlightedText(
+                              result['title'] ?? '',
+                              searchQuery,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ));
-        }).toList(),
-      ),
-    );
+                    ],
+                  ),
+                ));
+          }).toList(),
+        ),
+      );
+    });
   }
 
   List<TextSpan> _buildHighlightedText(String text, String highlight) {
@@ -2047,43 +2442,35 @@ class _MessageScreenState extends State<MessageScreen> {
     return spans;
   }
 
-  void _shareContent(String content) {
-    // TODO: Implement actual sharing functionality
-    // This could integrate with native sharing, social media APIs, etc.
-    Get.snackbar(
-      'Share',
-      'Sharing: $content',
-      backgroundColor: const Color(0xFF714FC0),
-      colorText: Colors.white,
-      duration: const Duration(seconds: 2),
+  void _shareEntryContent(Map<String, dynamic> entry) {
+    final entryId = entry['_id'] ?? '';
+    final title = entry['title'] ?? '';
+
+    // Create a message with the entry title
+    final message = 'Check this out: $title';
+
+    // Share the entry
+    controller.shareEntry(
+      message: message,
+      entryId: entryId,
     );
 
     // Close the search overlay after sharing
     setState(() {
       _showSearchOverlay = false;
       _searchController.clear();
+      controller.searchResults.clear();
     });
   }
 
-  void _performSearch() {
-    final searchQuery = _searchController.text.trim();
-    if (searchQuery.isNotEmpty) {
-      // TODO: Implement actual news article search
-      // This is where you would connect to your news API or database
-      Get.snackbar(
-        'Search',
-        'Searching for: $searchQuery',
-        backgroundColor: const Color(0xFF714FC0),
-        colorText: Colors.white,
-        duration: const Duration(seconds: 2),
-      );
+  void _updateSearchText(String value) {
+    controller.updateSearchText(value);
+    setState(() {});
+  }
 
-      // For now, just show a placeholder
-      // In the future, you would:
-      // 1. Call your news API
-      // 2. Display results
-      // 3. Allow users to select and share articles
-    }
+  void _clearSearch() {
+    _searchController.clear();
+    controller.clearSearch();
   }
 
   // Add this method to calculate dynamic height in steps

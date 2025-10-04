@@ -209,10 +209,11 @@ class WorldAndCultureCommunityScreen
     Get.toNamed(Routes.MESSAGE_SCREEN, arguments: {
       'interestId': topicId, // ✅ This will be used for the API call
       'interestName': topicName, // ✅ This will be shown in header
-      'subCategoryId': topicId,
+      'subCategoryId': topicId, // ✅ Use topicId as subCategoryId for now
       'subCategoryName': topicName,
-      'categoryId': controller.categoryId,
+      'categoryId': controller.categoryId, // ✅ Use categoryId as mainCategoryId
       'categoryName': controller.categoryName,
+      'topicId': topicId, // ✅ Explicitly pass topicId
     });
 
     print('✅ [WORLD & CULTURE COMMUNITY] Navigation initiated with arguments:');

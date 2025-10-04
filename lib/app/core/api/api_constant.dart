@@ -139,10 +139,17 @@ class ApiConstant {
 
   // Message Endpoints
   static const String sendMessage = '$apiVersion/messages';
+  static const String sendImportantMessage = '$apiVersion/messages/important';
+  static const String shareEntry = '$apiVersion/messages/share-entry';
   static String getInterestMessages(String interestId) =>
       '$apiVersion/messages/$interestId'; // GET /api/messages/:interestId
   static String getInterestUserCount(String interestId) =>
       '$apiVersion/user-count/$interestId'; // GET /api/user-count/:interestId
+
+  // Search Endpoints
+  static String searchEntriesInTopic(
+          String mainCategoryId, String subCategoryId, String topicId) =>
+      '$apiVersion/main-category/$mainCategoryId/sub-category/$subCategoryId/topic/$topicId/search';
 
 // User Interest Endpoints (for checking user permissions)
   static String getUserInterests(String userId) =>

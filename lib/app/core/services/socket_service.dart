@@ -24,6 +24,8 @@ class SocketService extends GetxService {
   // Event streams
   final StreamController<Map<String, dynamic>> _messageStream =
       StreamController.broadcast();
+  final StreamController<Map<String, dynamic>> _importantMessageStream =
+      StreamController.broadcast();
   final StreamController<Map<String, dynamic>> _typingStream =
       StreamController.broadcast();
   final StreamController<Map<String, dynamic>> _userJoinedStream =
@@ -55,6 +57,7 @@ class SocketService extends GetxService {
   void onClose() {
     disconnect();
     _messageStream.close();
+    _importantMessageStream.close();
     _typingStream.close();
     _userJoinedStream.close();
     _userLeftStream.close();
@@ -226,6 +229,60 @@ class SocketService extends GetxService {
         messageData = data;
         print(
             '📨 [SOCKET SERVICE] Using direct message data: ${messageData['_id']}');
+      }
+
+      _messageStream.add(messageData);
+    });
+
+    // Important message events
+    _socket!.on('newImportantMessage', (data) {
+      print('🔥 [SOCKET SERVICE] New important message received: $data');
+
+      // Handle different data structures from backend
+      Map<String, dynamic> messageData;
+      if (data['success'] == true && data['message'] != null) {
+        // Backend sends: {success: true, message: {...}}
+        messageData = data['message'];
+        messageData['isImportantMessage'] =
+            true; // Ensure it's marked as important
+        messageData['isImportant'] = true; // Additional flag for consistency
+        print(
+            '🔥 [SOCKET SERVICE] Extracted important message data: ${messageData['_id']}');
+      } else {
+        // Backend sends message data directly
+        messageData = data;
+        messageData['isImportantMessage'] =
+            true; // Ensure it's marked as important
+        messageData['isImportant'] = true; // Additional flag for consistency
+        print(
+            '🔥 [SOCKET SERVICE] Using direct important message data: ${messageData['_id']}');
+      }
+
+      // Send to both streams for compatibility
+      _importantMessageStream.add(messageData);
+      _messageStream.add(messageData);
+    });
+
+    // Shared entry events
+    _socket!.on('newSharedEntry', (data) {
+      print('📚 [SOCKET SERVICE] New shared entry received: $data');
+
+      // Handle different data structures from backend
+      Map<String, dynamic> messageData;
+      if (data['success'] == true && data['message'] != null) {
+        // Backend sends: {success: true, message: {...}}
+        messageData = data['message'];
+        messageData['isSharedEntry'] =
+            true; // Ensure it's marked as shared entry
+        print(
+            '📚 [SOCKET SERVICE] Extracted shared entry data: ${messageData['_id']}');
+      } else {
+        // Backend sends message data directly
+        messageData = data;
+        messageData['isSharedEntry'] =
+            true; // Ensure it's marked as shared entry
+        print(
+            '📚 [SOCKET SERVICE] Using direct shared entry data: ${messageData['_id']}');
       }
 
       _messageStream.add(messageData);
@@ -423,6 +480,8 @@ class SocketService extends GetxService {
 
   // Stream getters for external listeners
   Stream<Map<String, dynamic>> get messageStream => _messageStream.stream;
+  Stream<Map<String, dynamic>> get importantMessageStream =>
+      _importantMessageStream.stream;
   Stream<Map<String, dynamic>> get typingStream => _typingStream.stream;
   Stream<Map<String, dynamic>> get userJoinedStream => _userJoinedStream.stream;
   Stream<Map<String, dynamic>> get userLeftStream => _userLeftStream.stream;

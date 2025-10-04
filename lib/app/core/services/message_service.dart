@@ -245,6 +245,95 @@ class MessageService extends GetxService {
     }
   }
 
+  /// Send an important message to an interest group
+  Future<Map<String, dynamic>> sendImportantMessage({
+    required String interestId,
+    required String message,
+  }) async {
+    try {
+      isLoading.value = true;
+
+      print('🔥 [MESSAGE SERVICE] Sending important message via REST API');
+      print(
+          '🔥 [MESSAGE SERVICE] API URL: ${ApiConstant.sendImportantMessage}');
+      print(
+          '🔥 [MESSAGE SERVICE] Request data: {interestId: $interestId, message: $message}');
+
+      final response = await _apiClient.post(
+        ApiConstant.sendImportantMessage,
+        data: {
+          'interestId': interestId,
+          'message': message,
+        },
+      );
+
+      print(
+          '🔥 [MESSAGE SERVICE] Important message response status: ${response.statusCode}');
+      print(
+          '🔥 [MESSAGE SERVICE] Important message response data: ${response.data}');
+
+      if (response.statusCode == 201) {
+        final apiResponse = ApiResponse.fromJson(response.data, (data) => data);
+        if (apiResponse.success) {
+          // Transform the important message
+          final transformedMessage =
+              _transformImportantMessage(apiResponse.data);
+
+          // Add to messages list
+          messages.add(transformedMessage);
+          totalMessages.value++;
+
+          print('✅ [MESSAGE SERVICE] Important message sent successfully');
+          return transformedMessage;
+        } else {
+          throw ApiException(apiResponse.message);
+        }
+      } else {
+        // Surface backend message if available
+        try {
+          final apiResponse =
+              ApiResponse.fromJson(response.data, (data) => data);
+          final serverMessage = apiResponse.message.isNotEmpty
+              ? apiResponse.message
+              : 'Failed to send important message';
+          throw ApiException(serverMessage);
+        } catch (_) {
+          throw ApiException('Failed to send important message');
+        }
+      }
+    } catch (e) {
+      print('❌ [MESSAGE SERVICE] Error sending important message: $e');
+
+      // Enhanced error handling for important messages
+      String errorMessage = 'Failed to send important message';
+
+      if (e is ApiException) {
+        errorMessage = e.message;
+      } else if (e.toString().contains('SocketException')) {
+        errorMessage =
+            'Network connection failed. Please check your internet connection.';
+      } else if (e.toString().contains('TimeoutException')) {
+        errorMessage = 'Request timed out. Please try again.';
+      } else if (e.toString().contains('FormatException')) {
+        errorMessage = 'Invalid data format received from server.';
+      } else if (e.toString().contains('User not authenticated')) {
+        errorMessage = 'Authentication failed. Please log in again.';
+      } else if (e.toString().contains('not a member')) {
+        errorMessage = 'You are not a member of this interest group.';
+      } else if (e.toString().contains('Interest not found')) {
+        errorMessage = 'This interest group no longer exists.';
+      } else if (e.toString().contains('message are required')) {
+        errorMessage = 'Message content is required.';
+      } else if (e.toString().contains('Server error')) {
+        errorMessage = 'Server error occurred. Please try again later.';
+      }
+
+      throw ApiException(errorMessage);
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   // Get messages for an interest with pagination
   Future<List<Map<String, dynamic>>> getInterestMessages({
     required String interestId,
@@ -361,6 +450,15 @@ class MessageService extends GetxService {
         'isOwnMessage': _isOwnMessage(user['_id']),
         'avatarColor': _getAvatarColor(user['_id']),
         'interestName': interest['name'] ?? 'Unknown Interest',
+        'isImportantMessage':
+            apiMessage['isImportant'] == true, // Check backend flag
+        'isImportant': apiMessage['isImportant'] ==
+            true, // Additional flag for consistency
+        'isSharedEntry':
+            apiMessage['sharedEntry'] != null, // Check if it's a shared entry
+        'isHighlightedContent': apiMessage['sharedEntry'] !=
+            null, // Also mark as highlighted content if it's a shared entry
+        'sharedEntry': apiMessage['sharedEntry'], // Include shared entry data
       };
     } catch (e) {
       print('❌ [MESSAGE SERVICE] Error transforming message: $e');
@@ -375,6 +473,98 @@ class MessageService extends GetxService {
         'isOwnMessage': false,
         'avatarColor': const Color(0xFF9E9E9E),
         'interestName': 'Unknown Interest',
+        'isImportantMessage': false,
+        'isImportant': false,
+        'isSharedEntry': false,
+        'sharedEntry': null,
+      };
+    }
+  }
+
+  // Transform important message from API to UI format
+  Map<String, dynamic> _transformImportantMessage(
+      Map<String, dynamic> apiMessage) {
+    try {
+      final user = apiMessage['userId'] ?? {};
+      final interest = apiMessage['interestId'] ?? {};
+
+      return {
+        'id': apiMessage['_id'] ?? '',
+        'message': apiMessage['message'] ?? '',
+        'sender': user['name'] ??
+            '${user['firstName'] ?? ''} ${user['lastName'] ?? ''}'.trim(),
+        'timestamp': apiMessage['createdAt'] ?? '',
+        'isOwnMessage': _isOwnMessage(user['_id']),
+        'avatarColor': _getAvatarColor(user['_id']),
+        'interestName': interest['name'] ?? 'Unknown Interest',
+        'isImportantMessage': true, // Mark as important message
+        'isImportant': true, // Additional flag for consistency
+      };
+    } catch (e) {
+      print('❌ [MESSAGE SERVICE] Error transforming important message: $e');
+      print('❌ [MESSAGE SERVICE] Message data: $apiMessage');
+
+      // Return a safe fallback message
+      return {
+        'id': apiMessage['_id']?.toString() ?? 'unknown',
+        'message': apiMessage['message']?.toString() ??
+            'Error loading important message',
+        'sender': 'Unknown User',
+        'timestamp': DateTime.now().toIso8601String(),
+        'isOwnMessage': false,
+        'avatarColor': const Color(0xFF9E9E9E),
+        'interestName': 'Unknown Interest',
+        'isImportantMessage': true,
+        'isImportant': true,
+      };
+    }
+  }
+
+  // Transform shared entry message from API to UI format
+  Map<String, dynamic> _transformSharedEntryMessage(
+      Map<String, dynamic> apiMessage) {
+    try {
+      final user = apiMessage['userId'] ?? {};
+      final interest = apiMessage['interestId'] ?? {};
+      final sharedEntry = apiMessage['sharedEntry'] ?? {};
+
+      return {
+        'id': apiMessage['_id'] ?? '',
+        'message': apiMessage['message'] ?? '',
+        'sender': user['name'] ??
+            '${user['firstName'] ?? ''} ${user['lastName'] ?? ''}'.trim(),
+        'timestamp': apiMessage['createdAt'] ?? '',
+        'isOwnMessage': _isOwnMessage(user['_id']),
+        'avatarColor': _getAvatarColor(user['_id']),
+        'interestName': interest['name'] ?? 'Unknown Interest',
+        'isSharedEntry': true, // Mark as shared entry
+        'isHighlightedContent':
+            true, // Also mark as highlighted content for display
+        'sharedEntry': {
+          'mainCategoryId': sharedEntry['mainCategoryId'],
+          'subCategoryId': sharedEntry['subCategoryId'],
+          'topicId': sharedEntry['topicId'],
+          'entryId': sharedEntry['entryId'],
+          'title': sharedEntry['title'],
+          'body': sharedEntry['body'],
+        },
+      };
+    } catch (e) {
+      print('❌ [MESSAGE SERVICE] Error transforming shared entry message: $e');
+      print('❌ [MESSAGE SERVICE] Message data: $apiMessage');
+
+      // Return a safe fallback message
+      return {
+        'id': apiMessage['_id']?.toString() ?? 'unknown',
+        'message':
+            apiMessage['message']?.toString() ?? 'Error loading shared entry',
+        'sender': 'Unknown User',
+        'timestamp': DateTime.now().toIso8601String(),
+        'isOwnMessage': false,
+        'avatarColor': const Color(0xFF9E9E9E),
+        'interestName': 'Unknown Interest',
+        'isSharedEntry': true,
+        'sharedEntry': {},
       };
     }
   }
@@ -407,6 +597,143 @@ class MessageService extends GetxService {
 
     final hash = userId.hashCode;
     return colors[hash.abs() % colors.length];
+  }
+
+  /// Search entries in a specific topic
+  Future<List<Map<String, dynamic>>> searchEntriesInTopic({
+    required String mainCategoryId,
+    required String subCategoryId,
+    required String topicId,
+    required String query,
+    int page = 1,
+    int limit = 10,
+  }) async {
+    try {
+      print('🔍 [MESSAGE SERVICE] Searching entries in topic');
+      print('🔍 [MESSAGE SERVICE] Query: $query');
+      print('🔍 [MESSAGE SERVICE] Topic: $topicId');
+
+      final response = await _apiClient.get(
+        '${ApiConstant.searchEntriesInTopic(mainCategoryId, subCategoryId, topicId)}?query=${Uri.encodeComponent(query)}&page=$page&limit=$limit',
+      );
+
+      print(
+          '🔍 [MESSAGE SERVICE] Search response status: ${response.statusCode}');
+      print('🔍 [MESSAGE SERVICE] Search response data: ${response.data}');
+
+      if (response.statusCode == 200) {
+        final apiResponse = ApiResponse.fromJson(response.data, (data) => data);
+        if (apiResponse.success) {
+          final data = apiResponse.data;
+          final results =
+              List<Map<String, dynamic>>.from(data['results'] ?? []);
+
+          print('✅ [MESSAGE SERVICE] Found ${results.length} search results');
+          return results;
+        } else {
+          throw ApiException(apiResponse.message);
+        }
+      } else {
+        throw ApiException('Failed to search entries');
+      }
+    } catch (e) {
+      print('❌ [MESSAGE SERVICE] Error searching entries: $e');
+      throw ApiException('Failed to search entries: ${e.toString()}');
+    }
+  }
+
+  /// Share an entry as a message
+  Future<Map<String, dynamic>> shareEntry({
+    required String interestId,
+    required String message,
+    required String mainCategoryId,
+    required String subCategoryId,
+    required String topicId,
+    required String entryId,
+  }) async {
+    try {
+      isLoading.value = true;
+
+      print('📤 [MESSAGE SERVICE] Sharing entry via REST API');
+      print('📤 [MESSAGE SERVICE] API URL: ${ApiConstant.shareEntry}');
+      print('📤 [MESSAGE SERVICE] Entry ID: $entryId');
+
+      final response = await _apiClient.post(
+        ApiConstant.shareEntry,
+        data: {
+          'interestId': interestId,
+          'message': message,
+          'mainCategoryId': mainCategoryId,
+          'subCategoryId': subCategoryId,
+          'topicId': topicId,
+          'entryId': entryId,
+        },
+      );
+
+      print(
+          '📤 [MESSAGE SERVICE] Share entry response status: ${response.statusCode}');
+      print('📤 [MESSAGE SERVICE] Share entry response data: ${response.data}');
+
+      if (response.statusCode == 201) {
+        final apiResponse = ApiResponse.fromJson(response.data, (data) => data);
+        if (apiResponse.success) {
+          // Transform the shared entry message
+          final transformedMessage =
+              _transformSharedEntryMessage(apiResponse.data);
+
+          // Add to messages list
+          messages.add(transformedMessage);
+          totalMessages.value++;
+
+          print('✅ [MESSAGE SERVICE] Entry shared successfully');
+          return transformedMessage;
+        } else {
+          throw ApiException(apiResponse.message);
+        }
+      } else {
+        // Surface backend message if available
+        try {
+          final apiResponse =
+              ApiResponse.fromJson(response.data, (data) => data);
+          final serverMessage = apiResponse.message.isNotEmpty
+              ? apiResponse.message
+              : 'Failed to share entry';
+          throw ApiException(serverMessage);
+        } catch (_) {
+          throw ApiException('Failed to share entry');
+        }
+      }
+    } catch (e) {
+      print('❌ [MESSAGE SERVICE] Error sharing entry: $e');
+
+      // Enhanced error handling for entry sharing
+      String errorMessage = 'Failed to share entry';
+
+      if (e is ApiException) {
+        errorMessage = e.message;
+      } else if (e.toString().contains('SocketException')) {
+        errorMessage =
+            'Network connection failed. Please check your internet connection.';
+      } else if (e.toString().contains('TimeoutException')) {
+        errorMessage = 'Request timed out. Please try again.';
+      } else if (e.toString().contains('User not authenticated')) {
+        errorMessage = 'Authentication failed. Please log in again.';
+      } else if (e.toString().contains('not a member')) {
+        errorMessage = 'You are not a member of this interest group.';
+      } else if (e.toString().contains('Interest not found')) {
+        errorMessage = 'This interest group no longer exists.';
+      } else if (e.toString().contains('Entry not found')) {
+        errorMessage = 'The selected entry no longer exists.';
+      } else if (e.toString().contains('Topic not found')) {
+        errorMessage = 'The selected topic no longer exists.';
+      } else if (e.toString().contains('Main category not found')) {
+        errorMessage = 'The selected category no longer exists.';
+      }
+
+      throw ApiException(errorMessage);
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   // Clear messages
