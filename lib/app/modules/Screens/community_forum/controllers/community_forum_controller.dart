@@ -90,16 +90,6 @@ class CommunityForumController extends GetxController {
           this.subCategories.assignAll(subCategories);
           print(
               '✅ CommunityForum - Subcategories loaded: ${this.subCategories.length}');
-
-          // Show success message
-          Get.snackbar(
-            'Success',
-            'Loaded ${this.subCategories.length} community subcategories',
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.green,
-            colorText: Colors.white,
-            duration: Duration(seconds: 2),
-          );
         } else {
           print('⚠️ CommunityForum - No subcategories found for this category');
           print('📋 CommunityForum - Category Name: $categoryName');
@@ -434,17 +424,6 @@ class CommunityForumController extends GetxController {
           this.subCategories.assignAll(subCategories);
           print(
               '✅ CommunityForum - Community data loaded successfully: ${this.subCategories.length} subcategories');
-
-          // Show success message with metadata
-          Get.snackbar(
-            'Community Loaded',
-            'Loaded ${this.subCategories.length} communities successfully',
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.green,
-            colorText: Colors.white,
-            duration: Duration(seconds: 2),
-            icon: Icon(Icons.check_circle, color: Colors.white),
-          );
         } else {
           print('⚠️ CommunityForum - No subcategories found in community data');
           Get.snackbar(

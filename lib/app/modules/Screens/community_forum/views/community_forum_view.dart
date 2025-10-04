@@ -102,12 +102,12 @@ class CommunityForumView extends GetView<CommunityForumController> {
                             ),
                           ),
                           Positioned(
-                            top: 15,
-                            right: 25,
+                            top: -10,
+                            right: 35,
                             child: Image.asset(
                               'assets/images/findYourTribe.png',
-                              height: 169,
-                              width: 129,
+                              height: 200,
+                              width: 170,
                               fit: BoxFit.contain,
                             ),
                           ),
@@ -521,7 +521,7 @@ class CommunityForumView extends GetView<CommunityForumController> {
           width: ScreenUtils.width * 0.73,
           height: ScreenUtils.height * 0.4,
           padding: EdgeInsets.only(
-              top: topHeight, left: 22, right: 22, bottom: bottomHeight),
+              top: topHeight, left: 55, right: 55, bottom: bottomHeight),
           decoration: BoxDecoration(
             color: Color(0xFF3E9292),
             borderRadius: BorderRadius.circular(20),
@@ -537,7 +537,7 @@ class CommunityForumView extends GetView<CommunityForumController> {
               const Spacer(),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text("know more",
                       textAlign: TextAlign.end,

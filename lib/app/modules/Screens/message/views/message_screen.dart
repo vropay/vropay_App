@@ -54,801 +54,758 @@ class _MessageScreenState extends State<MessageScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: const Color(0xFFFFFFFF),
-        body: Stack(
-          children: [
-            CustomScrollView(
-              controller: _scrollController,
-              slivers: [
-                // SliverAppBar with blur effect
-                Obx(() => SliverAppBar(
-                      expandedHeight: 0,
-                      floating: false,
-                      pinned: true,
-                      toolbarHeight: kToolbarHeight,
-                      collapsedHeight: kToolbarHeight,
-                      backgroundColor: controller.isImportantIconPressed.value
-                          ? Colors.grey.withOpacity(0.1)
-                          : Colors.white,
-                      elevation: 0,
-                      surfaceTintColor: Colors.transparent,
-                      shadowColor: Colors.transparent,
-                      flexibleSpace: null,
-                      leading: IconButton(
-                        onPressed: () {
-                          Get.back();
-                        },
-                        icon: Padding(
-                          padding: const EdgeInsets.only(left: 10),
-                          child: BackIcon(isInsideButton: true),
+      backgroundColor: const Color(0xFFFFFFFF),
+      body: Stack(
+        children: [
+          CustomScrollView(
+            controller: _scrollController,
+            slivers: [
+              // SliverAppBar with blur effect
+              Obx(() => SliverAppBar(
+                    expandedHeight: 0,
+                    floating: false,
+                    pinned: true,
+                    toolbarHeight: kToolbarHeight,
+                    collapsedHeight: kToolbarHeight,
+                    backgroundColor: controller.isImportantIconPressed.value
+                        ? Colors.grey.withOpacity(0.1)
+                        : Colors.white,
+                    elevation: 0,
+                    surfaceTintColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    flexibleSpace: null,
+                    leading: IconButton(
+                      onPressed: () {
+                        Get.back();
+                      },
+                      icon: Padding(
+                        padding: const EdgeInsets.only(left: 10),
+                        child: BackIcon(isInsideButton: true),
+                      ),
+                    ),
+                    leadingWidth: 48,
+                    title: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Flexible(
+                          flex: 3,
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              controller.interestName.value,
+                              style: TextStyle(
+                                fontSize: 50,
+                                color: const Color(0xFFCC415D),
+                                fontWeight: FontWeight.w300,
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
-                      leadingWidth: 48,
-                      title: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Text(
-                            controller.interestName.value,
-                            style: TextStyle(
-                              fontSize: 22,
-                              color: const Color(0xFFCC415D),
-                              fontWeight: FontWeight.w300,
-                            ),
+                        SizedBox(width: ScreenUtils.width * 0.02),
+                        Text(
+                          "${controller.memberCount.value} members",
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: const Color(0xFF616161),
+                            fontWeight: FontWeight.w500,
                           ),
-                          SizedBox(width: ScreenUtils.width * 0.02),
-                          Text(
-                            "${controller.memberCount.value} members",
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: const Color(0xFF616161),
-                              fontWeight: FontWeight.w500,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ),
-                      actions: [
-                        Obx(() => controller.canSendMessages.value
-                            ? Padding(
-                                padding:
-                                    const EdgeInsets.only(right: 20.0, top: 15),
-                                child: GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      _showSearchOverlay = true;
-                                    });
-                                  },
-                                  child: Container(
-                                    width: 30,
-                                    height: 30,
-                                    decoration: const BoxDecoration(
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: CustomPaint(
-                                      painter: _DottedCirclePainter(),
-                                      child: const Center(
-                                        child: Icon(
-                                          Icons.add,
-                                          size: 20,
-                                          color: Color(0xFF714FC0),
-                                        ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                    actions: [
+                      Obx(() => controller.canSendMessages.value
+                          ? Padding(
+                              padding:
+                                  const EdgeInsets.only(right: 20.0, top: 10),
+                              child: GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    _showSearchOverlay = true;
+                                  });
+                                },
+                                child: Container(
+                                  width: 30,
+                                  height: 30,
+                                  decoration: const BoxDecoration(
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: CustomPaint(
+                                    painter: _DottedCirclePainter(),
+                                    child: const Center(
+                                      child: Icon(
+                                        Icons.add,
+                                        size: 20,
+                                        color: Color(0xFF714FC0),
                                       ),
                                     ),
                                   ),
                                 ),
-                              )
-                            : const SizedBox.shrink()),
-                        Obx(() => controller.canSendMessages.value
-                            ? Padding(
-                                padding:
-                                    const EdgeInsets.only(right: 29.0, top: 15),
-                                child: GestureDetector(
-                                  onTap: () {
-                                    controller.toggleBlurEffect();
-                                    setState(() {
-                                      _showImportantMessage = true;
-                                    });
-                                  },
-                                  child: Obx(() =>
-                                      controller.isImportantIconPressed.value
-                                          ? Container(
-                                              padding: const EdgeInsets.all(4),
-                                              decoration: BoxDecoration(
-                                                color: Colors.white,
-                                                borderRadius:
-                                                    BorderRadius.circular(8),
-                                                boxShadow: [
-                                                  BoxShadow(
-                                                    color: Colors.black
-                                                        .withOpacity(0.1),
-                                                    blurRadius: 4,
-                                                    offset: const Offset(0, 2),
-                                                  ),
-                                                ],
-                                              ),
-                                              child: Image.asset(
-                                                KImages.importantIcon,
-                                                height: 30,
-                                              ),
-                                            )
-                                          : Image.asset(
+                              ),
+                            )
+                          : const SizedBox.shrink()),
+                      Obx(() => controller.canSendMessages.value
+                          ? Padding(
+                              padding:
+                                  const EdgeInsets.only(right: 29.0, top: 10),
+                              child: GestureDetector(
+                                onTap: () {
+                                  controller.toggleBlurEffect();
+                                  setState(() {
+                                    _showImportantMessage = true;
+                                  });
+                                },
+                                child: Obx(() =>
+                                    controller.isImportantIconPressed.value
+                                        ? Container(
+                                            padding: const EdgeInsets.all(4),
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Colors.black
+                                                      .withOpacity(0.1),
+                                                  blurRadius: 4,
+                                                  offset: const Offset(0, 2),
+                                                ),
+                                              ],
+                                            ),
+                                            child: Image.asset(
                                               KImages.importantIcon,
                                               height: 30,
-                                            )),
-                                ),
-                              )
-                            : const SizedBox.shrink())
-                      ],
-                    )),
-
-                // Divider
-                SliverToBoxAdapter(
-                  child: const Divider(
-                    endIndent: 20,
-                    indent: 20,
-                    color: Color(0xFF01B3B2),
-                  ),
-                ),
-                // Loading indicator
-                Obx(() => controller.isLoading.value
-                    ? SliverToBoxAdapter(
-                        child: Container(
-                          padding: const EdgeInsets.all(20),
-                          child: const Center(
-                            child: CircularProgressIndicator(
-                              color: Color(0xFF714FC0),
-                            ),
-                          ),
-                        ),
-                      )
-                    : const SliverToBoxAdapter(child: SizedBox.shrink())),
-
-                // Reply indicator
-                SliverToBoxAdapter(
-                  child: Obx(() => controller.replyToMessage.value != null
-                      ? _buildReplyIndicator()
-                      : const SizedBox.shrink()),
-                ),
-
-                // Chat messages (efficient reactive list)
-                Obx(() {
-                  final messages = controller.messages;
-                  return SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final message = messages[index];
-                        if (message['isOwnMessage'] == true) {
-                          return Padding(
-                            padding: const EdgeInsets.only(
-                              top: 8,
-                              right: 16,
-                              left: 16, // Minimal left margin
-                            ),
-                            child: _buildOwnMessage(message, index),
-                          );
-                        } else {
-                          return Padding(
-                            padding: const EdgeInsets.only(
-                              left: 16,
-                              right: 16, // Minimal right margin
-                              top: 8,
-                            ),
-                            child: _buildMessageItem(message, index),
-                          );
-                        }
-                      },
-                      childCount: messages.length,
-                    ),
-                  );
-                }),
-                // Typing indicator
-                Obx(() => controller.typingUsersText.value.isNotEmpty
-                    ? SliverToBoxAdapter(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 8,
-                          ),
-                          child: Row(
-                            children: [
-                              const SizedBox(width: 8),
-                              Container(
-                                width: 8,
-                                height: 8,
-                                decoration: const BoxDecoration(
-                                  color: Color(0xFF9E9E9E),
-                                  shape: BoxShape.circle,
-                                ),
+                                            ),
+                                          )
+                                        : Image.asset(
+                                            KImages.importantIcon,
+                                            height: 30,
+                                          )),
                               ),
-                              const SizedBox(width: 8),
-                              Text(
-                                controller.typingUsersText.value,
-                                style: const TextStyle(
-                                  color: Color(0xFF9E9E9E),
-                                  fontSize: 14,
-                                  fontStyle: FontStyle.italic,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      )
-                    : const SliverToBoxAdapter(child: SizedBox.shrink())),
-                // Load more button
-                SliverToBoxAdapter(
-                  child: Obx(() => controller.hasNextPage
-                      ? Container(
-                          padding: const EdgeInsets.all(16),
-                          child: Center(
-                            child: ElevatedButton(
-                              onPressed: () => controller.loadMoreMessages(),
-                              child: const Text('Load More Messages'),
-                            ),
-                          ),
-                        )
-                      : const SizedBox.shrink()),
-                ),
+                            )
+                          : const SizedBox.shrink())
+                    ],
+                  )),
 
-                // Bottom padding to prevent messages from being hidden behind input field
-                SliverToBoxAdapter(
-                  child: SizedBox(
-                      height: 120), // Space for message input + quick replies
+              // Divider
+              SliverToBoxAdapter(
+                child: const Divider(
+                  endIndent: 20,
+                  indent: 20,
+                  color: Color(0xFF01B3B2),
                 ),
-              ],
-            ),
-
-            // Fixed Message Input Area at Bottom
-            Obx(
-              () => controller.canSendMessages.value
-                  ? Positioned(
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
+              ),
+              // Loading indicator
+              Obx(() => controller.isLoading.value
+                  ? SliverToBoxAdapter(
                       child: Container(
-                        color: Colors.white,
-                        padding: EdgeInsets.only(
-                          bottom: MediaQuery.of(context).padding.bottom,
-                          top: 8,
+                        padding: const EdgeInsets.all(20),
+                        child: const Center(
+                          child: CircularProgressIndicator(
+                            color: Color(0xFF714FC0),
+                          ),
                         ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
+                      ),
+                    )
+                  : const SliverToBoxAdapter(child: SizedBox.shrink())),
+
+              // Reply indicator
+              SliverToBoxAdapter(
+                child: Obx(() => controller.replyToMessage.value != null
+                    ? _buildReplyIndicator()
+                    : const SizedBox.shrink()),
+              ),
+
+              // Chat messages (efficient reactive list)
+              Obx(() {
+                final messages = controller.messages;
+                return SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final message = messages[index];
+                      if (message['isOwnMessage'] == true) {
+                        return Padding(
+                          padding: const EdgeInsets.only(
+                            top: 8,
+                            right: 16,
+                            left: 16, // Minimal left margin
+                          ),
+                          child: _buildOwnMessage(message, index),
+                        );
+                      } else {
+                        return Padding(
+                          padding: const EdgeInsets.only(
+                            left: 16,
+                            right: 16, // Minimal right margin
+                            top: 8,
+                          ),
+                          child: _buildMessageItem(message, index),
+                        );
+                      }
+                    },
+                    childCount: messages.length,
+                  ),
+                );
+              }),
+              // Typing indicator
+              Obx(() => controller.typingUsersText.value.isNotEmpty
+                  ? SliverToBoxAdapter(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 8,
+                        ),
+                        child: Row(
                           children: [
-                            Divider(
-                              color: Color(0xFF01B3B2).withOpacity(0.5),
+                            const SizedBox(width: 8),
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFF9E9E9E),
+                                shape: BoxShape.circle,
+                              ),
                             ),
-                            // Quick reply buttons above message input
-                            Obx(() => _showQuickReplies.value
-                                ? _buildQuickReplyButtons()
-                                : const SizedBox.shrink()),
-                            // Message input field
-                            Padding(
-                              padding:
-                                  const EdgeInsets.only(left: 10, right: 10),
-                              child: _buildMessageInput(),
+                            const SizedBox(width: 8),
+                            Text(
+                              controller.typingUsersText.value,
+                              style: const TextStyle(
+                                color: Color(0xFF9E9E9E),
+                                fontSize: 14,
+                                fontStyle: FontStyle.italic,
+                              ),
                             ),
                           ],
                         ),
                       ),
                     )
-                  : const SizedBox.shrink(),
-            ),
-
-            // Important Message Overlay
-            if (_showImportantMessage && controller.canSendMessages.value)
-              Positioned.fill(
-                child: Stack(
-                  children: [
-                    // Blur overlay for entire background
-                    Positioned.fill(
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 8.0, sigmaY: 8.0),
-                        child: Container(
-                          color: Colors.black.withValues(alpha: 0.3),
+                  : const SliverToBoxAdapter(child: SizedBox.shrink())),
+              // Load more button
+              SliverToBoxAdapter(
+                child: Obx(() => controller.hasNextPage
+                    ? Container(
+                        padding: const EdgeInsets.all(16),
+                        child: Center(
+                          child: ElevatedButton(
+                            onPressed: () => controller.loadMoreMessages(),
+                            child: const Text('Load More Messages'),
+                          ),
                         ),
-                      ),
-                    ),
-                    // Important Message Overlay - Simple Input Popup
-                    Positioned(
-                      top: kToolbarHeight,
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      child: Stack(
-                        children: [
-                          // Full screen gesture detector to dismiss on outside tap
-                          Positioned.fill(
-                            child: GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  _showImportantMessage = false;
-                                  _importantMessageController.clear();
-                                  _showConfirmationOptions = false;
-                                });
-                                controller.disableBlurEffect();
-                              },
-                              behavior: HitTestBehavior.translucent,
-                            ),
-                          ),
-                          Positioned(
-                            top: 50,
-                            right: 20,
-                            child: Image.asset(
-                              KImages.importantIcon,
-                              height: 50,
-                            ),
-                          ),
-                          // Popup content positioned on top
-                          Positioned(
-                            top: 100,
-                            right: 50,
-                            child: GestureDetector(
-                              onTap: () {},
-                              child: Container(
-                                width: ScreenUtils.width * 0.7,
-                                decoration: BoxDecoration(
-                                  color: Colors.transparent,
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    // Header
-                                    Container(
-                                      height: ScreenUtils.height * 0.06,
-                                      width: ScreenUtils.width * 0.7,
-                                      padding: const EdgeInsets.all(10),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFFFFFFFF),
-                                        borderRadius: const BorderRadius.only(
-                                          topLeft: Radius.circular(16),
-                                          topRight: Radius.circular(16),
-                                        ),
-                                      ),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          const Text(
-                                            'Important Message',
-                                            style: TextStyle(
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.w300,
-                                              color: Color(0xFF172B75),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    SizedBox(
-                                        height: ScreenUtils.height * 0.005),
-
-                                    // Message Input Field with Send Button Inside
-                                    Container(
-                                      constraints: BoxConstraints(
-                                        minHeight: ScreenUtils.height * 0.02,
-                                        maxHeight: ScreenUtils.height * 0.7,
-                                      ),
-                                      padding: const EdgeInsets.all(16),
-                                      decoration: BoxDecoration(
-                                          color: Color(0xFFD9D9D9),
-                                          borderRadius:
-                                              BorderRadius.circular(8)),
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          // Simple TextField that works
-                                          TextField(
-                                            controller:
-                                                _importantMessageController,
-                                            autofocus: true,
-                                            keyboardType:
-                                                TextInputType.multiline,
-                                            textInputAction:
-                                                TextInputAction.newline,
-                                            textAlignVertical:
-                                                TextAlignVertical.top,
-                                            maxLines: null,
-                                            style: const TextStyle(
-                                              color: Color(0xFF172B75),
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w400,
-                                            ),
-                                            cursorColor: Color(0xFF172B75),
-                                            onChanged: (value) =>
-                                                setState(() {}),
-                                            decoration: InputDecoration(
-                                              hintText:
-                                                  "Write your message\n upto 100 words",
-                                              hintStyle: TextStyle(
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.w400),
-                                              border: InputBorder.none,
-                                              contentPadding:
-                                                  const EdgeInsets.all(8),
-                                              filled: false,
-                                              // Send button
-                                              suffixIcon: GestureDetector(
-                                                onTap: () {
-                                                  if (_importantMessageController
-                                                      .text
-                                                      .trim()
-                                                      .isNotEmpty) {
-                                                    setState(() {
-                                                      _showConfirmationOptions =
-                                                          true;
-                                                    });
-                                                  }
-                                                },
-                                                child: Container(
-                                                  height: 30,
-                                                  width: 30,
-                                                  decoration: BoxDecoration(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            8),
-                                                    border: Border.all(
-                                                      color: Color(0xFF172B75),
-                                                      width:
-                                                          _importantMessageController
-                                                                  .text
-                                                                  .trim()
-                                                                  .isNotEmpty
-                                                              ? 2
-                                                              : 1,
-                                                    ),
-                                                  ),
-                                                  child: const Icon(
-                                                    Iconsax.arrow_up_3,
-                                                    color: Color(0xFF172B75),
-                                                    size: 20,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          // // Hint text below the TextField
-                                          // if (_importantMessageController
-                                          //     .text.isEmpty)
-                                          //   Padding(
-                                          //     padding:
-                                          //         const EdgeInsets.only(top: 8),
-                                          //     child: RichText(
-                                          //       text: TextSpan(
-                                          //         children: [
-                                          //           TextSpan(
-                                          //             text:
-                                          //                 'Write your message\n',
-                                          //             style: TextStyle(
-                                          //               color:
-                                          //                   Color(0xFF797C7B),
-                                          //               fontSize: 12,
-                                          //               fontWeight:
-                                          //                   FontWeight.w400,
-                                          //             ),
-                                          //           ),
-                                          //           TextSpan(
-                                          //             text: 'upto 100 words',
-                                          //             style: TextStyle(
-                                          //               color:
-                                          //                   Color(0xFFFFA000),
-                                          //               fontSize: 10,
-                                          //               fontWeight:
-                                          //                   FontWeight.w400,
-                                          //             ),
-                                          //           ),
-                                          //         ],
-                                          //       ),
-                                          //     ),
-                                          //   ),
-                                        ],
-                                      ),
-                                    ),
-                                    SizedBox(height: 20),
-                                    // Confirmation options below text field
-                                    if (_showConfirmationOptions)
-                                      Container(
-                                        width: ScreenUtils.width * 0.7,
-                                        padding: EdgeInsets.symmetric(
-                                            horizontal: 20, vertical: 10),
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.only(
-                                            topLeft: Radius.circular(16),
-                                            topRight: Radius.circular(16),
-                                          ),
-                                          color: Color(0xFFFFFFFF),
-                                        ),
-                                        child: Align(
-                                          alignment: Alignment.center,
-                                          child: const Text(
-                                            'not a regular update ?\nneed community attention ?',
-                                            style: TextStyle(
-                                                fontSize: 15,
-                                                color: Color(0xFF3E9292),
-                                                fontWeight: FontWeight.w300),
-                                          ),
-                                        ),
-                                      ),
-                                    SizedBox(height: 20),
-                                    if (_showConfirmationOptions)
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          // Send as important message (Yes button)
-                                          GestureDetector(
-                                            onTap: () {
-                                              controller.sendImportantMessage(
-                                                _importantMessageController.text
-                                                    .trim(),
-                                              );
-                                              setState(() {
-                                                _showImportantMessage = false;
-                                                _importantMessageController
-                                                    .clear();
-                                                _showConfirmationOptions =
-                                                    false;
-                                              });
-                                              controller.disableBlurEffect();
-                                            },
-                                            child: Container(
-                                              height: 52,
-                                              width: ScreenUtils.width * 0.2,
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      vertical: 8,
-                                                      horizontal: 12),
-                                              decoration: BoxDecoration(
-                                                color: Color(0xFFFFC746),
-                                                borderRadius: BorderRadius.only(
-                                                  topLeft: Radius.circular(20),
-                                                  bottomLeft:
-                                                      Radius.circular(20),
-                                                  topRight: Radius.circular(0),
-                                                  bottomRight:
-                                                      Radius.circular(20),
-                                                ),
-                                              ),
-                                              child: Center(
-                                                child: const Text(
-                                                  'yes',
-                                                  textAlign: TextAlign.center,
-                                                  style: TextStyle(
-                                                    color: Color(0xFFFFFFFF),
-                                                    fontSize: 20,
-                                                    fontWeight: FontWeight.w600,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          SizedBox(
-                                              width: ScreenUtils.width * 0.1),
-                                          // Send as normal message (No button)
-                                          GestureDetector(
-                                            onTap: () {
-                                              controller.sendNormalMessage(
-                                                _importantMessageController.text
-                                                    .trim(),
-                                              );
-                                              setState(() {
-                                                _showImportantMessage = false;
-                                                _importantMessageController
-                                                    .clear();
-                                                _showConfirmationOptions =
-                                                    false;
-                                              });
-                                              controller.disableBlurEffect();
-                                            },
-                                            child: Container(
-                                              height: 52,
-                                              width: ScreenUtils.width * 0.2,
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      vertical: 8,
-                                                      horizontal: 12),
-                                              decoration: BoxDecoration(
-                                                color: Color(0xFFFFFFFF),
-                                                borderRadius: BorderRadius.only(
-                                                  topLeft: Radius.circular(0),
-                                                  bottomLeft:
-                                                      Radius.circular(20),
-                                                  topRight: Radius.circular(20),
-                                                  bottomRight:
-                                                      Radius.circular(20),
-                                                ),
-                                              ),
-                                              child: Center(
-                                                child: const Text(
-                                                  'no',
-                                                  textAlign: TextAlign.center,
-                                                  style: TextStyle(
-                                                    color: Color(0xFFFFC746),
-                                                    fontSize: 20,
-                                                    fontWeight: FontWeight.w600,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+                      )
+                    : const SizedBox.shrink()),
               ),
+            ],
+          ),
 
-            // Search Overlay for News Articles
-            if (_showSearchOverlay)
-              Positioned.fill(
-                child: Stack(
-                  children: [
-                    // Blur overlay for entire background
-                    Positioned.fill(
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 8.0, sigmaY: 8.0),
-                        child: Container(
-                          color: Colors.black.withValues(alpha: 0.3),
-                        ),
+          // Fixed Message Input Area at Bottom
+          // Obx(
+          //   () => controller.canSendMessages.value
+          //       ? Positioned(
+          //           bottom: 0,
+          //           left: 0,
+          //           right: 0,
+          //           child: Container(
+          //             color: Colors.white,
+          //             padding: EdgeInsets.only(
+          //               bottom: MediaQuery.of(context).padding.bottom,
+          //               top: 8,
+          //             ),
+          //             child: Column(
+          //               mainAxisSize: MainAxisSize.min,
+          //               children: [
+          //                 Divider(
+          //                   color: Color(0xFF01B3B2).withOpacity(0.5),
+          //                 ),
+          //                 // Quick reply buttons above message input
+          //                 Obx(() => _showQuickReplies.value
+          //                     ? _buildQuickReplyButtons()
+          //                     : const SizedBox.shrink()),
+          //                 // Message input field
+          //                 Padding(
+          //                   padding: const EdgeInsets.only(left: 10, right: 10),
+          //                   child: _buildMessageInput(),
+          //                 ),
+          //               ],
+          //             ),
+          //           ),
+          //         )
+          //       : const SizedBox.shrink(),
+          // ),
+
+          // // Important Message Overlay
+          if (_showImportantMessage && controller.canSendMessages.value)
+            Positioned.fill(
+              child: Stack(
+                children: [
+                  // Blur overlay for entire background
+                  Positioned.fill(
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 8.0, sigmaY: 8.0),
+                      child: Container(
+                        color: Colors.black.withValues(alpha: 0.3),
                       ),
                     ),
-                    // Search Overlay Content
-                    Positioned.fill(
-                      child: Stack(
-                        children: [
-                          // Full screen gesture detector to dismiss on outside tap
-                          Positioned(
-                            top: 70,
-                            right: 65,
+                  ),
+                  // Important Message Overlay - Simple Input Popup
+                  Positioned(
+                    top: kToolbarHeight,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    child: Stack(
+                      children: [
+                        // Full screen gesture detector to dismiss on outside tap
+                        Positioned.fill(
+                          child: GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _showImportantMessage = false;
+                                _importantMessageController.clear();
+                                _showConfirmationOptions = false;
+                              });
+                              controller.disableBlurEffect();
+                            },
+                            behavior: HitTestBehavior.translucent,
+                          ),
+                        ),
+                        Positioned(
+                          top: 50,
+                          right: 20,
+                          child: Image.asset(
+                            KImages.importantIcon,
+                            height: 50,
+                          ),
+                        ),
+                        // Popup content positioned on top
+                        Positioned(
+                          top: 100,
+                          right: 50,
+                          child: GestureDetector(
+                            onTap: () {},
                             child: Container(
-                              width: ScreenUtils.width * 0.12,
-                              height: ScreenUtils.height * 0.05,
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
+                              width: ScreenUtils.width * 0.7,
+                              decoration: BoxDecoration(
+                                color: Colors.transparent,
+                                borderRadius: BorderRadius.circular(16),
                               ),
-                              child: CustomPaint(
-                                painter: _DottedCirclePainter(),
-                                child: const Center(
-                                  child: Icon(
-                                    Icons.add,
-                                    size: 20,
-                                    color: Color(0xFF714FC0),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          Positioned(
-                            top: kToolbarHeight,
-                            left: 0,
-                            right: 0,
-                            bottom: 0,
-                            child: GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  _showSearchOverlay = false;
-                                  _searchController.clear();
-                                });
-                              },
-                              behavior: HitTestBehavior.translucent,
-                            ),
-                          ),
-                          // Search popup content
-                          Positioned(
-                            top: 100,
-                            left: 20,
-                            right: 20,
-                            child: GestureDetector(
-                              onTap: () {},
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  // color: const Color(0xFFD9D9D9),
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    // Header
-                                    Container(
-                                      height: 60,
-                                      width: double.infinity,
-                                      margin: EdgeInsets.only(
-                                          left: 25, right: 24, top: 16),
-                                      padding: const EdgeInsets.all(16),
-                                      decoration: const BoxDecoration(
-                                        color: Color(0xFFF7F7F7),
-                                        borderRadius: BorderRadius.only(
-                                          topLeft: Radius.circular(16),
-                                          topRight: Radius.circular(16),
-                                        ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  // Header
+                                  Container(
+                                    height: ScreenUtils.height * 0.06,
+                                    width: ScreenUtils.width * 0.7,
+                                    padding: const EdgeInsets.all(10),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFFFFFF),
+                                      borderRadius: const BorderRadius.only(
+                                        topLeft: Radius.circular(16),
+                                        topRight: Radius.circular(16),
                                       ),
-                                      child: Center(
-                                        child: const Text(
-                                          'highlighted content will be shared',
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        const Text(
+                                          'Important Message',
                                           style: TextStyle(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w400,
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.w300,
                                             color: Color(0xFF172B75),
                                           ),
                                         ),
-                                      ),
+                                      ],
                                     ),
-                                    SizedBox(height: 5),
-                                    // Search Input
-                                    Container(
-                                      margin: EdgeInsets.only(
-                                        left: 25,
-                                        right: 24,
-                                      ),
-                                      padding: const EdgeInsets.all(5),
-                                      decoration: const BoxDecoration(
+                                  ),
+                                  SizedBox(height: ScreenUtils.height * 0.005),
+
+                                  // Message Input Field with Send Button Inside
+                                  Container(
+                                    constraints: BoxConstraints(
+                                      minHeight: ScreenUtils.height * 0.02,
+                                      maxHeight: ScreenUtils.height * 0.7,
+                                    ),
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
                                         color: Color(0xFFD9D9D9),
+                                        borderRadius: BorderRadius.circular(8)),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        // Simple TextField that works
+                                        TextField(
+                                          controller:
+                                              _importantMessageController,
+                                          autofocus: true,
+                                          keyboardType: TextInputType.multiline,
+                                          textInputAction:
+                                              TextInputAction.newline,
+                                          textAlignVertical:
+                                              TextAlignVertical.top,
+                                          maxLines: null,
+                                          style: const TextStyle(
+                                            color: Color(0xFF172B75),
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w400,
+                                          ),
+                                          cursorColor: Color(0xFF172B75),
+                                          onChanged: (value) => setState(() {}),
+                                          decoration: InputDecoration(
+                                            hintText:
+                                                "Write your message\n upto 100 words",
+                                            hintStyle: TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w400),
+                                            border: InputBorder.none,
+                                            contentPadding:
+                                                const EdgeInsets.all(8),
+                                            filled: false,
+                                            // Send button
+                                            suffixIcon: GestureDetector(
+                                              onTap: () {
+                                                if (_importantMessageController
+                                                    .text
+                                                    .trim()
+                                                    .isNotEmpty) {
+                                                  setState(() {
+                                                    _showConfirmationOptions =
+                                                        true;
+                                                  });
+                                                }
+                                              },
+                                              child: Container(
+                                                height: 30,
+                                                width: 30,
+                                                decoration: BoxDecoration(
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                  border: Border.all(
+                                                    color: Color(0xFF172B75),
+                                                    width:
+                                                        _importantMessageController
+                                                                .text
+                                                                .trim()
+                                                                .isNotEmpty
+                                                            ? 2
+                                                            : 1,
+                                                  ),
+                                                ),
+                                                child: const Icon(
+                                                  Iconsax.arrow_up_3,
+                                                  color: Color(0xFF172B75),
+                                                  size: 20,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  SizedBox(height: 20),
+                                  // Confirmation options below text field
+                                  if (_showConfirmationOptions)
+                                    Container(
+                                      width: ScreenUtils.width * 0.7,
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: 20, vertical: 10),
+                                      decoration: BoxDecoration(
                                         borderRadius: BorderRadius.only(
                                           topLeft: Radius.circular(16),
                                           topRight: Radius.circular(16),
                                         ),
+                                        color: Color(0xFFFFFFFF),
                                       ),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          TextField(
-                                            controller: _searchController,
-                                            autofocus: true,
-                                            decoration: InputDecoration(
-                                              hintText:
-                                                  'Try searching the relevant keyword',
-                                              hintStyle: const TextStyle(
-                                                  color: Color(0xFF797C7B),
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.w300),
-                                              prefixIcon: Image.asset(
-                                                  KImages.searchIcon),
-                                              border: InputBorder.none,
-                                              contentPadding:
-                                                  EdgeInsets.symmetric(
-                                                      horizontal: 20,
-                                                      vertical: 15),
-                                            ),
-                                            onChanged: (value) {
-                                              setState(() {});
-                                            },
-                                            onSubmitted: (_) =>
-                                                _performSearch(),
-                                          ),
-                                        ],
+                                      child: Align(
+                                        alignment: Alignment.center,
+                                        child: const Text(
+                                          'not a regular update ?\nneed community attention ?',
+                                          style: TextStyle(
+                                              fontSize: 15,
+                                              color: Color(0xFF3E9292),
+                                              fontWeight: FontWeight.w300),
+                                        ),
                                       ),
                                     ),
+                                  SizedBox(height: 20),
+                                  if (_showConfirmationOptions)
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        // Send as important message (Yes button)
+                                        GestureDetector(
+                                          onTap: () {
+                                            controller.sendImportantMessage(
+                                              _importantMessageController.text
+                                                  .trim(),
+                                            );
+                                            setState(() {
+                                              _showImportantMessage = false;
+                                              _importantMessageController
+                                                  .clear();
+                                              _showConfirmationOptions = false;
+                                            });
+                                            controller.disableBlurEffect();
+                                          },
+                                          child: Container(
+                                            height: 52,
+                                            width: ScreenUtils.width * 0.2,
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 8, horizontal: 12),
+                                            decoration: BoxDecoration(
+                                              color: Color(0xFFFFC746),
+                                              borderRadius: BorderRadius.only(
+                                                topLeft: Radius.circular(20),
+                                                bottomLeft: Radius.circular(20),
+                                                topRight: Radius.circular(0),
+                                                bottomRight:
+                                                    Radius.circular(20),
+                                              ),
+                                            ),
+                                            child: Center(
+                                              child: const Text(
+                                                'yes',
+                                                textAlign: TextAlign.center,
+                                                style: TextStyle(
+                                                  color: Color(0xFFFFFFFF),
+                                                  fontSize: 20,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox(
+                                            width: ScreenUtils.width * 0.1),
+                                        // Send as normal message (No button)
+                                        GestureDetector(
+                                          onTap: () {
+                                            controller.sendNormalMessage(
+                                              _importantMessageController.text
+                                                  .trim(),
+                                            );
+                                            setState(() {
+                                              _showImportantMessage = false;
+                                              _importantMessageController
+                                                  .clear();
+                                              _showConfirmationOptions = false;
+                                            });
+                                            controller.disableBlurEffect();
+                                          },
+                                          child: Container(
+                                            height: 52,
+                                            width: ScreenUtils.width * 0.2,
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 8, horizontal: 12),
+                                            decoration: BoxDecoration(
+                                              color: Color(0xFFFFFFFF),
+                                              borderRadius: BorderRadius.only(
+                                                topLeft: Radius.circular(0),
+                                                bottomLeft: Radius.circular(20),
+                                                topRight: Radius.circular(20),
+                                                bottomRight:
+                                                    Radius.circular(20),
+                                              ),
+                                            ),
+                                            child: Center(
+                                              child: const Text(
+                                                'no',
+                                                textAlign: TextAlign.center,
+                                                style: TextStyle(
+                                                  color: Color(0xFFFFC746),
+                                                  fontSize: 20,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
 
-                                    // Search Results
-                                    if (_searchController.text.isNotEmpty)
-                                      _buildSearchResults()
-                                    else
-                                      SizedBox()
-                                  ],
+          // Search Overlay for News Articles
+          if (_showSearchOverlay)
+            Positioned.fill(
+              child: Stack(
+                children: [
+                  // Blur overlay for entire background
+                  Positioned.fill(
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 8.0, sigmaY: 8.0),
+                      child: Container(
+                        color: Colors.black.withValues(alpha: 0.3),
+                      ),
+                    ),
+                  ),
+                  // Search Overlay Content
+                  Positioned.fill(
+                    child: Stack(
+                      children: [
+                        // Full screen gesture detector to dismiss on outside tap
+                        Positioned(
+                          top: 70,
+                          right: 65,
+                          child: Container(
+                            width: ScreenUtils.width * 0.12,
+                            height: ScreenUtils.height * 0.05,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                            ),
+                            child: CustomPaint(
+                              painter: _DottedCirclePainter(),
+                              child: const Center(
+                                child: Icon(
+                                  Icons.add,
+                                  size: 20,
+                                  color: Color(0xFF714FC0),
                                 ),
                               ),
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+                        Positioned(
+                          top: kToolbarHeight,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          child: GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _showSearchOverlay = false;
+                                _searchController.clear();
+                              });
+                            },
+                            behavior: HitTestBehavior.translucent,
+                          ),
+                        ),
+                        // Search popup content
+                        Positioned(
+                          top: 100,
+                          left: 20,
+                          right: 20,
+                          child: GestureDetector(
+                            onTap: () {},
+                            child: Container(
+                              decoration: BoxDecoration(
+                                // color: const Color(0xFFD9D9D9),
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  // Header
+                                  Container(
+                                    height: 60,
+                                    width: double.infinity,
+                                    margin: EdgeInsets.only(
+                                        left: 25, right: 24, top: 16),
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: const BoxDecoration(
+                                      color: Color(0xFFF7F7F7),
+                                      borderRadius: BorderRadius.only(
+                                        topLeft: Radius.circular(16),
+                                        topRight: Radius.circular(16),
+                                      ),
+                                    ),
+                                    child: Center(
+                                      child: const Text(
+                                        'highlighted content will be shared',
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w400,
+                                          color: Color(0xFF172B75),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(height: 5),
+                                  // Search Input
+                                  Container(
+                                    margin: EdgeInsets.only(
+                                      left: 25,
+                                      right: 24,
+                                    ),
+                                    padding: const EdgeInsets.all(5),
+                                    decoration: const BoxDecoration(
+                                      color: Color(0xFFD9D9D9),
+                                      borderRadius: BorderRadius.only(
+                                        topLeft: Radius.circular(16),
+                                        topRight: Radius.circular(16),
+                                      ),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        TextField(
+                                          controller: _searchController,
+                                          autofocus: true,
+                                          decoration: InputDecoration(
+                                            hintText:
+                                                'Try searching the relevant keyword',
+                                            hintStyle: const TextStyle(
+                                                color: Color(0xFF797C7B),
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w300),
+                                            prefixIcon:
+                                                Image.asset(KImages.searchIcon),
+                                            border: InputBorder.none,
+                                            contentPadding:
+                                                EdgeInsets.symmetric(
+                                                    horizontal: 20,
+                                                    vertical: 15),
+                                          ),
+                                          onChanged: (value) {
+                                            setState(() {});
+                                          },
+                                          onSubmitted: (_) => _performSearch(),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+
+                                  // Search Results
+                                  if (_searchController.text.isNotEmpty)
+                                    _buildSearchResults()
+                                  else
+                                    SizedBox()
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-          ],
-        ));
+            ),
+        ],
+      ),
+      // Add bottomNavigationBar with message input
+      bottomNavigationBar: Obx(() => controller.canSendMessages.value
+          ? _buildMessageInputBottomBar()
+          : const SizedBox.shrink()),
+    );
   }
 
   Widget _buildReplyIndicator() {
@@ -894,6 +851,32 @@ class _MessageScreenState extends State<MessageScreen> {
             onPressed: controller.cancelReply,
             icon: const Icon(Icons.close, color: Colors.white, size: 20),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMessageInputBottomBar() {
+    return Container(
+      color: Colors.white,
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).padding.bottom,
+        top: 8,
+        left: 10,
+        right: 10,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Divider(
+            color: Color(0xFF01B3B2).withOpacity(0.5),
+          ),
+          // Quick reply buttons above message input
+          Obx(() => _showQuickReplies.value
+              ? _buildQuickReplyButtons()
+              : const SizedBox.shrink()),
+          // Message input field
+          _buildMessageInput(),
         ],
       ),
     );
@@ -1409,7 +1392,6 @@ class _MessageScreenState extends State<MessageScreen> {
                       ],
                     ),
                   ),
-                const SizedBox(height: 40),
               ],
             ),
           ),
