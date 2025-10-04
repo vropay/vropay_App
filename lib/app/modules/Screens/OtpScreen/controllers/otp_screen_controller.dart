@@ -201,7 +201,7 @@ class OTPController extends GetxController {
           snackPosition: SnackPosition.TOP,
           backgroundColor: Colors.green,
           colorText: Colors.white);
-      Get.offAllNamed('/home');
+      Get.offAllNamed(Routes.LEARN_SCREEN);
     } else {
       Get.snackbar("Error", "Invalid Phone OTP!",
           snackPosition: SnackPosition.BOTTOM,
