@@ -60,6 +60,7 @@ class MessageService extends GetxService {
     required String message,
     String? replyToMessageId,
     List<String>? taggedUsers,
+    bool isQuickReply = false,
   }) async {
     return await sendMessage(
       interestId: interestId,
@@ -67,6 +68,7 @@ class MessageService extends GetxService {
       replyToMessageId: replyToMessageId,
       taggedUsers: taggedUsers,
       forceRestApi: true,
+      isQuickReply: isQuickReply,
     );
   }
 
@@ -96,6 +98,7 @@ class MessageService extends GetxService {
     String? replyToMessageId,
     List<String>? taggedUsers,
     bool forceRestApi = false, // Add option to force REST API
+    bool isQuickReply = false, // Add option to identify quick replies
   }) async {
     try {
       isLoading.value = true;
@@ -140,95 +143,100 @@ class MessageService extends GetxService {
         if (!_socketService!.isConnected.value) {
           print(
               '⚠️ [MESSAGE SERVICE] Socket not connected, falling back to REST API');
-          throw Exception('Socket not connected - falling back to REST API');
-        }
-
-        _socketService!.sendMessage(messageData);
-
-        // Wait a moment to see if we get any response
-        await Future.delayed(const Duration(milliseconds: 500));
-        print('📤 [MESSAGE SERVICE] Message sent via Socket.IO');
-
-        // Check if socket is still connected after sending
-        if (!_socketService!.isConnected.value) {
-          print(
-              '⚠️ [MESSAGE SERVICE] Socket disconnected after sending, falling back to REST API');
-          // Don't throw exception, just continue to REST API fallback
-        }
-
-        // Return optimistic message data
-        final userData = _storage.read('user_data');
-        final optimisticMessage = {
-          '_id': DateTime.now().millisecondsSinceEpoch.toString(),
-          'message': message,
-          'interestId': {
-            '_id': interestId,
-            'name':
-                'Current Interest' // Will be updated when real message arrives
-          },
-          'userId': {
-            '_id': userId,
-            'name': userData?['firstName'] ?? userData?['name'] ?? 'You'
-          },
-          'createdAt': DateTime.now().toIso8601String(),
-          'isOptimistic': true,
-        };
-
-        // Add optimistic message to UI immediately at bottom (newest at bottom)
-        final transformedMessage = _transformMessage(optimisticMessage);
-        messages.add(transformedMessage);
-        totalMessages.value++;
-        print('⚡ [MESSAGE SERVICE] Optimistic message added immediately to UI');
-
-        return transformedMessage;
-      } else {
-        // Fallback to REST API
-        print('📤 [MESSAGE SERVICE] Sending message via REST API');
-        print('📤 [MESSAGE SERVICE] API URL: ${ApiConstant.sendMessage}');
-        print(
-            '📤 [MESSAGE SERVICE] Request data: {interestId: $interestId, message: $message}');
-
-        final response = await _apiClient.post(
-          ApiConstant.sendMessage,
-          data: {
-            'interestId': interestId,
-            'message': message,
-            if (replyToMessageId != null) 'replyToMessageId': replyToMessageId,
-            if (taggedUsers != null && taggedUsers.isNotEmpty)
-              'taggedUsers': taggedUsers,
-          },
-        );
-
-        print(
-            '📤 [MESSAGE SERVICE] REST API Response status: ${response.statusCode}');
-        print('📤 [MESSAGE SERVICE] REST API Response data: ${response.data}');
-
-        if (response.statusCode == 201) {
-          final apiResponse =
-              ApiResponse.fromJson(response.data, (data) => data);
-          if (apiResponse.success) {
-            // Add the new message to the bottom of the list
-            final transformedMessage = _transformMessage(apiResponse.data);
-            messages.add(transformedMessage);
-            totalMessages.value++;
-            return transformedMessage;
-          } else {
-            throw ApiException(apiResponse.message);
-          }
+          // Continue to REST API fallback
         } else {
-          // Surface backend message if available
-          try {
-            final apiResponse =
-                ApiResponse.fromJson(response.data, (data) => data);
-            final serverMessage = apiResponse.message.isNotEmpty
-                ? apiResponse.message
-                : 'Failed to send message';
-            throw ApiException(serverMessage);
-          } catch (_) {
-            throw ApiException('Failed to send message');
+          // Wait a moment to see if we get any response
+          await Future.delayed(const Duration(milliseconds: 500));
+          print('📤 [MESSAGE SERVICE] Message sent via Socket.IO');
+
+          // Check if socket is still connected after sending
+          if (!_socketService!.isConnected.value) {
+            print(
+                '⚠️ [MESSAGE SERVICE] Socket disconnected after sending, falling back to REST API');
+            // Don't throw exception, just continue to REST API fallback
           }
+
+          // Return optimistic message data
+          final userData = _storage.read('user_data');
+          final optimisticMessage = {
+            '_id': DateTime.now().millisecondsSinceEpoch.toString(),
+            'message': message,
+            'interestId': {
+              '_id': interestId,
+              'name':
+                  'Current Interest' // Will be updated when real message arrives
+            },
+            'userId': {
+              '_id': userId,
+              'name': userData?['firstName'] ?? userData?['name'] ?? 'You'
+            },
+            'createdAt': DateTime.now().toIso8601String(),
+            'isOptimistic': true,
+          };
+
+          // Add optimistic message to UI immediately at bottom (newest at bottom)
+          final transformedMessage = _transformMessage(optimisticMessage);
+          messages.add(transformedMessage);
+          totalMessages.value++;
+          print(
+              '⚡ [MESSAGE SERVICE] Optimistic message added immediately to UI');
+
+          return transformedMessage;
         }
       }
+
+      // Fallback to REST API
+      print('📤 [MESSAGE SERVICE] Sending message via REST API');
+      print('📤 [MESSAGE SERVICE] API URL: ${ApiConstant.sendMessage}');
+      print(
+          '📤 [MESSAGE SERVICE] Request data: {interestId: $interestId, message: $message}');
+
+      final response = await _apiClient.post(
+        ApiConstant.sendMessage,
+        data: {
+          'interestId': interestId,
+          'message': message,
+          if (replyToMessageId != null) 'replyToMessageId': replyToMessageId,
+          if (taggedUsers != null && taggedUsers.isNotEmpty)
+            'taggedUsers': taggedUsers,
+        },
+      );
+
+      print(
+          '📤 [MESSAGE SERVICE] REST API Response status: ${response.statusCode}');
+      print('📤 [MESSAGE SERVICE] REST API Response data: ${response.data}');
+
+      if (response.statusCode == 201) {
+        final apiResponse = ApiResponse.fromJson(response.data, (data) => data);
+        if (apiResponse.success) {
+          // Transform the message but don't add to list if it's a quick reply
+          final transformedMessage = _transformMessage(apiResponse.data);
+
+          // Only add to messages list if it's not a quick reply
+          if (!isQuickReply) {
+            messages.add(transformedMessage);
+            totalMessages.value++;
+          }
+
+          return transformedMessage;
+        } else {
+          throw ApiException(apiResponse.message);
+        }
+      } else {
+        // Surface backend message if available
+        try {
+          final apiResponse =
+              ApiResponse.fromJson(response.data, (data) => data);
+          final serverMessage = apiResponse.message.isNotEmpty
+              ? apiResponse.message
+              : 'Failed to send message';
+          throw ApiException(serverMessage);
+        } catch (_) {
+          throw ApiException('Failed to send message');
+        }
+      }
+
+      // REST API fallback for socket failures
     } catch (e) {
       print('Error sending message: $e');
       throw ApiException('Failed to send message: ${e.toString()}');
