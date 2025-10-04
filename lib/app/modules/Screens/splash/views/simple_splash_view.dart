@@ -49,7 +49,7 @@ class SimpleSplashView extends StatelessWidget {
                                     ],
                                   ),
                                   child: Padding(
-                                    padding: EdgeInsets.all(20),
+                                    padding: EdgeInsets.all(10),
                                     child: Image.asset(
                                       'assets/images/vropayLogo.png',
                                       fit: BoxFit.contain,
