@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:html/parser.dart' as html_parser;
 import 'package:vropay_final/app/core/api/api_constant.dart';
 import 'package:vropay_final/app/core/models/api_response.dart';
@@ -7,6 +8,7 @@ import 'package:vropay_final/app/core/network/api_exception.dart';
 
 class LearnService extends GetxService {
   final ApiClient _api = ApiClient();
+  final GetStorage _storage = GetStorage();
   final RxBool isLoading = false.obs;
 
   Future<ApiResponse<Map<String, dynamic>>> getMainCategories() async {
@@ -226,6 +228,23 @@ class LearnService extends GetxService {
         // Add entry ID for reference if it exists
         if (entry['_id'] != null) {
           entry['entryId'] = entry['_id'];
+        }
+
+        // Initialize read status - check if user has read this entry
+        // The backend should include readBy array with user IDs
+        final readBy = entry['readBy'] as List? ?? [];
+        final currentUserId = _getCurrentUserId();
+        final isRead = currentUserId != null &&
+            readBy.any((read) =>
+                read['userId']?.toString() == currentUserId.toString());
+
+        entry['isRead'] = isRead;
+
+        if (isRead) {
+          print(
+              '📖 LearnService - Entry "${entry['title']}" is already read by user');
+        } else {
+          print('📰 LearnService - Entry "${entry['title']}" is unread');
         }
       }
 
@@ -561,6 +580,49 @@ class LearnService extends GetxService {
       print('⚠️ LearnService - HTML parsing error: $e');
       // Return original content if parsing fails
       return htmlContent;
+    }
+  }
+
+  // Mark entry as read
+  Future<ApiResponse<Map<String, dynamic>>> markEntryAsRead(
+      String mainCategoryId,
+      String subCategoryId,
+      String topicId,
+      String entryId) async {
+    try {
+      isLoading.value = true;
+      print('🚀 LearnService - Marking entry as read: $entryId');
+      print(
+          '🔍 LearnService - Parameters: mainCategoryId=$mainCategoryId, subCategoryId=$subCategoryId, topicId=$topicId, entryId=$entryId');
+
+      final url = ApiConstant.markEntryAsRead(
+          mainCategoryId, subCategoryId, topicId, entryId);
+      print('🌐 LearnService - Mark as read API URL: $url');
+
+      final res = await _api.post(url);
+      print('✅ LearnService - Mark as read response: ${res.data}');
+
+      final data = _unwrap(res.data);
+      return ApiResponse.success(data);
+    } catch (e) {
+      print('❌ LearnService - Mark entry as read error: $e');
+      throw _handle(e);
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  // Get current user ID from storage
+  String? _getCurrentUserId() {
+    try {
+      final userData = _storage.read('user_data');
+      if (userData != null && userData is Map<String, dynamic>) {
+        return userData['_id'] ?? userData['id'];
+      }
+      return null;
+    } catch (e) {
+      print('❌ LearnService - Error getting current user ID: $e');
+      return null;
     }
   }
 }

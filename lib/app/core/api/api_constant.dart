@@ -126,6 +126,11 @@ class ApiConstant {
           String mainCategoryId, String subCategoryId, String topicId) =>
       '$apiVersion/main-category/$mainCategoryId/sub-category/$subCategoryId/topic/$topicId/search';
 
+  // Mark entry as read endpoint
+  static String markEntryAsRead(String mainCategoryId, String subCategoryId,
+          String topicId, String entryId) =>
+      '$apiVersion/main-category/$mainCategoryId/sub-category/$subCategoryId/topic/$topicId/entry/$entryId/mark-read';
+
   // Community endpoints
   static String communityMainCategories = '$apiVersion/main-categories';
 

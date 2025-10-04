@@ -765,8 +765,24 @@ class NewsScreen extends GetView<NewsController> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Title
-                  _buildNewsTitle(news),
+                  // Title with read status indicator
+                  Row(
+                    children: [
+                      Expanded(child: _buildNewsTitle(news)),
+                      // Unread indicator dot
+                      if (news['isRead'] != true) ...[
+                        SizedBox(width: 8),
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: Color(0xFF714FC0),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -821,13 +837,31 @@ class NewsScreen extends GetView<NewsController> {
                       ),
                     ),
             ),
-            // Title text below the image
+            // Title text below the image with read status indicator
             Container(
               height: ScreenUtils.height * 0.04,
               width: double.infinity,
               padding: EdgeInsets.only(left: 10, right: 10, bottom: 10),
-              child: Center(
-                child: _buildGridNewsTitle(news),
+              child: Stack(
+                children: [
+                  Center(
+                    child: _buildGridNewsTitle(news),
+                  ),
+                  // Unread indicator dot in top-right corner
+                  if (news['isRead'] != true)
+                    Positioned(
+                      top: 0,
+                      right: 5,
+                      child: Container(
+                        width: 6,
+                        height: 6,
+                        decoration: BoxDecoration(
+                          color: Color(0xFF714FC0),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
           ],
@@ -976,17 +1010,25 @@ class NewsScreen extends GetView<NewsController> {
   Widget _buildGridNewsTitle(Map<String, dynamic> news) {
     final title = news['title'] ?? '';
     final highlightedTitle = news['highlightedTitle'];
+    final isRead = news['isRead'] == true;
+
+    // Determine text style based on read status
+    final titleStyle = TextStyle(
+      fontSize: 15,
+      fontWeight: isRead
+          ? FontWeight.w400
+          : FontWeight.w600, // Lighter weight for read articles
+      color: isRead
+          ? Color(0xFF9E9E9E)
+          : Color(0xFF1E2025), // Grayed out for read articles
+    );
 
     // If we have a highlighted title from search results, use it
     if (highlightedTitle != null && highlightedTitle.toString().isNotEmpty) {
       return RichText(
         text: TextSpan(
           children: _parseHighlightedText(highlightedTitle.toString()),
-          style: TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w500,
-            color: Color(0xFF1E2025),
-          ),
+          style: titleStyle,
         ),
         textAlign: TextAlign.center,
         maxLines: 2,
@@ -997,11 +1039,7 @@ class NewsScreen extends GetView<NewsController> {
     // Otherwise, use regular title
     return Text(
       title,
-      style: TextStyle(
-        fontSize: 15,
-        fontWeight: FontWeight.w500,
-        color: Color(0xFF1E2025),
-      ),
+      style: titleStyle,
       textAlign: TextAlign.center,
       maxLines: 2,
       overflow: TextOverflow.ellipsis,
@@ -1012,17 +1050,25 @@ class NewsScreen extends GetView<NewsController> {
   Widget _buildNewsTitle(Map<String, dynamic> news) {
     final title = news['title'] ?? '';
     final highlightedTitle = news['highlightedTitle'];
+    final isRead = news['isRead'] == true;
+
+    // Determine text style based on read status
+    final titleStyle = TextStyle(
+      fontSize: 15,
+      fontWeight: isRead
+          ? FontWeight.w400
+          : FontWeight.w600, // Lighter weight for read articles
+      color: isRead
+          ? Color(0xFF9E9E9E)
+          : Color(0xFF1E2025), // Grayed out for read articles
+    );
 
     // If we have a highlighted title from search results, use it
     if (highlightedTitle != null && highlightedTitle.toString().isNotEmpty) {
       return RichText(
         text: TextSpan(
           children: _parseHighlightedText(highlightedTitle.toString()),
-          style: TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w500,
-            color: Color(0xFF1E2025),
-          ),
+          style: titleStyle,
         ),
         textAlign: TextAlign.start,
         maxLines: 2,
@@ -1033,11 +1079,7 @@ class NewsScreen extends GetView<NewsController> {
     // Otherwise, use regular title
     return Text(
       title,
-      style: TextStyle(
-        fontSize: 15,
-        fontWeight: FontWeight.w500,
-        color: Color(0xFF1E2025),
-      ),
+      style: titleStyle,
       textAlign: TextAlign.start,
       maxLines: 2,
       overflow: TextOverflow.ellipsis,

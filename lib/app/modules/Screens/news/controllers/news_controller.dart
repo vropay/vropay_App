@@ -444,14 +444,82 @@ class NewsController extends GetxController {
   }
 
   // Navigate to news detail screen
-  void navigateToNewsDetail(Map<String, dynamic> news) {
+  void navigateToNewsDetail(Map<String, dynamic> news) async {
     print('🚀 News - Navigating to detail screen');
     print('🔍 News - News data: ${news.toString()}');
     print('🔍 News - Title: ${news['title']}');
     print('🔍 News - Has body: ${news['body'] != null}');
     print('🔍 News - Has thumbnail: ${news['thumbnail'] != null}');
 
+    // Mark entry as read when user taps to view details
+    await _markEntryAsRead(news);
+
     Get.to(() => NewsDetailScreen(news: news));
+  }
+
+  // Mark entry as read
+  Future<void> _markEntryAsRead(Map<String, dynamic> news) async {
+    try {
+      // Get the entry ID from the news data
+      final entryId = news['entryId'] ?? news['_id'];
+
+      if (entryId == null) {
+        print('⚠️ News - Cannot mark as read: entryId not found');
+        return;
+      }
+
+      // Ensure we have all required parameters
+      if (categoryId == null || subCategoryId == null || topicId == null) {
+        print('⚠️ News - Cannot mark as read: missing category parameters');
+        print(
+            '⚠️ News - categoryId: $categoryId, subCategoryId: $subCategoryId, topicId: $topicId');
+        return;
+      }
+
+      print('📖 News - Marking entry as read: $entryId');
+
+      // Call the mark as read API
+      final response = await _learnService.markEntryAsRead(
+        categoryId!,
+        subCategoryId!,
+        topicId!,
+        entryId.toString(),
+      );
+
+      if (response.success) {
+        print('✅ News - Entry marked as read successfully');
+
+        // Update the local news data to reflect read status
+        _updateNewsReadStatus(entryId.toString(), true);
+      } else {
+        print('❌ News - Failed to mark entry as read: ${response.message}');
+      }
+    } catch (e) {
+      print('❌ News - Error marking entry as read: $e');
+      // Don't prevent navigation if marking as read fails
+    }
+  }
+
+  // Update local news data to reflect read status
+  void _updateNewsReadStatus(String entryId, bool isRead) {
+    // Update in main news articles list
+    final index = newsArticles.indexWhere(
+        (news) => (news['entryId'] ?? news['_id'])?.toString() == entryId);
+
+    if (index != -1) {
+      newsArticles[index]['isRead'] = isRead;
+      print('✅ News - Updated read status for entry: $entryId');
+    }
+
+    // Update in search results if present
+    final searchIndex = searchResults.indexWhere(
+        (news) => (news['entryId'] ?? news['_id'])?.toString() == entryId);
+
+    if (searchIndex != -1) {
+      searchResults[searchIndex]['isRead'] = isRead;
+      print(
+          '✅ News - Updated read status in search results for entry: $entryId');
+    }
   }
 
   // Go back to the previous screen
