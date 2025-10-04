@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
@@ -27,6 +28,7 @@ class _MessageScreenState extends State<MessageScreen> {
   bool _showConfirmationOptions = false;
   final RxBool _showQuickReplies = false.obs;
   final ScrollController _scrollController = ScrollController();
+  Timer? _loadMoreDebounceTimer;
 
   @override
   void initState() {
@@ -41,6 +43,27 @@ class _MessageScreenState extends State<MessageScreen> {
         );
       }
     });
+
+    // Add scroll listener for dynamic loading
+    _scrollController.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    // Check if user has scrolled to the top (within 100 pixels)
+    if (_scrollController.position.pixels <= 100 &&
+        _scrollController.position.pixels > 0) {
+      // User is near the top, load more messages if available and not already loading
+      if (controller.hasNextPage && !controller.isLoading.value) {
+        // Debounce to prevent multiple rapid calls
+        _loadMoreDebounceTimer?.cancel();
+        _loadMoreDebounceTimer = Timer(Duration(milliseconds: 300), () {
+          if (controller.hasNextPage && !controller.isLoading.value) {
+            print('🔄 [MESSAGE SCREEN] Loading more messages automatically');
+            controller.loadMoreMessages();
+          }
+        });
+      }
+    }
   }
 
   @override
@@ -48,6 +71,7 @@ class _MessageScreenState extends State<MessageScreen> {
     _importantMessageController.dispose();
     _searchController.dispose(); // Add this
     _scrollController.dispose();
+    _loadMoreDebounceTimer?.cancel(); // Clean up timer
     super.dispose();
   }
 
@@ -197,19 +221,55 @@ class _MessageScreenState extends State<MessageScreen> {
                   color: Color(0xFF01B3B2),
                 ),
               ),
-              // Loading indicator
-              Obx(() => controller.isLoading.value
-                  ? SliverToBoxAdapter(
-                      child: Container(
-                        padding: const EdgeInsets.all(20),
-                        child: const Center(
-                          child: CircularProgressIndicator(
-                            color: Color(0xFF714FC0),
+
+              // Automatic loading indicator at the top for loading more messages
+              SliverToBoxAdapter(
+                child: Obx(
+                    () => controller.hasNextPage && controller.isLoading.value
+                        ? Container(
+                            padding: const EdgeInsets.all(16),
+                            child: Center(
+                              child: Column(
+                                children: [
+                                  SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        Color(0xFF714FC0),
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(height: 8),
+                                  Text(
+                                    'Loading older messages...',
+                                    style: TextStyle(
+                                      color: Color(0xFF9E9E9E),
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
+                        : const SizedBox.shrink()),
+              ),
+
+              // Initial loading indicator (for first load)
+              Obx(() =>
+                  controller.isLoading.value && controller.messages.isEmpty
+                      ? SliverToBoxAdapter(
+                          child: Container(
+                            padding: const EdgeInsets.all(20),
+                            child: const Center(
+                              child: CircularProgressIndicator(
+                                color: Color(0xFF714FC0),
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                    )
-                  : const SliverToBoxAdapter(child: SizedBox.shrink())),
+                        )
+                      : const SliverToBoxAdapter(child: SizedBox.shrink())),
 
               // Reply indicator
               SliverToBoxAdapter(
@@ -282,20 +342,6 @@ class _MessageScreenState extends State<MessageScreen> {
                       ),
                     )
                   : const SliverToBoxAdapter(child: SizedBox.shrink())),
-              // Load more button
-              SliverToBoxAdapter(
-                child: Obx(() => controller.hasNextPage
-                    ? Container(
-                        padding: const EdgeInsets.all(16),
-                        child: Center(
-                          child: ElevatedButton(
-                            onPressed: () => controller.loadMoreMessages(),
-                            child: const Text('Load More Messages'),
-                          ),
-                        ),
-                      )
-                    : const SizedBox.shrink()),
-              ),
             ],
           ),
 
