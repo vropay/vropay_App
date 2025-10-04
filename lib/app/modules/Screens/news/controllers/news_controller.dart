@@ -11,6 +11,9 @@ class NewsController extends GetxController {
   final searchText = ''.obs;
   final isGridView = false.obs;
   final selectedFilter = 'All'.obs;
+
+  // Read status filter options
+  final RxList<String> filterOptions = ['All', 'Read', 'Unread'].obs;
   final showBlur = false.obs;
 
   // Search-related observables
@@ -192,24 +195,56 @@ class NewsController extends GetxController {
     ]);
   }
 
-  // Get filtered news based on search text
+  // Get filtered news based on search text and read status
   List<Map<String, dynamic>> get filteredNews {
+    List<Map<String, dynamic>> baseList;
+
+    // First apply search filter
     if (searchText.value.isEmpty) {
-      return newsArticles;
+      baseList = newsArticles;
+    } else if (hasSearchResults.value && searchResults.isNotEmpty) {
+      baseList = searchResults;
+    } else {
+      // Local search filtering
+      baseList = newsArticles.where((news) {
+        return news['title']
+            .toString()
+            .toLowerCase()
+            .contains(searchText.value.toLowerCase());
+      }).toList();
     }
 
-    // If we have search results, use them
-    if (hasSearchResults.value && searchResults.isNotEmpty) {
-      return searchResults;
+    // Then apply read status filter
+    return _applyReadStatusFilter(baseList);
+  }
+
+  // Apply read status filtering and sorting
+  List<Map<String, dynamic>> _applyReadStatusFilter(
+      List<Map<String, dynamic>> newsList) {
+    if (selectedFilter.value == 'All') {
+      // Show all news, but sort with unread first
+      final sortedList = List<Map<String, dynamic>>.from(newsList);
+      sortedList.sort((a, b) {
+        final aIsRead = a['isRead'] == true;
+        final bIsRead = b['isRead'] == true;
+
+        // Unread items come first
+        if (!aIsRead && bIsRead) return -1;
+        if (aIsRead && !bIsRead) return 1;
+        return 0;
+      });
+      return sortedList;
+    } else if (selectedFilter.value == 'Read' ||
+        selectedFilter.value == 'read') {
+      // Show only read news
+      return newsList.where((news) => news['isRead'] == true).toList();
+    } else if (selectedFilter.value == 'Unread' ||
+        selectedFilter.value == 'unread') {
+      // Show only unread news
+      return newsList.where((news) => news['isRead'] != true).toList();
     }
 
-    // Otherwise, fall back to local filtering
-    return newsArticles.where((news) {
-      return news['title']
-          .toString()
-          .toLowerCase()
-          .contains(searchText.value.toLowerCase());
-    }).toList();
+    return newsList;
   }
 
   // Update search text with debounced search
@@ -338,6 +373,26 @@ class NewsController extends GetxController {
     } else {
       print('❌ News - Cannot load news: missing topic context');
     }
+  }
+
+  // Handle read status filter change
+  void onReadStatusFilterChanged(String filter) {
+    selectedFilter.value = filter;
+    print('📖 News - Read status filter changed to: $filter');
+
+    // Trigger UI update by refreshing the filtered list
+    newsArticles.refresh();
+    searchResults.refresh();
+
+    // Log filter results for debugging
+    final filteredList = filteredNews;
+    final readCount =
+        filteredList.where((news) => news['isRead'] == true).length;
+    final unreadCount =
+        filteredList.where((news) => news['isRead'] != true).length;
+
+    print(
+        '📊 News - Filter results: Total=${filteredList.length}, Read=$readCount, Unread=$unreadCount');
   }
 
   // Client-side date filtering as fallback

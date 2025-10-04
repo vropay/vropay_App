@@ -242,7 +242,7 @@ class NewsScreen extends GetView<NewsController> {
                                 child: Material(
                                   color: Colors.transparent,
                                   child: Container(
-                                    height: ScreenUtils.height * 0.22,
+                                    height: ScreenUtils.height * 0.32,
                                     width: ScreenUtils.width * 0.45,
                                     decoration: BoxDecoration(
                                       color:
@@ -290,6 +290,35 @@ class NewsScreen extends GetView<NewsController> {
                                                 "this month", () {
                                           controller
                                               .onFilterChanged("this month");
+                                          Navigator.of(context).pop();
+                                        }),
+                                        // Read status filters
+                                        SizedBox(height: 8),
+                                        Text(
+                                          "Read Status",
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                        SizedBox(height: 4),
+                                        _buildFilterChip(
+                                            context,
+                                            "Read",
+                                            controller.selectedFilter.value ==
+                                                "Read", () {
+                                          controller.onReadStatusFilterChanged(
+                                              "Read");
+                                          Navigator.of(context).pop();
+                                        }),
+                                        _buildFilterChip(
+                                            context,
+                                            "Unread",
+                                            controller.selectedFilter.value ==
+                                                "Unread", () {
+                                          controller.onReadStatusFilterChanged(
+                                              "Unread");
                                           Navigator.of(context).pop();
                                         }),
                                         SizedBox(
@@ -390,8 +419,8 @@ class NewsScreen extends GetView<NewsController> {
                                             "read",
                                             controller.selectedFilter.value ==
                                                 "read", () {
-                                          controller.selectedFilter.value =
-                                              "read";
+                                          controller.onReadStatusFilterChanged(
+                                              "read");
                                           Navigator.of(context).pop();
                                         }),
                                         _buildFilterChip(
@@ -399,8 +428,8 @@ class NewsScreen extends GetView<NewsController> {
                                             "unread",
                                             controller.selectedFilter.value ==
                                                 "unread", () {
-                                          controller.selectedFilter.value =
-                                              "unread";
+                                          controller.onReadStatusFilterChanged(
+                                              "unread");
                                           Navigator.of(context).pop();
                                         }),
                                         SizedBox(
