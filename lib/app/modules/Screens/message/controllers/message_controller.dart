@@ -54,6 +54,9 @@ class MessageController extends GetxController {
   final RxList<Map<String, dynamic>> searchResults =
       <Map<String, dynamic>>[].obs;
 
+  // Search debouncing timer
+  Timer? _searchTimer;
+
   // Report options
   final List<String> reportOptions = [
     'irrelevant',
@@ -106,6 +109,7 @@ class MessageController extends GetxController {
   @override
   void onClose() {
     _disposeTimers();
+    _searchTimer?.cancel(); // Cancel search timer
     _messageService.disableRealTimeMessaging();
     _disconnectFromSocket();
     messageController.dispose();
@@ -1033,11 +1037,30 @@ class MessageController extends GetxController {
 
   // Search methods (similar to NewsController)
   void updateSearchText(String value) {
+    print('🔍 [MESSAGE CONTROLLER] updateSearchText called with: "$value"');
     searchText.value = value;
-    if (value.trim().isNotEmpty && value.length >= 2) {
-      _performSearch(value.trim());
-    } else if (value.trim().isEmpty) {
+
+    // Cancel previous timer
+    _searchTimer?.cancel();
+
+    if (value.trim().isEmpty) {
+      print('🔍 [MESSAGE CONTROLLER] Clearing search results');
       _clearSearchResults();
+    } else if (value.trim().length >= 2) {
+      print(
+          '🔍 [MESSAGE CONTROLLER] Setting up debounced search for: "$value"');
+      // Set new timer for debounced search
+      _searchTimer = Timer(Duration(milliseconds: 500), () {
+        if (value == searchText.value) {
+          // Ensure query hasn't changed
+          print(
+              '🔍 [MESSAGE CONTROLLER] Executing debounced search for: "$value"');
+          _performSearch(value.trim());
+        }
+      });
+    } else {
+      print(
+          '🔍 [MESSAGE CONTROLLER] Search text too short: "${value.length}" characters');
     }
   }
 
@@ -1045,6 +1068,12 @@ class MessageController extends GetxController {
     try {
       isSearching.value = true;
       print('🔍 [MESSAGE CONTROLLER] Performing search for: $query');
+      print('🔍 [MESSAGE CONTROLLER] Search context:');
+      print('   - categoryId: "${categoryId.value}"');
+      print('   - subCategoryId: "${subCategoryId.value}"');
+      print('   - topicId: "${topicId.value}"');
+      print('   - interestId: "${interestId.value}"');
+      print('   - interestName: "${interestName.value}"');
 
       // Use the existing searchEntriesInTopic method
       final results = await searchEntriesInTopic(query: query);
@@ -1053,8 +1082,14 @@ class MessageController extends GetxController {
       searchResults.value = results;
       print(
           '✅ [MESSAGE CONTROLLER] Search completed: ${results.length} results');
+
+      // Debug: Print first few results
+      if (results.isNotEmpty) {
+        print('🔍 [MESSAGE CONTROLLER] First result: ${results.first}');
+      }
     } catch (e) {
       print('❌ [MESSAGE CONTROLLER] Search error: $e');
+      print('❌ [MESSAGE CONTROLLER] Stack trace: ${StackTrace.current}');
       searchResults.clear();
     } finally {
       isSearching.value = false;
@@ -1062,6 +1097,7 @@ class MessageController extends GetxController {
   }
 
   void clearSearch() {
+    _searchTimer?.cancel();
     searchText.value = '';
     _clearSearchResults();
   }
