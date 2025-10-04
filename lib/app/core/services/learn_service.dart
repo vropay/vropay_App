@@ -233,12 +233,56 @@ class LearnService extends GetxService {
         // Initialize read status - check if user has read this entry
         // The backend should include readBy array with user IDs
         final readBy = entry['readBy'] as List? ?? [];
-        final currentUserId = _getCurrentUserId();
-        final isRead = currentUserId != null &&
-            readBy.any((read) =>
-                read['userId']?.toString() == currentUserId.toString());
+        final currentUserId = getCurrentUserId();
+        final entryId =
+            entry['_id']?.toString() ?? entry['entryId']?.toString();
+
+        bool isRead = false;
+
+        // First check backend readBy data
+        if (currentUserId != null && readBy.isNotEmpty) {
+          // Check different possible formats for readBy data
+          for (var readItem in readBy) {
+            if (readItem is Map<String, dynamic>) {
+              // Format: {userId: "user_id"}
+              final readUserId = readItem['userId']?.toString();
+              if (readUserId == currentUserId.toString()) {
+                isRead = true;
+                break;
+              }
+
+              // Format: {user: "user_id"} (alternative format)
+              final readUser = readItem['user']?.toString();
+              if (readUser == currentUserId.toString()) {
+                isRead = true;
+                break;
+              }
+            } else if (readItem is String) {
+              // Format: ["user_id", "user_id2"] (direct array of user IDs)
+              if (readItem.toString() == currentUserId.toString()) {
+                isRead = true;
+                break;
+              }
+            }
+          }
+        }
+
+        // FALLBACK: Check local storage if backend doesn't have readBy data
+        if (!isRead && currentUserId != null && entryId != null) {
+          isRead = _isEntryReadLocally(entryId, currentUserId);
+          if (isRead) {
+            print('💾 LearnService - Entry read status found in LOCAL storage');
+          }
+        }
 
         entry['isRead'] = isRead;
+
+        // Debug logging
+        print('🔍 LearnService - Entry "${entry['title']}" read status check:');
+        print('   - Current User ID: $currentUserId');
+        print('   - Entry ID: $entryId');
+        print('   - ReadBy data: $readBy');
+        print('   - Is Read: $isRead');
 
         if (isRead) {
           print(
@@ -594,15 +638,30 @@ class LearnService extends GetxService {
       print('🚀 LearnService - Marking entry as read: $entryId');
       print(
           '🔍 LearnService - Parameters: mainCategoryId=$mainCategoryId, subCategoryId=$subCategoryId, topicId=$topicId, entryId=$entryId');
+      print('🔍 LearnService - Current User ID: ${getCurrentUserId()}');
 
       final url = ApiConstant.markEntryAsRead(
           mainCategoryId, subCategoryId, topicId, entryId);
       print('🌐 LearnService - Mark as read API URL: $url');
 
       final res = await _api.post(url);
-      print('✅ LearnService - Mark as read response: ${res.data}');
+      print('✅ LearnService - Mark as read response status: ${res.statusCode}');
+      print('✅ LearnService - Mark as read response data: ${res.data}');
 
       final data = _unwrap(res.data);
+
+      // Additional validation
+      if (res.statusCode == 200 || res.statusCode == 201) {
+        print('✅ LearnService - Entry marked as read successfully in backend');
+
+        // Store read status locally as backup
+        markEntryReadLocally(entryId, getCurrentUserId()!);
+        print(
+            '💾 LearnService - Entry marked as read in LOCAL storage as backup');
+      } else {
+        print('⚠️ LearnService - Unexpected status code: ${res.statusCode}');
+      }
+
       return ApiResponse.success(data);
     } catch (e) {
       print('❌ LearnService - Mark entry as read error: $e');
@@ -613,7 +672,7 @@ class LearnService extends GetxService {
   }
 
   // Get current user ID from storage
-  String? _getCurrentUserId() {
+  String? getCurrentUserId() {
     try {
       final userData = _storage.read('user_data');
       if (userData != null && userData is Map<String, dynamic>) {
@@ -623,6 +682,55 @@ class LearnService extends GetxService {
     } catch (e) {
       print('❌ LearnService - Error getting current user ID: $e');
       return null;
+    }
+  }
+
+  // LOCAL STORAGE METHODS FOR READ STATUS PERSISTENCE
+  // These methods ensure read status persists even if backend fails
+
+  /// Store that an entry has been read by a user locally
+  void markEntryReadLocally(String entryId, String userId) {
+    try {
+      final key = 'read_entries_$userId';
+      Set<String> readEntries = Set<String>.from(_storage.read(key) ?? []);
+      readEntries.add(entryId);
+      _storage.write(key, readEntries.toList());
+
+      print('💾 LearnService - Stored read status locally for entry: $entryId');
+      print(
+          '💾 LearnService - Total local read entries: ${readEntries.length}');
+    } catch (e) {
+      print('❌ LearnService - Error storing read status locally: $e');
+    }
+  }
+
+  /// Check if an entry has been read by a user locally
+  bool _isEntryReadLocally(String entryId, String userId) {
+    try {
+      final key = 'read_entries_$userId';
+      final readEntries = _storage.read(key);
+
+      if (readEntries != null && readEntries is List) {
+        final isRead = readEntries.contains(entryId);
+        print('💾 LearnService - Local read check for entry $entryId: $isRead');
+        return isRead;
+      }
+
+      return false;
+    } catch (e) {
+      print('❌ LearnService - Error checking local read status: $e');
+      return false;
+    }
+  }
+
+  /// Clear all local read status for a user (useful for logout)
+  void clearLocalReadStatus(String userId) {
+    try {
+      final key = 'read_entries_$userId';
+      _storage.remove(key);
+      print('🗑️ LearnService - Cleared local read status for user: $userId');
+    } catch (e) {
+      print('❌ LearnService - Error clearing local read status: $e');
     }
   }
 }

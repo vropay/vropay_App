@@ -454,7 +454,11 @@ class NewsController extends GetxController {
     // Mark entry as read when user taps to view details
     await _markEntryAsRead(news);
 
-    Get.to(() => NewsDetailScreen(news: news));
+    // Navigate to detail screen and refresh when returning
+    await Get.to(() => NewsDetailScreen(news: news));
+
+    // Refresh the news list when returning from detail screen
+    refreshNewsList();
   }
 
   // Mark entry as read
@@ -491,8 +495,19 @@ class NewsController extends GetxController {
 
         // Update the local news data to reflect read status
         _updateNewsReadStatus(entryId.toString(), true);
+
+        // Also store locally as backup (in case backend fails in future)
+        _learnService.markEntryReadLocally(
+            entryId.toString(), _learnService.getCurrentUserId()!);
+        print('💾 News - Entry also marked as read in LOCAL storage');
       } else {
         print('❌ News - Failed to mark entry as read: ${response.message}');
+
+        // Even if backend fails, mark locally so user doesn't see it as unread
+        _learnService.markEntryReadLocally(
+            entryId.toString(), _learnService.getCurrentUserId()!);
+        _updateNewsReadStatus(entryId.toString(), true);
+        print('💾 News - Marked as read locally despite backend failure');
       }
     } catch (e) {
       print('❌ News - Error marking entry as read: $e');
@@ -502,28 +517,66 @@ class NewsController extends GetxController {
 
   // Update local news data to reflect read status
   void _updateNewsReadStatus(String entryId, bool isRead) {
-    // Update in main news articles list
-    final index = newsArticles.indexWhere(
-        (news) => (news['entryId'] ?? news['_id'])?.toString() == entryId);
+    bool updated = false;
 
-    if (index != -1) {
-      newsArticles[index]['isRead'] = isRead;
-      print('✅ News - Updated read status for entry: $entryId');
+    // Update in main news articles list
+    for (int i = 0; i < newsArticles.length; i++) {
+      final news = newsArticles[i];
+      final currentEntryId = (news['entryId'] ?? news['_id'])?.toString();
+
+      if (currentEntryId == entryId) {
+        newsArticles[i]['isRead'] = isRead;
+        updated = true;
+        print('✅ News - Updated read status for entry: $entryId');
+        break;
+      }
     }
 
     // Update in search results if present
-    final searchIndex = searchResults.indexWhere(
-        (news) => (news['entryId'] ?? news['_id'])?.toString() == entryId);
+    for (int i = 0; i < searchResults.length; i++) {
+      final news = searchResults[i];
+      final currentEntryId = (news['entryId'] ?? news['_id'])?.toString();
 
-    if (searchIndex != -1) {
-      searchResults[searchIndex]['isRead'] = isRead;
-      print(
-          '✅ News - Updated read status in search results for entry: $entryId');
+      if (currentEntryId == entryId) {
+        searchResults[i]['isRead'] = isRead;
+        print(
+            '✅ News - Updated read status in search results for entry: $entryId');
+        break;
+      }
+    }
+
+    // Trigger reactive updates if any changes were made
+    if (updated) {
+      newsArticles.refresh();
+      searchResults.refresh();
+      print('🔄 News - Triggered reactive updates for read status change');
     }
   }
 
   // Go back to the previous screen
   void goBack() {
     Get.back();
+  }
+
+  // Refresh news list when returning from detail screen
+  void refreshNewsList() {
+    print('🔄 News - Refreshing news list');
+    // Trigger a refresh of the reactive lists
+    newsArticles.refresh();
+    searchResults.refresh();
+  }
+
+  // Called when the screen becomes active again
+  void onScreenResumed() {
+    print('📱 News - Screen resumed, refreshing UI');
+    refreshNewsList();
+  }
+
+  // Force refresh the entire news list from API
+  Future<void> forceRefreshNewsList() async {
+    print('🔄 News - Force refreshing news list from API');
+    if (topicId != null && subCategoryId != null && categoryId != null) {
+      await loadTopicNews();
+    }
   }
 }
