@@ -139,6 +139,9 @@ class OnBoardingView extends GetView<OnBoardingController> {
                                 ),
                                 recognizer: TapGestureRecognizer()
                                   ..onTap = () {
+                                    controller.isSignInFlow.value = true;
+                                    print(
+                                        "Is sign in flow: ${controller.isSignInFlow.value}");
                                     controller.goToSignIn();
                                   },
                               ),
@@ -231,37 +234,6 @@ class OnBoardingView extends GetView<OnBoardingController> {
         ),
       ],
     );
-  }
-
-  // Helper methods for dynamic dot sizing
-  double _getDotHeight(int currentPage) {
-    switch (currentPage) {
-      case 0:
-        return 8.0; // First page - larger dots
-      case 1:
-        return 6.0; // Second page - medium dots
-      case 2:
-        return 5.0; // Third page - smaller dots
-      case 3:
-        return 7.0; // Fourth page - medium-large dots
-      default:
-        return 4.0; // Default size
-    }
-  }
-
-  double _getDotWidth(int currentPage) {
-    switch (currentPage) {
-      case 0:
-        return 40.0; // First page - wider dots
-      case 1:
-        return 35.0; // Second page - medium width
-      case 2:
-        return 30.0; // Third page - narrower dots
-      case 3:
-        return 45.0; // Fourth page - widest dots
-      default:
-        return 30.0; // Default width
-    }
   }
 
   Widget _buildSignUpPage() {
@@ -540,6 +512,8 @@ class OnBoardingView extends GetView<OnBoardingController> {
                 // Sign In Navigation
                 GestureDetector(
                   onTap: () {
+                    controller.isSignInFlow.value = true;
+                    print("Is sign in flow: ${controller.isSignInFlow.value}");
                     controller.showPhoneVerification.value = true;
                   },
                   child: RichText(
@@ -729,6 +703,8 @@ class OnBoardingView extends GetView<OnBoardingController> {
                         text: "Send OTP",
                         onPressed: () {
                           controller.isPhoneOtp.value = true;
+                          print(
+                              "Is sign in flow: ${controller.isSignInFlow.value}");
 
                           if (controller.isSignInFlow.value) {
                             controller

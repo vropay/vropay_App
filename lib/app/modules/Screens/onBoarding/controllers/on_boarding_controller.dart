@@ -90,8 +90,12 @@ class OnBoardingController extends GetxController {
   }
 
   void goToSignIn() {
+    print('🔍 Setting isSignInFlow to TRUE');
+
     isSignInFlow.value = true; // Set sign-in flow to true
     showPhoneVerification.value = true;
+    print('🔍 isSignInFlow after setting: ${isSignInFlow.value}');
+
     goToNextPage();
   }
 
