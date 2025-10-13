@@ -213,10 +213,13 @@ class OnBoardingController extends GetxController {
       final hashedNonce = sha256.convert(utf8.encode(rawNonce)).toString();
 
       // Request Apple Sign In
-      final credential = await SignInWithApple.getAppleIDCredential(scopes: [
-        AppleIDAuthorizationScopes.email,
-        AppleIDAuthorizationScopes.fullName,
-      ], nonce: hashedNonce);
+      final credential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+        nonce: hashedNonce,
+      );
 
       final email = credential.email ?? '';
       final fullName =
@@ -278,7 +281,7 @@ class OnBoardingController extends GetxController {
       final GoogleSignIn googleSignIn = GoogleSignIn(
         scopes: ['email', 'profile', 'openid'],
         serverClientId:
-            '138350205652-bi63pi8effgi3tepl4t7v9le4vlfgsh4.apps.googleusercontent.com',
+            '785813482327-37jbltj9j5ejaflul09gdg9hr3pn2iv9.apps.googleusercontent.com',
       );
 
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
@@ -311,7 +314,8 @@ class OnBoardingController extends GetxController {
         // Verify token was saved
         final savedToken = _authService.authToken.value;
         print(
-            '🔍 Token after Google auth: ${savedToken.isNotEmpty ? 'EXISTS' : 'MISSING'}');
+          '🔍 Token after Google auth: ${savedToken.isNotEmpty ? 'EXISTS' : 'MISSING'}',
+        );
 
         final responseData = response.data;
         final isNewUser = responseData?['isNewUser'] ?? false;
@@ -324,8 +328,11 @@ class OnBoardingController extends GetxController {
           // New user - redirect to phone verification (skip email verification)
           showPhoneVerification.value = true;
           currentPage.value = 1; // Go to phone verification screen
-          pageController.animateToPage(1,
-              duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
+          pageController.animateToPage(
+            1,
+            duration: Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
         } else {
           // Existing user - check profile completion
           await _authService.getUserProfile();
@@ -336,6 +343,7 @@ class OnBoardingController extends GetxController {
               user.firstName!.isNotEmpty &&
               user.lastName != null &&
               user.lastName!.isNotEmpty &&
+              // Gender is optional (user can prefer not to disclose)
               user.profession != null &&
               user.profession!.isNotEmpty &&
               user.selectedTopics != null &&
@@ -381,10 +389,13 @@ class OnBoardingController extends GetxController {
         isPhoneOtp.value = true; // This is phone OTP
         print('DEBUG: isSignInFlow: ${isSignInFlow.value}');
       } else {
-        Get.snackbar("Error", "Invalid phone number",
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: const Color(0xFFE74C3C),
-            colorText: Colors.white);
+        Get.snackbar(
+          "Error",
+          "Invalid phone number",
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: const Color(0xFFE74C3C),
+          colorText: Colors.white,
+        );
       }
     } catch (e) {
       Get.snackbar('Error', "Failed to send OTP: ${e.toString()}");
@@ -416,11 +427,13 @@ class OnBoardingController extends GetxController {
 
           if (response.success) {
             Get.snackbar('Success', 'Phone number verified successfully');
-            // Navigate to user details screen
-            Get.offAllNamed(Routes.HOME, arguments: {'showUserDetails': true});
+            // Navigate to learn screen to collect user data
+            Get.offAllNamed(Routes.LEARN_SCREEN);
           } else {
             Get.snackbar(
-                'Error', response.message ?? 'Phone verification failed');
+              'Error',
+              response.message ?? 'Phone verification failed',
+            );
           }
         }
       } else {
@@ -436,11 +449,16 @@ class OnBoardingController extends GetxController {
           showPhoneVerification.value = true;
           currentPage.value =
               1; // Go back to signup page but show phone verification
-          pageController.animateToPage(1,
-              duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
+          pageController.animateToPage(
+            1,
+            duration: Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
         } else {
           Get.snackbar(
-              'Error', response.message ?? 'Email verification failed');
+            'Error',
+            response.message ?? 'Email verification failed',
+          );
         }
       }
     } catch (e) {
@@ -455,8 +473,36 @@ class OnBoardingController extends GetxController {
     if (_isDisposed.value) return;
     try {
       if (!isPhoneOtp.value) {
-        // Resend email OTP
-        await signUpWithEmail();
+        // Resend email OTP - use dedicated API instead of signUpWithEmail
+        final email = emailController.text.trim();
+
+        if (email.isEmpty || !GetUtils.isEmail(email)) {
+          Get.snackbar('Error', 'Please enter a valid email address');
+          return;
+        }
+
+        final response = await _authService.resendSignUpEmailOtp(email: email);
+
+        if (response.success) {
+          Get.snackbar(
+            "OTP Sent",
+            "Verification code sent to your email",
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: const Color(0xFF172B75),
+            colorText: Colors.white,
+          );
+
+          // Restart timer but DON'T navigate
+          _initializeResendTimer();
+        } else {
+          Get.snackbar(
+            "Error",
+            response.message,
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: const Color(0xFFE74C3C),
+            colorText: Colors.white,
+          );
+        }
       } else {
         // For phone OTP resend, use dedicated API instead of original methods
         final phone = phoneController.text.trim();
@@ -468,8 +514,9 @@ class OnBoardingController extends GetxController {
 
           if (isSignInFlow.value) {
             // Use dedicated resend sign-in OTP API
-            response =
-                await _authService.resendSignInOtp(phoneNumber: formattedPhone);
+            response = await _authService.resendSignInOtp(
+              phoneNumber: formattedPhone,
+            );
           } else {
             // Use dedicated resend sign-up OTP API (when available)
             // For now, use the original method
@@ -479,24 +526,32 @@ class OnBoardingController extends GetxController {
 
           if (response.success) {
             Get.snackbar(
-                "OTP Sent", "Verification code sent to your phone number",
-                snackPosition: SnackPosition.BOTTOM,
-                backgroundColor: const Color(0xFF172B75),
-                colorText: Colors.white);
+              "OTP Sent",
+              "Verification code sent to your phone number",
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: const Color(0xFF172B75),
+              colorText: Colors.white,
+            );
 
             // Restart timer but DON'T navigate
             _initializeResendTimer();
           } else {
-            Get.snackbar("Error", response.message ?? "Failed to resend OTP",
-                snackPosition: SnackPosition.BOTTOM,
-                backgroundColor: const Color(0xFFE74C3C),
-                colorText: Colors.white);
-          }
-        } else {
-          Get.snackbar("Error", "Invalid phone number",
+            Get.snackbar(
+              "Error",
+              response.message,
               snackPosition: SnackPosition.BOTTOM,
               backgroundColor: const Color(0xFFE74C3C),
-              colorText: Colors.white);
+              colorText: Colors.white,
+            );
+          }
+        } else {
+          Get.snackbar(
+            "Error",
+            "Invalid phone number",
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: const Color(0xFFE74C3C),
+            colorText: Colors.white,
+          );
         }
       }
     } catch (e) {
@@ -524,10 +579,11 @@ class OnBoardingController extends GetxController {
       errorMessage.value = '';
 
       await _userService.updateUserProfile(
-          firstName: firstName.value,
-          lastName: lastName.value,
-          gender: gender.value,
-          profession: profession.value);
+        firstName: firstName.value,
+        lastName: lastName.value,
+        gender: gender.value,
+        profession: profession.value,
+      );
 
       // Update local user data
       await _authService.getUserProfile();
@@ -568,7 +624,8 @@ class OnBoardingController extends GetxController {
       errorMessage.value = '';
 
       await _userService.updateDifficultyLevel(
-          difficultyLevel: difficultyLevel.value);
+        difficultyLevel: difficultyLevel.value,
+      );
 
       // Update local user data
       await _authService.getUserProfile();
@@ -589,7 +646,8 @@ class OnBoardingController extends GetxController {
       errorMessage.value = '';
 
       await _userService.updateCommunityAccess(
-          communityAccess: communityAccess.value);
+        communityAccess: communityAccess.value,
+      );
 
       // Update local user data
       await _authService.getUserProfile();
@@ -610,7 +668,8 @@ class OnBoardingController extends GetxController {
       errorMessage.value = '';
 
       await _userService.updateNotificationPreferences(
-          notificationsEnabled: notificationsEnabled.value);
+        notificationsEnabled: notificationsEnabled.value,
+      );
 
       Get.snackbar('Success', 'Notification preferences updated successfully');
     } catch (e) {
@@ -634,15 +693,16 @@ class OnBoardingController extends GetxController {
           : gender.value;
 
       await _userService.completeUserUpdate(
-          firstName: firstName.value,
-          lastName: lastName.value,
-          gender: selectedGender,
-          profession: profession.value,
-          mobile: '', // Add mobile field if needed
-          selectedTopics: selectedTopics,
-          difficultyLevel: difficultyLevel.value,
-          communityAccess: communityAccess.value,
-          notificationsEnabled: notificationsEnabled.value);
+        firstName: firstName.value,
+        lastName: lastName.value,
+        gender: selectedGender,
+        profession: profession.value,
+        mobile: '', // Add mobile field if needed
+        selectedTopics: selectedTopics,
+        difficultyLevel: difficultyLevel.value,
+        communityAccess: communityAccess.value,
+        notificationsEnabled: notificationsEnabled.value,
+      );
 
       // Update local user data
       await _authService.getUserProfile();
@@ -678,8 +738,10 @@ class OnBoardingController extends GetxController {
     const charset =
         '0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._';
     final random = Random.secure();
-    return List.generate(length, (_) => charset[random.nextInt(charset.length)])
-        .join();
+    return List.generate(
+      length,
+      (_) => charset[random.nextInt(charset.length)],
+    ).join();
   }
 
   String _getErrorMessage(dynamic error) {
@@ -710,29 +772,47 @@ class OnBoardingController extends GetxController {
         isSignInFlow.value = false;
 
         final response = await _authService.requestPhoneVerification(
-            phoneNumber: formattedPhone);
+          phoneNumber: formattedPhone,
+        );
 
         if (response.success) {
           Get.snackbar(
-              "OTP Sent ", "Verification code sent to your phone number",
-              snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: const Color(0xFF172B75),
-              colorText: Colors.white);
+            "OTP Sent ",
+            "Verification code sent to your phone number",
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: const Color(0xFF172B75),
+            colorText: Colors.white,
+          );
 
           // Start the resend Timer
           _initializeResendTimer();
-          goToNextPage();
+          // FIXED: Navigate to OTP screen instead of calling goToNextPage()
+          // which would redirect to subscription screen
+          Get.toNamed(
+            Routes.OTP_SCREEN,
+            arguments: {
+              'phone': formattedPhone,
+              'isPhoneOtp': true,
+              'isSignInFlow': false,
+            },
+          );
         } else {
-          Get.snackbar("Error", response.message ?? "Failed to send OTP",
-              snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: const Color(0xFFE74C3C),
-              colorText: Colors.white);
-        }
-      } else {
-        Get.snackbar("Error", "Invalid phone number",
+          Get.snackbar(
+            "Error",
+            response.message ?? "Failed to send OTP",
             snackPosition: SnackPosition.BOTTOM,
             backgroundColor: const Color(0xFFE74C3C),
-            colorText: Colors.white);
+            colorText: Colors.white,
+          );
+        }
+      } else {
+        Get.snackbar(
+          "Error",
+          "Invalid phone number",
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: const Color(0xFFE74C3C),
+          colorText: Colors.white,
+        );
       }
     } catch (e) {
       Get.snackbar("Error", "Failed to send OTP: ${e.toString()}");
@@ -753,40 +833,59 @@ class OnBoardingController extends GetxController {
         isPhoneOtp.value = true;
         isSignInFlow.value = true;
 
-        final response =
-            await _authService.signInWithPhone(phoneNumber: formattedPhone);
+        final response = await _authService.signInWithPhone(
+          phoneNumber: formattedPhone,
+        );
 
         if (response.success) {
           Get.snackbar(
-              "OTP Sent", "Verification code sent to your phone number",
-              snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: const Color(0xFF172B75),
-              colorText: Colors.white);
+            "OTP Sent",
+            "Verification code sent to your phone number",
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: const Color(0xFF172B75),
+            colorText: Colors.white,
+          );
 
           // Start the resend Timer
           _initializeResendTimer();
-          goToNextPage();
+          // Navigate to OTP screen instead of calling goToNextPage()
+          Get.toNamed(
+            Routes.OTP_SCREEN,
+            arguments: {
+              'phone': formattedPhone,
+              'isPhoneOtp': true,
+              'isSignInFlow': true,
+            },
+          );
         } else {
           String errorMsg = response.message ?? "Failed to send OTP";
           if (errorMsg.contains("not found") ||
               errorMsg.contains("not registered")) {
             Get.snackbar(
-                "User Not Found", "Please sign up first to create an account",
-                snackPosition: SnackPosition.BOTTOM,
-                backgroundColor: const Color(0xFFE74C3C),
-                colorText: Colors.white);
+              "User Not Found",
+              "Please sign up first to create an account",
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: const Color(0xFFE74C3C),
+              colorText: Colors.white,
+            );
           } else {
-            Get.snackbar("Error", errorMsg,
-                snackPosition: SnackPosition.BOTTOM,
-                backgroundColor: const Color(0xFFE74C3C),
-                colorText: Colors.white);
+            Get.snackbar(
+              "Error",
+              errorMsg,
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: const Color(0xFFE74C3C),
+              colorText: Colors.white,
+            );
           }
         }
       } else {
-        Get.snackbar("Error", "Invalid phone number",
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: const Color(0xFFE74C3C),
-            colorText: Colors.white);
+        Get.snackbar(
+          "Error",
+          "Invalid phone number",
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: const Color(0xFFE74C3C),
+          colorText: Colors.white,
+        );
       }
     } catch (e) {
       Get.snackbar("Error", "Failed to send OTP: ${e.toString()}");
@@ -807,7 +906,9 @@ class OnBoardingController extends GetxController {
         return;
       }
       final response = await _authService.verifyPhoneSignInOtp(
-          phoneNumber: userPhone.value, otp: otp);
+        phoneNumber: userPhone.value,
+        otp: otp,
+      );
 
       if (response.success) {
         print('🔍 Sign-in response data: ${response.data}');
@@ -833,8 +934,8 @@ class OnBoardingController extends GetxController {
 
   // formatter timer text
   String getFormatterTimer() {
-    final minutes = resendTimer.value ~/ 100;
-    final seconds = resendTimer.value % 100;
+    final minutes = resendTimer.value ~/ 60;
+    final seconds = resendTimer.value % 60;
     return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
   }
 

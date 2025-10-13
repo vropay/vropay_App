@@ -33,11 +33,21 @@ class OTPController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    // Get email from previous screen
+    // Get arguments from previous screen
     final args = Get.arguments as Map<String, dynamic>? ?? {};
+
+    // Handle email arguments
     if (args['email'] != null) {
       userEmail.value = args['email'];
       emailController.text = args['email'];
+    }
+
+    // Handle phone arguments
+    if (args['phone'] != null) {
+      userPhone.value = args['phone'];
+      phoneController.text = args['phone'];
+      isPhoneOtp.value = args['isPhoneOtp'] ?? false;
+      print('📱 Phone number set: ${userPhone.value}');
     }
 
     // Check if this is for email change
@@ -45,28 +55,59 @@ class OTPController extends GetxController {
       isEmailChange.value = true;
       profileData.value = args['profileData'] ?? {};
     }
-    _initializeTimerFromOnBoarding();
+
+    // 🔥 FIX: Initialize timer properly based on the flow
+    _initializeTimerProperly();
   }
 
-  void _initializeTimerFromOnBoarding() {
+  void _initializeTimerProperly() {
     try {
-      // Get timer state from on boarding controller if available
-      final onBoardingController = Get.find<OnBoardingController>();
-      resendTimer.value = onBoardingController.resendTimer.value;
-      canResendOtp.value = onBoardingController.canResendOtp.value;
+      // Check if this is a phone OTP flow by looking at arguments
+      final args = Get.arguments as Map<String, dynamic>? ?? {};
+      final isPhoneOtpFlow = args['isPhoneOtp'] == true;
 
-      if (resendTimer.value > 0) {
-        _startResendTimer();
+      if (isPhoneOtpFlow) {
+        // For phone OTP flows, try to get timer state from OnBoarding controller
+        final onBoardingController = Get.find<OnBoardingController>();
+        final hasValidTimer = onBoardingController.resendTimer.value > 0;
+
+        if (hasValidTimer) {
+          // Use existing timer from OnBoarding (for phone OTP flows)
+          resendTimer.value = onBoardingController.resendTimer.value;
+          canResendOtp.value = onBoardingController.canResendOtp.value;
+
+          if (resendTimer.value > 0) {
+            _startResendTimer();
+            print(
+                '🕐 Using OnBoarding timer for phone OTP: ${resendTimer.value} seconds');
+          }
+        } else {
+          // No valid timer, start fresh
+          _initializeFreshTimer();
+        }
+      } else {
+        // For email OTP flows, always start fresh
+        print('🔄 Email OTP flow - starting fresh timer');
+        _initializeFreshTimer();
       }
     } catch (e) {
-      _initializeResendTimer();
+      // OnBoarding controller not available, start fresh timer
+      print('🔄 OnBoarding controller not found, starting fresh timer');
+      _initializeFreshTimer();
     }
+  }
+
+  void _initializeFreshTimer() {
+    canResendOtp.value = true; // Allow immediate resend for email flows
+    resendTimer.value = 0;
+    print('🕐 Fresh timer initialized - resend available immediately');
   }
 
   void _initializeResendTimer() {
     canResendOtp.value = false;
     resendTimer.value = 60;
     _startResendTimer();
+    print('🕐 Resend timer started: ${resendTimer.value} seconds');
   }
 
   void _startResendTimer() {
@@ -98,6 +139,8 @@ class OTPController extends GetxController {
               "OTP has been sent to ${userEmail.value} for verification.",
               position: SnackPosition.BOTTOM,
               backgroundColor: KConstColors.snackbarSecondary);
+          // Start timer for email change OTP
+          _initializeResendTimer();
           return;
         }
 
@@ -109,6 +152,10 @@ class OTPController extends GetxController {
           setSnackBar("OTP Sent", "OTP has been sent to ${userEmail.value}.",
               position: SnackPosition.BOTTOM,
               backgroundColor: KConstColors.snackbarSecondary);
+
+          // 🔥 FIX: Start timer after successful email OTP send
+          _initializeResendTimer();
+          print('✅ Email OTP sent successfully, timer started');
         } else {
           setSnackBar("Error", response.message ?? "Failed to send OTP",
               position: SnackPosition.BOTTOM,
@@ -288,10 +335,12 @@ class OTPController extends GetxController {
         // Navigate based on flow type
         if (isSignInFlow) {
           // For sign-in flow, navigate to profile
+          print('🔍 Navigating to PROFILE for sign-in flow');
           Get.offAllNamed(Routes.PROFILE);
         } else {
-          // For sign-up flow, navigate to learn screen
-          Get.offAllNamed(Routes.LEARN_SCREEN);
+          // For sign-up flow, navigate to learn screen to collect user data
+          print('🔍 Navigating to LEARN_SCREEN for sign-up flow');
+          Get.offAllNamed(Routes.HOME);
         }
       } else {
         Get.snackbar(
@@ -319,54 +368,97 @@ class OTPController extends GetxController {
   Future<void> resendOtp() async {
     if (!canResendOtp.value) return;
     if (!isPhoneOtp.value) {
-      await sendOtpToEmail();
-    } else {
-      // For phone OTP, delegate to onBoarding controller
+      // For email OTP resend
+      final email = userEmail.value.isNotEmpty
+          ? userEmail.value
+          : emailController.text.trim();
+
+      if (email.isEmpty || !GetUtils.isEmail(email)) {
+        Get.snackbar('Error', 'Please enter a valid email address');
+        return;
+      }
+
       try {
-        final onBoardingController = Get.find<OnBoardingController>();
+        final response = await _authService.resendSignUpEmailOtp(email: email);
 
-        // Get the phone number from onBoarding controller
-        final phone = onBoardingController.phoneController.text.trim();
-        final isSignInFlow = onBoardingController.isSignInFlow.value;
+        if (response.success) {
+          Get.snackbar("OTP Sent", "Verification code sent to your email",
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: const Color(0xFF172B75),
+              colorText: Colors.white);
 
-        if (phone.length == 10 && RegExp(r'^[0-9]+$').hasMatch(phone)) {
-          final formattedPhone = '+91$phone';
-
-          ApiResponse<Map<String, dynamic>> response;
-
-          if (isSignInFlow) {
-            print('🔄 Calling resendSignInOtp for: $formattedPhone');
-
-            response =
-                await _authService.resendSignInOtp(phoneNumber: formattedPhone);
-          } else {
-            response = await _authService.requestPhoneVerification(
-                phoneNumber: formattedPhone);
-          }
-
-          // Call the appropriate API directly
-          // final response = isSignInFlow
-          //     ? await _authService.signInWithPhone(phoneNumber: formattedPhone)
-          //     : await _authService.requestPhoneVerification(
-          //         phoneNumber: formattedPhone);
-
-          if (response.success) {
-            Get.snackbar(
-                "OTP Sent", "Verification code sent to your phone number",
-                snackPosition: SnackPosition.BOTTOM,
-                backgroundColor: const Color(0xFF172B75),
-                colorText: Colors.white);
-
-            // Restart timer after resend
-            _initializeResendTimer();
-          } else {
-            Get.snackbar("Error", response.message ?? "Failed to resend OTP",
-                snackPosition: SnackPosition.BOTTOM,
-                backgroundColor: const Color(0xFFE74C3C),
-                colorText: Colors.white);
-          }
+          // Restart timer
+          _initializeResendTimer();
         } else {
-          Get.snackbar("Error", "Invalid phone number",
+          Get.snackbar("Error", response.message,
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: const Color(0xFFE74C3C),
+              colorText: Colors.white);
+        }
+      } catch (e) {
+        Get.snackbar("Error", "Failed to resend OTP: ${e.toString()}",
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: const Color(0xFFE74C3C),
+            colorText: Colors.white);
+      }
+    } else {
+      // For phone OTP resend
+      try {
+        // Use the phone number from arguments or controller
+        String phoneNumber = userPhone.value;
+
+        // If no phone number in controller, try to get from OnBoarding controller
+        if (phoneNumber.isEmpty) {
+          try {
+            final onBoardingController = Get.find<OnBoardingController>();
+            phoneNumber = onBoardingController.userPhone.value;
+          } catch (e) {
+            print('⚠️ Could not get phone from OnBoarding controller');
+          }
+        }
+
+        if (phoneNumber.isEmpty) {
+          Get.snackbar("Error", "Phone number not available for resend",
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: const Color(0xFFE74C3C),
+              colorText: Colors.white);
+          return;
+        }
+
+        print('🔄 Resending OTP to phone: $phoneNumber');
+
+        // Determine if this is sign-in flow
+        bool isSignInFlow = false;
+        try {
+          final onBoardingController = Get.find<OnBoardingController>();
+          isSignInFlow = onBoardingController.isSignInFlow.value;
+        } catch (e) {
+          print('⚠️ Could not determine sign-in flow, defaulting to sign-up');
+        }
+
+        ApiResponse<Map<String, dynamic>> response;
+
+        if (isSignInFlow) {
+          print('🔄 Calling resendSignInOtp for: $phoneNumber');
+          response =
+              await _authService.resendSignInOtp(phoneNumber: phoneNumber);
+        } else {
+          print('🔄 Calling requestPhoneVerification for: $phoneNumber');
+          response = await _authService.requestPhoneVerification(
+              phoneNumber: phoneNumber);
+        }
+
+        if (response.success) {
+          Get.snackbar(
+              "OTP Sent", "Verification code sent to your phone number",
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: const Color(0xFF172B75),
+              colorText: Colors.white);
+
+          // Restart timer after resend
+          _initializeResendTimer();
+        } else {
+          Get.snackbar("Error", response.message ?? "Failed to resend OTP",
               snackPosition: SnackPosition.BOTTOM,
               backgroundColor: const Color(0xFFE74C3C),
               colorText: Colors.white);
