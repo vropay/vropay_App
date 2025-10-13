@@ -94,7 +94,8 @@ class DeactivateScreenView extends StatelessWidget {
                 child: Obx(() => SizedBox(
                       width: double.infinity,
                       child: OutlinedButton(
-                        onPressed: controller.confirmErase.value
+                        onPressed: (controller.confirmErase.value &&
+                                !controller.isLoading.value)
                             ? controller.onDeactivate
                             : null,
                         style: OutlinedButton.styleFrom(
@@ -107,15 +108,25 @@ class DeactivateScreenView extends StatelessWidget {
                               ? Colors.white
                               : Colors.white.withOpacity(0.8),
                         ),
-                        child: const Text(
-                          "YES, DEACTIVATE",
-                          style: TextStyle(
-                            color: Colors.pinkAccent,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
+                        child: controller.isLoading.value
+                            ? SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.pinkAccent),
+                                ),
+                              )
+                            : const Text(
+                                "YES, DEACTIVATE",
+                                style: TextStyle(
+                                  color: Colors.pinkAccent,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
                       ),
                     )),
               ),

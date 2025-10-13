@@ -144,6 +144,49 @@ class AuthService extends GetxService {
     }
   }
 
+  // Resend OTP for sign-up email
+  Future<ApiResponse<Map<String, dynamic>>> resendSignUpEmailOtp(
+      {required String email}) async {
+    try {
+      isLoading.value = true;
+      print('🔄 Resending sign-up email OTP for: $email');
+
+      final response = await _apiClient
+          .post(ApiConstant.resendSignUpEmailOtp, data: {'email': email});
+      print('✅ Resend sign-up email OTP response: ${response.data}');
+
+      return ApiResponse.fromJson(
+          response.data, (data) => data as Map<String, dynamic>);
+    } catch (e) {
+      print('❌ Resend sign-up email OTP error: $e');
+      throw ApiException('Failed to resend email OTP: ${e.toString()}');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  // Resend OTP for sign-up phone
+  Future<ApiResponse<Map<String, dynamic>>> resendSignUpPhoneOtp(
+      {required String phoneNumber}) async {
+    try {
+      isLoading.value = true;
+      print('🔄 Resending sign-up phone OTP for: $phoneNumber');
+
+      final response = await _apiClient.post(ApiConstant.resendSignUpPhoneOtp,
+          data: {'phoneNumber': phoneNumber});
+
+      print('✅ Resend sign-up phone OTP response: ${response.data}');
+
+      return ApiResponse.fromJson(
+          response.data, (data) => data as Map<String, dynamic>);
+    } catch (e) {
+      print('❌ Resend sign-up phone OTP error: $e');
+      throw ApiException('Failed to resend phone OTP: ${e.toString()}');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   // Resend OTP for sign-in
   Future<ApiResponse<Map<String, dynamic>>> resendSignInOtp({
     required String phoneNumber,
@@ -861,5 +904,69 @@ class AuthService extends GetxService {
     }
     final xToken = headers?['x-access-token']?.first;
     return xToken;
+  }
+
+  // Deactivate User account
+  Future<ApiResponse<Map<String, dynamic>>> deactivateUserAccount() async {
+    try {
+      isLoading.value = true;
+      print('🔄 Deactivating user account...');
+
+      final response = await _apiClient.delete(ApiConstant.deactivateAccount);
+
+      print('✅ Deactivate account response status: ${response.statusCode}');
+      print('✅ Deactivate account response data: ${response.data}');
+
+      // Check if response is HTML (indicates endpoint not found)
+      if (response.data is String &&
+          response.data.toString().contains('<!DOCTYPE html>')) {
+        throw ApiException(
+            'Deactivate endpoint not found. Please check if the API is available.');
+      }
+
+      // Handle different response types
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        // Successful response - parse as JSON
+        if (response.data is Map<String, dynamic>) {
+          final responseData = response.data as Map<String, dynamic>;
+
+          // Log the detailed response for debugging
+          if (responseData['data'] != null) {
+            final deletedData = responseData['data'] as Map<String, dynamic>;
+            print('🗑️ Deleted data summary:');
+            print('  - Messages deleted: ${deletedData['messagesDeleted']}');
+            print(
+                '  - Interests removed from: ${deletedData['interestsRemovedFrom']}');
+            print('  - User deleted: ${deletedData['userDeleted']}');
+          }
+
+          return ApiResponse.fromJson(
+              response.data, (data) => data as Map<String, dynamic>);
+        } else {
+          // If response is not a Map, create a success response
+          return ApiResponse.success(
+              {'message': 'Account deactivated successfully'});
+        }
+      } else if (response.statusCode == 401) {
+        throw ApiException('User not authenticated. Please sign in again.');
+      } else if (response.statusCode == 404) {
+        throw ApiException(
+            'Deactivate endpoint not found. Please check if the API is available.');
+      } else if (response.statusCode == 500) {
+        throw ApiException('Server error occurred. Please try again later.');
+      } else {
+        // Other HTTP errors
+        throw ApiException('Server error: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('❌ Deactivate account error: $e');
+      if (e is ApiException) {
+        rethrow; // Re-throw ApiException as-is
+      } else {
+        throw ApiException('Failed to deactivate account: ${e.toString()}');
+      }
+    } finally {
+      isLoading.value = false;
+    }
   }
 }

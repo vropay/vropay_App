@@ -78,6 +78,9 @@ class ApiConstant {
   // Log out Endpoint
   static const String logout = '$apiVersion/logout';
 
+  // Deactivate Account Endpoint
+  static const String deactivateAccount = '$apiVersion/deactivate';
+
   // Timeouts
   static const int connectionTimeout = 120000; // 120 seconds
   static const int receiveTimeout = 120000; // 120 seconds
