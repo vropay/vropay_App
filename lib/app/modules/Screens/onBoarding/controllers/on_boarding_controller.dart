@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
@@ -6,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'package:vropay_final/app/core/models/api_response.dart';
 import 'package:vropay_final/app/core/network/api_exception.dart';
 import 'package:vropay_final/app/core/services/auth_service.dart';
 import 'package:vropay_final/app/core/services/user_service.dart';
@@ -53,11 +55,15 @@ class OnBoardingController extends GetxController {
   final RxString userPhone = ''.obs;
   final RxString userEmail = ''.obs;
   final RxString otpCode = ''.obs;
+  var resendTimer = 0.obs;
+  var canResendOtp = true.obs;
+  Timer? _resendTimer;
 
   @override
   void onInit() {
     super.onInit();
     _loadUserData();
+    _initializeResendTimer();
   }
 
   // Load existing user data
@@ -74,6 +80,22 @@ class OnBoardingController extends GetxController {
       communityAccess.value = user.communityAccess ?? '';
       notificationsEnabled.value = user.notificationsEnabled ?? true;
     }
+  }
+
+  void _initializeResendTimer() {
+    canResendOtp.value = false;
+    resendTimer.value = 60;
+
+    _resendTimer?.cancel();
+    _resendTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+      if (resendTimer.value > 0) {
+        resendTimer.value--;
+      } else {
+        canResendOtp.value = true;
+        timer.cancel();
+        _resendTimer = null;
+      }
+    });
   }
 
   // Navigation methods
@@ -358,25 +380,6 @@ class OnBoardingController extends GetxController {
         userPhone.value = formattedPhone;
         isPhoneOtp.value = true; // This is phone OTP
         print('DEBUG: isSignInFlow: ${isSignInFlow.value}');
-
-        // // Choose API based on flow
-        // final response = isSignInFlow.value
-        //     ? await _authService.signInWithPhone(phoneNumber: formattedPhone)
-        //     : await _authService.requestPhoneVerification(
-        //         phoneNumber: formattedPhone);
-
-        // if (response.success) {
-        //   Get.snackbar("OTP Sent", "OTP has been sent to $phone",
-        //       snackPosition: SnackPosition.BOTTOM,
-        //       backgroundColor: const Color(0xFF172B75),
-        //       colorText: Colors.white);
-        //   goToNextPage(); // Go to phone OTP screen
-        // } else {
-        //   Get.snackbar("Error", response.message ?? "Failed to send OTP",
-        //       snackPosition: SnackPosition.BOTTOM,
-        //       backgroundColor: const Color(0xFFE74C3C),
-        //       colorText: Colors.white);
-        // }
       } else {
         Get.snackbar("Error", "Invalid phone number",
             snackPosition: SnackPosition.BOTTOM,
@@ -455,15 +458,50 @@ class OnBoardingController extends GetxController {
         // Resend email OTP
         await signUpWithEmail();
       } else {
-        if (isSignInFlow.value) {
-          await sendSigninPhoneOtp();
+        // For phone OTP resend, use dedicated API instead of original methods
+        final phone = phoneController.text.trim();
+
+        if (phone.length == 10 && RegExp(r'^[0-9]+$').hasMatch(phone)) {
+          final formattedPhone = '+91$phone';
+
+          ApiResponse<Map<String, dynamic>> response;
+
+          if (isSignInFlow.value) {
+            // Use dedicated resend sign-in OTP API
+            response =
+                await _authService.resendSignInOtp(phoneNumber: formattedPhone);
+          } else {
+            // Use dedicated resend sign-up OTP API (when available)
+            // For now, use the original method
+            await sendSignupPhoneOtp();
+            return; // Exit early to avoid the navigation below
+          }
+
+          if (response.success) {
+            Get.snackbar(
+                "OTP Sent", "Verification code sent to your phone number",
+                snackPosition: SnackPosition.BOTTOM,
+                backgroundColor: const Color(0xFF172B75),
+                colorText: Colors.white);
+
+            // Restart timer but DON'T navigate
+            _initializeResendTimer();
+          } else {
+            Get.snackbar("Error", response.message ?? "Failed to resend OTP",
+                snackPosition: SnackPosition.BOTTOM,
+                backgroundColor: const Color(0xFFE74C3C),
+                colorText: Colors.white);
+          }
         } else {
-          await sendSignupPhoneOtp();
+          Get.snackbar("Error", "Invalid phone number",
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: const Color(0xFFE74C3C),
+              colorText: Colors.white);
         }
       }
     } catch (e) {
       if (!_isDisposed.value) {
-        Get.snackbar('Error', 'Failed to resend OTP');
+        Get.snackbar('Error', 'Failed to resend OTP: ${e.toString()}');
       }
     }
   }
@@ -635,22 +673,6 @@ class OnBoardingController extends GetxController {
   void updateNotificationEnabled(bool value) =>
       notificationsEnabled.value = value;
 
-  @override
-  void onClose() {
-    if (_isDisposed.value) return;
-    _isDisposed.value = true;
-
-    try {
-      if (emailController.hasListeners) emailController.dispose();
-      if (phoneController.hasListeners) phoneController.dispose();
-      if (otpFieldController.hasListeners) otpFieldController.dispose();
-      pageController.dispose();
-    } catch (e) {
-      print('Controller disposal error: $e');
-    }
-    super.onClose();
-  }
-
   // Generate random nonce for Apple Sign In
   String _generateNonce([int length = 32]) {
     const charset =
@@ -696,6 +718,9 @@ class OnBoardingController extends GetxController {
               snackPosition: SnackPosition.BOTTOM,
               backgroundColor: const Color(0xFF172B75),
               colorText: Colors.white);
+
+          // Start the resend Timer
+          _initializeResendTimer();
           goToNextPage();
         } else {
           Get.snackbar("Error", response.message ?? "Failed to send OTP",
@@ -737,6 +762,9 @@ class OnBoardingController extends GetxController {
               snackPosition: SnackPosition.BOTTOM,
               backgroundColor: const Color(0xFF172B75),
               colorText: Colors.white);
+
+          // Start the resend Timer
+          _initializeResendTimer();
           goToNextPage();
         } else {
           String errorMsg = response.message ?? "Failed to send OTP";
@@ -801,5 +829,29 @@ class OnBoardingController extends GetxController {
     } finally {
       isLoading.value = false;
     }
+  }
+
+  // formatter timer text
+  String getFormatterTimer() {
+    final minutes = resendTimer.value ~/ 100;
+    final seconds = resendTimer.value % 100;
+    return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+  }
+
+  @override
+  void onClose() {
+    _resendTimer?.cancel();
+    if (_isDisposed.value) return;
+    _isDisposed.value = true;
+
+    try {
+      if (emailController.hasListeners) emailController.dispose();
+      if (phoneController.hasListeners) phoneController.dispose();
+      if (otpFieldController.hasListeners) otpFieldController.dispose();
+      pageController.dispose();
+    } catch (e) {
+      print('Controller disposal error: $e');
+    }
+    super.onClose();
   }
 }

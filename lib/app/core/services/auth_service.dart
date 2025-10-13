@@ -144,6 +144,31 @@ class AuthService extends GetxService {
     }
   }
 
+  // Resend OTP for sign-in
+  Future<ApiResponse<Map<String, dynamic>>> resendSignInOtp({
+    required String phoneNumber,
+  }) async {
+    try {
+      isLoading.value = true;
+      print('🔄 Resending sign-in OTP for: $phoneNumber');
+
+      final response = await _apiClient.post(ApiConstant.resendSignInOtp,
+          data: {'phoneNumber': phoneNumber});
+
+      print('✅ Resend OTP response: ${response.data}');
+
+      return ApiResponse.fromJson(
+          response.data, (data) => data as Map<String, dynamic>);
+    } catch (e) {
+      print('❌ Resend OTP error: $e');
+      throw ApiException(
+        'Failed to resend OTP: ${e.toString()}',
+      );
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   // Google authentication with token
   Future<ApiResponse<Map<String, dynamic>>> googleAuth({
     required String email,

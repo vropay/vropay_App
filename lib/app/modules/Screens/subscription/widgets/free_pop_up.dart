@@ -23,7 +23,8 @@ class FreePopUp extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             const Align(alignment: Alignment.centerLeft, child: BackIcon()),
-            Image.asset('assets/images/PoPUpSubscription.png', height: 112, width: 120),
+            Image.asset('assets/images/PoPUpSubscription.png',
+                height: 112, width: 120),
             const SizedBox(height: 10),
             const Text(
               'really?',
@@ -57,7 +58,7 @@ class FreePopUp extends StatelessWidget {
             SizedBox(
               width: 250,
               child: ElevatedButton(
-                onPressed: onYesPressed,
+                onPressed: null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFEF2D56),
                   shape: const RoundedRectangleBorder(

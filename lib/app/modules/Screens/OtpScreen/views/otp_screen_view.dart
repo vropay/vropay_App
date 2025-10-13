@@ -56,7 +56,7 @@ class OtpScreenView extends StatelessWidget {
                   length: 5,
                   controller: _otpController.otpFieldController,
                   onChanged: (value) => _otpController.updateOtp(value),
-                  keyboardType: TextInputType.number,
+                  keyboardType: TextInputType.text,
                   appContext: context,
                   textStyle: TextStyle(fontSize: 18, color: Color(0xFF172B75)),
                   pinTheme: PinTheme(
@@ -98,16 +98,29 @@ class OtpScreenView extends StatelessWidget {
               // Resend OTP
               Align(
                 alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: () => _otpController.resendOtp(),
-                  child: Text(
-                    "Resend OTP?",
-                    style: TextStyle(
-                        color: Color(0xFF4263E0),
-                        fontWeight: FontWeight.bold,
-                        decoration: TextDecoration.underline),
-                  ),
-                ),
+                child: Obx(() {
+                  if (_otpController.canResendOtp.value) {
+                    return TextButton(
+                      onPressed: () => _otpController.resendOtp(),
+                      child: Text(
+                        "Resend OTP?",
+                        style: TextStyle(
+                            color: Color(0xFF4263E0),
+                            fontWeight: FontWeight.bold,
+                            decoration: TextDecoration.underline),
+                      ),
+                    );
+                  } else {
+                    return TextButton(
+                      onPressed: null, // Disabled
+                      child: Text(
+                        "Resend OTP in ${_otpController.getFormattedTimer()}",
+                        style: TextStyle(
+                            color: Colors.grey, fontWeight: FontWeight.bold),
+                      ),
+                    );
+                  }
+                }),
               ),
 
               SizedBox(height: 100),

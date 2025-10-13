@@ -828,17 +828,32 @@ class OnBoardingView extends GetView<OnBoardingController> {
                 // Resend OTP
                 Align(
                   alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () => controller.resendOtp(),
-                    child: Text(
-                      "Resend OTP?",
-                      style: TextStyle(
-                          color: Color(0xFF4263E0),
-                          fontWeight: FontWeight.w600,
-                          decoration: TextDecoration.underline,
-                          fontFamily: GoogleFonts.poppins().fontFamily),
-                    ),
-                  ),
+                  child: Obx(() {
+                    if (controller.canResendOtp.value) {
+                      return TextButton(
+                        onPressed: () => controller.resendOtp(),
+                        child: Text(
+                          "Resend OTP?",
+                          style: TextStyle(
+                              color: Color(0xFF4263E0),
+                              fontWeight: FontWeight.w600,
+                              decoration: TextDecoration.underline,
+                              fontFamily: GoogleFonts.poppins().fontFamily),
+                        ),
+                      );
+                    } else {
+                      return TextButton(
+                          onPressed: null,
+                          child: Text(
+                              "Resend OTP in ${controller.getFormatterTimer()}",
+                              style: TextStyle(
+                                  color: Color(0xFF4263E0),
+                                  fontWeight: FontWeight.w600,
+                                  decoration: TextDecoration.underline,
+                                  fontFamily:
+                                      GoogleFonts.poppins().fontFamily)));
+                    }
+                  }),
                 ),
 
                 SizedBox(height: ScreenUtils.height * 0.053),

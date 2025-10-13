@@ -44,6 +44,11 @@ class ApiConstant {
   static const String phoneSignInVerify =
       '$apiVersion/verify-signin'; // Phone OTP verification
 
+  // Resend OTP endpoints
+  static const String resendSignUpEmailOtp = '$apiVersion/resend-otp';
+  static const String resendSignUpPhoneOtp = '$apiVersion/resend-phone-otp';
+  static const String resendSignInOtp = '$apiVersion/resend-signin-otp';
+
   // User Endpoints
   static const String userProfile = '$apiVersion/profile';
   static const String userPreferences = '$apiVersion/preferences';
