@@ -7,10 +7,8 @@ import 'package:vropay_final/app/modules/Screens/home/widgets/difficultyScreen.d
 import 'package:vropay_final/app/modules/Screens/home/widgets/communityAccess.dart';
 import 'package:vropay_final/app/modules/Screens/home/widgets/notificationPopUp.dart';
 
-class HomeView extends StatelessWidget {
-  final HomeController controller = Get.put(HomeController());
-
-  HomeView({super.key});
+class HomeView extends GetView<HomeController> {
+  const HomeView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +19,7 @@ class HomeView extends StatelessWidget {
             child: CircularProgressIndicator(),
           );
         }
-        
+
         // Show user details form for new users
         if (controller.showUserDetailsForm.value) {
           return Obx(() {
@@ -31,11 +29,14 @@ class HomeView extends StatelessWidget {
               case 1:
                 return InterestsScreen();
               case 2:
-                return DifficultyLevelScreen(onNext: () => controller.nextStep());
+                return DifficultyLevelScreen(
+                    onNext: () => controller.nextStep());
               case 3:
-                return CommunityAccessScreen(onNext: () => controller.nextStep());
+                return CommunityAccessScreen(
+                    onNext: () => controller.nextStep());
               case 4:
-                return NotificationScreen(onFinish: () => controller.nextStep());
+                return NotificationScreen(
+                    onFinish: () => controller.nextStep());
               case 5:
                 return _SubscriptionScreen();
               default:
@@ -43,7 +44,7 @@ class HomeView extends StatelessWidget {
             }
           });
         }
-        
+
         return IndexedStack(
           index: controller.currentIndex.value,
           children: [

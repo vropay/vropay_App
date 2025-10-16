@@ -47,6 +47,8 @@ class HomeController extends GetxController {
     final args = Get.arguments as Map<String, dynamic>?;
     if (args?['showUserDetails'] == true) {
       showUserDetailsForm.value = true;
+      // Ensure stepper starts from user details for fresh onboarding
+      currentStep.value = 0;
     }
 
     loadUserData();
@@ -340,6 +342,11 @@ class HomeController extends GetxController {
         print('🔍 Step 0 - Selected gender: ${selectedLevel.value}');
         // Update user profile with current form data including gender
         await updateUserProfile();
+      }
+
+      // Ensure the stepper UI is active (not the static IndexedStack)
+      if (!showUserDetailsForm.value) {
+        showUserDetailsForm.value = true;
       }
 
       // Save interests when moving from interests screen (step 1)

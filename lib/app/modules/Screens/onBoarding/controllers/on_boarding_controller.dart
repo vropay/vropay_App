@@ -428,7 +428,7 @@ class OnBoardingController extends GetxController {
           if (response.success) {
             Get.snackbar('Success', 'Phone number verified successfully');
             // Navigate to learn screen to collect user data
-            Get.offAllNamed(Routes.LEARN_SCREEN);
+            Get.offAllNamed(Routes.HOME, arguments: {'showUserDetails': true});
           } else {
             Get.snackbar(
               'Error',
@@ -921,7 +921,7 @@ class OnBoardingController extends GetxController {
         // await _authService.getUserProfile();
         _loadUserData();
 
-        Get.offAllNamed(Routes.PROFILE);
+        Get.offAllNamed(Routes.HOME);
       } else {
         Get.snackbar('Error', response.message);
       }
