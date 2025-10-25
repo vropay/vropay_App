@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:vropay_final/Components/bottom_navbar.dart';
@@ -20,7 +19,7 @@ class KnowledgeCenterScreenView
       bottomNavigationBar: CustomBottomNavBar(),
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(150),
-        child: CustomTopNavBar(selectedIndex: null),
+        child: CustomTopNavBar(selectedIndex: null, isMainScreen: true),
       ),
       body: SafeArea(
         child: Column(
@@ -33,30 +32,133 @@ class KnowledgeCenterScreenView
                   children: [
                     const SizedBox(height: 8),
 
-                    // Your existing search field (unchanged)
-                    TextField(
-                      decoration: InputDecoration(
-                        hintText: 'Try searching the topic like "STOCKS"',
-                        hintStyle: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w400,
-                          color: Color(0xFF4A4A4A),
+                    // Search field with suggestions dropdown (like news screen)
+                    Column(
+                      children: [
+                        Container(
+                          height: ScreenUtils.height * 0.05,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: Color(0xFFDBEFFF).withOpacity(0.5),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Obx(() => TextField(
+                                controller: controller.searchTextController,
+                                onChanged: (value) {
+                                  controller.searchTopicsDebounced(value);
+                                },
+                                decoration: InputDecoration(
+                                  hintText:
+                                      'Try searching the topic like "STOCKS"',
+                                  hintStyle: TextStyle(
+                                    color: Color(0xFF4A4A4A),
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w300,
+                                  ),
+                                  prefixIcon: Image.asset(
+                                    KImages.searchIcon,
+                                    color: Color(0xFF4a4a4a),
+                                  ),
+                                  suffixIcon: controller
+                                          .currentSearchQuery.value.isNotEmpty
+                                      ? IconButton(
+                                          icon: Icon(
+                                            Icons.clear,
+                                            color: Color(0xFF4a4a4a),
+                                          ),
+                                          onPressed: () =>
+                                              controller.clearSearch(),
+                                        )
+                                      : null,
+                                  border: InputBorder.none,
+                                  contentPadding: EdgeInsets.symmetric(
+                                      horizontal: 20, vertical: 15),
+                                ),
+                              )),
                         ),
-                        filled: true,
-                        fillColor: const Color(0xFFDBEFFF).withOpacity(0.5),
-                        prefixIcon: Image.asset(KImages.searchIcon),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
-                        ),
-                        suffixIcon: Container(
-                          height: ScreenUtils.height * 0.02,
-                          width: ScreenUtils.width * 0.02,
-                          color: Color(0xFFF2F7FB),
-                          child: Icon(CupertinoIcons.clear,
-                              color: Color(0xFF4A4A4A)),
-                        ),
-                      ),
+
+                        // Show search suggestions below search bar (like news screen)
+                        Obx(() {
+                          if (controller.currentSearchQuery.value.isNotEmpty) {
+                            final suggestions =
+                                controller.searchResults.where((topic) {
+                              return topic['name']
+                                  .toString()
+                                  .toLowerCase()
+                                  .contains(controller.currentSearchQuery.value
+                                      .toLowerCase());
+                            }).toList();
+
+                            if (suggestions.isNotEmpty) {
+                              return Container(
+                                width: double.infinity,
+                                margin: EdgeInsets.only(
+                                    top: 8, left: 20, right: 20),
+                                padding: EdgeInsets.only(left: 10, right: 20),
+                                constraints: BoxConstraints(
+                                  maxHeight: ScreenUtils.height * 0.3,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  border: Border.all(
+                                      color: Colors.black.withOpacity(0.1)),
+                                  borderRadius: BorderRadius.only(
+                                      bottomLeft: Radius.circular(5),
+                                      bottomRight: Radius.circular(5)),
+                                ),
+                                child: ListView.builder(
+                                  shrinkWrap: true,
+                                  itemCount: suggestions.length,
+                                  itemBuilder: (context, index) {
+                                    final topic = suggestions[index];
+                                    return ListTile(
+                                      leading: Container(
+                                        padding: EdgeInsets.all(8),
+                                        decoration: BoxDecoration(
+                                          color: Color(0xFF4A4A4A)
+                                              .withOpacity(0.1),
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                        ),
+                                        child: Icon(
+                                          Icons.topic,
+                                          color: Color(0xFF4A4A4A),
+                                          size: 16,
+                                        ),
+                                      ),
+                                      title: RichText(
+                                        text: TextSpan(
+                                            children: _highlightOccurrences(
+                                              topic['name'] ?? '',
+                                              controller
+                                                  .currentSearchQuery.value,
+                                            ),
+                                            style: TextStyle(
+                                                color: Color(0xFF797C7B))),
+                                      ),
+                                      subtitle: topic['subCategory'] != null
+                                          ? Text(
+                                              'In: ${topic['subCategory']['name']}',
+                                              style: TextStyle(
+                                                color: Color(0xFF999999),
+                                                fontSize: 12,
+                                              ),
+                                            )
+                                          : null,
+                                      onTap: () {
+                                        print(
+                                            '🔍 SearchSuggestion - Tapped suggestion: ${topic['name']}');
+                                        _onTopicSearchResultTap(topic);
+                                      },
+                                    );
+                                  },
+                                ),
+                              );
+                            }
+                          }
+                          return SizedBox.shrink();
+                        }),
+                      ],
                     ),
 
                     SizedBox(height: ScreenUtils.height * 0.02),
@@ -281,22 +383,47 @@ class KnowledgeCenterScreenView
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          width: double.infinity,
-          margin: EdgeInsets.only(left: 5, right: 6),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          decoration: BoxDecoration(
-            color: Color(0xFFDBEFFF).withOpacity(0.5),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: const Text(
-            "INVESTING (title of last topic read)",
-            style: TextStyle(
-                color: Color(0xFF4A4A4A),
-                fontSize: 12,
-                fontWeight: FontWeight.w400),
-          ),
-        ),
+        // Continue reading container - always show
+        Obx(() {
+          // Get the last read entry title or default message
+          final lastReadEntry = controller.continueReadingData['lastReadEntry'];
+          final hasData = controller.continueReadingData.isNotEmpty &&
+              lastReadEntry != null &&
+              lastReadEntry is Map &&
+              lastReadEntry['title'] != null;
+
+          final displayTitle =
+              hasData ? lastReadEntry['title'].toString() : 'Start Reading';
+
+          final displaySubtitle = 'INVESTING';
+
+          return GestureDetector(
+            onTap: hasData ? () => controller.onContinueReadingTap() : null,
+            child: Container(
+              width: double.infinity,
+              margin: EdgeInsets.only(left: 5, right: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              decoration: BoxDecoration(
+                color: Color(0xFFDBEFFF).withOpacity(0.5),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    hasData ? displayTitle : displaySubtitle,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        color: Color(0xFF4A4A4A),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }),
         SizedBox(height: ScreenUtils.height * 0.042),
 
         // SUBCATEGORIES using your existing card style
@@ -783,6 +910,241 @@ class KnowledgeCenterScreenView
         ),
       ),
     );
+  }
+
+  Widget _buildSearchResults() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Search results header (like news screen)
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          child: Row(
+            children: [
+              Text(
+                'Search Results',
+                style: TextStyle(
+                  fontSize: ScreenUtils.x(3.5),
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF172B75),
+                ),
+              ),
+              SizedBox(width: 8),
+              Obx(() => Text(
+                    '(${controller.searchResults.length} found)',
+                    style: TextStyle(
+                      fontSize: ScreenUtils.x(3),
+                      color: Colors.grey[600],
+                    ),
+                  )),
+            ],
+          ),
+        ),
+        SizedBox(height: ScreenUtils.height * 0.02),
+
+        // Show search results or "No data found" message
+        Obx(() {
+          if (controller.searchResults.isEmpty) {
+            // Show "No data found" message
+            return Container(
+              width: double.infinity,
+              padding: EdgeInsets.all(40),
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.search_off,
+                    size: 64,
+                    color: Color(0xFF999999),
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    'No topics found',
+                    style: TextStyle(
+                      color: Color(0xFF666666),
+                      fontSize: 18,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'Try searching with different keywords',
+                    style: TextStyle(
+                      color: Color(0xFF999999),
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          } else {
+            // Show search results as topic items
+            return Column(
+              children: controller.searchResults
+                  .map((topic) => _buildTopicSearchResult(topic))
+                  .toList(),
+            );
+          }
+        }),
+      ],
+    );
+  }
+
+  // Build topic search result item
+  Widget _buildTopicSearchResult(Map<String, dynamic> topic) {
+    return Container(
+      margin: EdgeInsets.only(bottom: 12),
+      child: Card(
+        elevation: 2,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: ListTile(
+          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          leading: Container(
+            padding: EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Color(0xFFE93A47).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              Icons.topic,
+              color: Color(0xFFE93A47),
+              size: 20,
+            ),
+          ),
+          title: Text(
+            topic['name']?.toString() ?? 'Topic',
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF4A4A4A),
+              fontSize: 16,
+            ),
+          ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (topic['subCategory'] != null)
+                Text(
+                  'In: ${topic['subCategory']['name'] ?? 'Unknown Category'}',
+                  style: TextStyle(
+                    color: Color(0xFF666666),
+                    fontSize: 12,
+                  ),
+                ),
+              if (topic['entriesCount'] != null)
+                Text(
+                  '${topic['entriesCount']} entries available',
+                  style: TextStyle(
+                    color: Color(0xFF999999),
+                    fontSize: 11,
+                  ),
+                ),
+            ],
+          ),
+          trailing: Icon(
+            Icons.arrow_forward_ios,
+            color: Color(0xFFE93A47),
+            size: 16,
+          ),
+          onTap: () => _onTopicSearchResultTap(topic),
+        ),
+      ),
+    );
+  }
+
+  // Handle topic search result tap
+  void _onTopicSearchResultTap(Map<String, dynamic> topic) async {
+    final topicId = topic['_id']?.toString();
+    final topicName = topic['name']?.toString();
+    final subCategoryId = topic['subCategory']?['_id']?.toString();
+    final subCategoryName = topic['subCategory']?['name']?.toString();
+    final mainCategoryId = controller.categoryId;
+    final mainCategoryName = controller.categoryName;
+
+    print('🔍 [KNOWLEDGE CENTER] Navigating to news screen...');
+    print('🔍 [KNOWLEDGE CENTER] Topic Name: "$topicName"');
+    print('🔍 [KNOWLEDGE CENTER] Topic ID: "$topicId"');
+    print('🔍 [KNOWLEDGE CENTER] SubCategory ID: "$subCategoryId"');
+    print('🔍 [KNOWLEDGE CENTER] MainCategory ID: "$mainCategoryId"');
+
+    if (topicId != null && topicName != null) {
+      // Navigate to news screen with topic data (like other screens)
+      Get.toNamed(Routes.NEWS_SCREEN, arguments: {
+        'topicId': topicId,
+        'topicName': topicName,
+        'subCategoryId': subCategoryId ?? '',
+        'subCategoryName': subCategoryName ?? '',
+        'categoryId': mainCategoryId ?? '',
+        'categoryName': mainCategoryName ?? '',
+      });
+
+      print('✅ [KNOWLEDGE CENTER] Navigation initiated with arguments:');
+      print('   - topicId: $topicId');
+      print('   - topicName: $topicName');
+      print('   - subCategoryId: $subCategoryId');
+      print('   - categoryId: $mainCategoryId');
+    } else {
+      print('❌ [KNOWLEDGE CENTER] Missing required data for navigation');
+      Get.snackbar('Error', 'Unable to navigate to topic');
+    }
+  }
+
+  // Highlight search occurrences in text (from news screen)
+  List<TextSpan> _highlightOccurrences(String text, String query) {
+    if (query.isEmpty) {
+      return [
+        TextSpan(
+          text: text,
+          style: TextStyle(
+            color: Color(0xFF797C7B),
+            fontSize: ScreenUtils.x(3.5),
+            fontWeight: FontWeight.w500,
+          ),
+        )
+      ];
+    }
+
+    List<TextSpan> spans = [];
+    String lowerText = text.toLowerCase();
+    String lowerQuery = query.toLowerCase();
+    int start = 0;
+
+    while (true) {
+      int index = lowerText.indexOf(lowerQuery, start);
+      if (index == -1) {
+        spans.add(TextSpan(
+          text: text.substring(start),
+          style: TextStyle(
+            color: Color(0xFF797C7B),
+            fontSize: 14,
+            fontWeight: FontWeight.w300,
+          ),
+        ));
+        break;
+      }
+
+      if (index > start) {
+        spans.add(TextSpan(
+          text: text.substring(start, index),
+          style: TextStyle(
+            color: Color(0xFF797C7B),
+            fontSize: 14,
+            fontWeight: FontWeight.w300,
+          ),
+        ));
+      }
+
+      spans.add(TextSpan(
+        text: text.substring(index, index + query.length),
+        style: TextStyle(
+          color: Color(0xFFE93A47),
+          fontSize: 14,
+          fontWeight: FontWeight.w400,
+        ),
+      ));
+
+      start = index + query.length;
+    }
+
+    return spans;
   }
 }
 

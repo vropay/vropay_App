@@ -21,30 +21,6 @@ class OnBoardingView extends GetView<OnBoardingController> {
       body: SafeArea(
         child: Column(
           children: [
-            // // Skip Button - Only show on first page
-            // Obx(() => controller.currentPage.value == 0
-            //     ? Padding(
-            //         padding: const EdgeInsets.all(0.0),
-            //         child: Row(
-            //           mainAxisAlignment: MainAxisAlignment.end,
-            //           children: [
-            //             TextButton(
-            //               onPressed: () {
-            //                 Get.offAllNamed(Routes.PROFILE);
-            //               },
-            //               child: Text(
-            //                 'Skip',
-            //                 style: TextStyle(
-            //                   color: KConstColors.onBoardingSubHeading,
-            //                   fontSize: 16,
-            //                   fontWeight: FontWeight.w500,
-            //                 ),
-            //               ),
-            //             ),
-            //           ],
-            //         ),
-            //       )
-            //     : const SizedBox.shrink()),
             Expanded(
               child: PageView(
                 controller: controller.pageController,
@@ -595,7 +571,6 @@ class OnBoardingView extends GetView<OnBoardingController> {
                 height: ScreenUtils.height * 0.06,
                 child: TextField(
                   controller: controller.phoneController,
-                  keyboardType: TextInputType.phone,
                   maxLength: 10,
                   decoration: InputDecoration(
                     prefixIcon: Padding(
@@ -765,7 +740,6 @@ class OnBoardingView extends GetView<OnBoardingController> {
                         // Ignore disposal errors
                       }
                     },
-                    keyboardType: TextInputType.number,
                     appContext: Get.context!,
                     onCompleted: (value) {
                       try {

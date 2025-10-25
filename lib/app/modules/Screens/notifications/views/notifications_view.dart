@@ -98,7 +98,7 @@ class _NotificationsViewState extends State<NotificationsView> {
       backgroundColor: Color(0xFFF7F7F7),
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(150),
-        child: CustomTopNavBar(selectedIndex: null),
+        child: CustomTopNavBar(selectedIndex: null, isMainScreen: true),
       ),
       body: SafeArea(
         child: Column(

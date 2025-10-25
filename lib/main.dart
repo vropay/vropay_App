@@ -58,7 +58,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       themeMode: ThemeMode.system,
       theme: TAppTheme.lightTheme,
-      darkTheme: TAppTheme.darkTheme,
+      darkTheme: TAppTheme.lightTheme,
       getPages: AppPages.routes,
       initialRoute: AppPages.INITIAL,
 

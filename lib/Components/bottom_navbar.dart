@@ -64,22 +64,22 @@ class CustomBottomNavBar extends StatelessWidget {
                               if (index == 1) {
                                 // Profile - full screen without changing state
                                 navController.updateIndex(index);
-                                Get.to(() => ProfileView());
+                                Get.offAll(() => ProfileView());
                               } else if (index == 2) {
                                 navController.setSubOption('learn');
                                 navController.updateIndex(index);
-                                Get.toNamed(Routes.LEARN_SCREEN);
+                                Get.offNamed(Routes.LEARN_SCREEN);
                               } else {
                                 navController.updateIndex(index);
                                 switch (index) {
                                   case 0:
-                                    Get.toNamed(Routes.DASHBOARD);
+                                    Get.offNamed(Routes.DASHBOARD);
                                     break;
                                   case 3:
-                                    Get.toNamed('/shop');
+                                    Get.offNamed('/shop');
                                     break;
                                   case 4:
-                                    Get.toNamed(Routes.NOTIFICATIONS);
+                                    Get.offNamed(Routes.NOTIFICATIONS);
                                     break;
                                 }
                               }

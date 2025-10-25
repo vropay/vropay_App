@@ -428,6 +428,76 @@ class LearnService extends GetxService {
     }
   }
 
+  // Search subcategories by query
+  Future<ApiResponse<Map<String, dynamic>>> searchSubCategories(
+      String mainCategoryId, String query) async {
+    try {
+      isLoading.value = true;
+      print(
+          '🚀 LearnService - Searching subcategories for mainId: $mainCategoryId, query: $query');
+
+      final res = await _api
+          .get(ApiConstant.searchSubCategories(mainCategoryId, query));
+      print('✅ LearnService - Subcategory search response: ${res.data}');
+
+      final data = _unwrap(res.data);
+
+      // Backend returns results in 'results' key with pagination
+      List<Map<String, dynamic>> list = [];
+      if (data is Map<String, dynamic> && data['results'] != null) {
+        list = (data['results'] as List).cast<Map<String, dynamic>>();
+        print('🔍 LearnService - Found ${list.length} search results');
+      }
+
+      return ApiResponse.success({
+        'items': list,
+        'pagination': data['pagination'],
+        'searchQuery': data['searchQuery'],
+        'targetMainCategory': data['targetMainCategory']
+      });
+    } catch (e) {
+      print('❌ LearnService - Search subcategories error: $e');
+      throw _handle(e);
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  // Search topics by query
+  Future<ApiResponse<Map<String, dynamic>>> searchTopics(
+      String mainCategoryId, String query) async {
+    try {
+      isLoading.value = true;
+      print(
+          '🚀 LearnService - Searching topics for mainId: $mainCategoryId, query: $query');
+
+      final res =
+          await _api.get(ApiConstant.searchTopics(mainCategoryId, query));
+      print('✅ LearnService - Topic search response: ${res.data}');
+
+      final data = _unwrap(res.data);
+
+      // Backend returns results in 'results' key with pagination
+      List<Map<String, dynamic>> list = [];
+      if (data is Map<String, dynamic> && data['results'] != null) {
+        list = (data['results'] as List).cast<Map<String, dynamic>>();
+        print('🔍 LearnService - Found ${list.length} topic search results');
+      }
+
+      return ApiResponse.success({
+        'items': list,
+        'pagination': data['pagination'],
+        'searchQuery': data['searchQuery'],
+        'targetMainCategory': data['targetMainCategory']
+      });
+    } catch (e) {
+      print('❌ LearnService - Search topics error: $e');
+      throw _handle(e);
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   // Search content within a subcategory
   Future<ApiResponse<Map<String, dynamic>>> searchContentInSubCategory(
       String subCategoryId, String searchQuery) async {
@@ -682,6 +752,69 @@ class LearnService extends GetxService {
     } catch (e) {
       print('❌ LearnService - Error getting current user ID: $e');
       return null;
+    }
+  }
+
+  // Get continue reading data - last read topic
+  Future<ApiResponse<Map<String, dynamic>>> getContinueReading() async {
+    try {
+      isLoading.value = true;
+      print('🚀 LearnService - Getting continue reading data');
+
+      final res = await _api.get(ApiConstant.continueReading);
+      print('✅ LearnService - Continue reading response: ${res.data}');
+
+      final data = _unwrap(res.data);
+
+      // Extract topics list from paginated response
+      if (data != null && data is Map) {
+        final topicsList = data['topics'];
+
+        if (topicsList != null && topicsList is List && topicsList.isNotEmpty) {
+          // Get the first (most recent) topic
+          final firstTopic = topicsList[0] as Map<String, dynamic>;
+
+          // Prepare last read entry with all required fields
+          Map<String, dynamic>? lastReadEntry;
+          if (firstTopic['lastReadEntry'] != null) {
+            final entry = firstTopic['lastReadEntry'] as Map<String, dynamic>;
+            lastReadEntry = {
+              '_id': entry['_id']?.toString(),
+              'title': entry['title']?.toString() ?? 'No Title',
+              'image': entry['image']?.toString() ?? '',
+              'thumbnail': entry['image']?.toString() ?? '',
+              'body': entry['body']?.toString() ?? '',
+              'description': entry['description']?.toString() ?? '',
+              'readAt': entry['readAt'],
+            };
+          }
+
+          // Transform to match expected format
+          final transformedData = {
+            'topicId': firstTopic['_id']?.toString(),
+            'topicName': firstTopic['name']?.toString(),
+            'subCategoryId': firstTopic['subCategory']?['_id']?.toString(),
+            'mainCategoryId': firstTopic['mainCategory']?['_id']?.toString(),
+            'totalEntries': firstTopic['totalEntries'],
+            'readEntries': firstTopic['readEntries'],
+            'progressPercentage': firstTopic['progressPercentage'],
+            'lastReadEntry': lastReadEntry,
+            'lastReadAt': firstTopic['lastReadAt'],
+          };
+
+          print('📖 LearnService - Continue reading data: $transformedData');
+          return ApiResponse.success(transformedData);
+        }
+      }
+
+      print('⚠️ LearnService - No continue reading data available');
+      return ApiResponse.success({});
+    } catch (e) {
+      print('❌ LearnService - Continue reading error: $e');
+      // Return success with empty map instead of throwing, so UI can handle gracefully
+      return ApiResponse.success({});
+    } finally {
+      isLoading.value = false;
     }
   }
 

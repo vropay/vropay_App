@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:vropay_final/app/core/services/knowledge_service.dart';
 import 'package:vropay_final/app/core/services/learn_service.dart';
 import 'package:vropay_final/app/routes/app_pages.dart';
+import 'package:vropay_final/app/modules/Screens/news/views/news_detail_screen.dart';
 
 class KnowledgeCenterScreenController extends GetxController {
   final KnowledgeService _knowledgeService = Get.find<KnowledgeService>();
@@ -25,6 +28,9 @@ class KnowledgeCenterScreenController extends GetxController {
   final RxString selectedSubCategoryId = ''.obs;
   final RxString selectedLearnTopicId = ''.obs;
 
+  // Continue reading data
+  final RxMap<String, dynamic> continueReadingData = <String, dynamic>{}.obs;
+
   // Observable variables for content management
   final RxList<Map<String, dynamic>> contentDetails =
       <Map<String, dynamic>>[].obs;
@@ -36,11 +42,33 @@ class KnowledgeCenterScreenController extends GetxController {
   final RxString currentContentId = ''.obs;
   final RxBool isContentLoading = false.obs;
   final RxString searchQuery = ''.obs;
+  final RxBool isSearching = false.obs;
+  final RxString currentSearchQuery = ''.obs;
+
+  // TextField controller for search
+  final TextEditingController searchTextController = TextEditingController();
 
   // Category data from navigation
   String? categoryId;
   String? categoryName;
   Map<String, dynamic>? categoryData;
+
+  Timer? _searchDebounce;
+
+  // Debounced search method
+  void searchTopicsDebounced(String query) {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(Duration(milliseconds: 500), () {
+      searchTopics(query);
+    });
+  }
+
+  @override
+  void onClose() {
+    _searchDebounce?.cancel();
+    searchTextController.dispose();
+    super.onClose();
+  }
 
   final count = 0.obs;
 
@@ -64,6 +92,36 @@ class KnowledgeCenterScreenController extends GetxController {
       loadLearnData();
     } else {
       loadKnowledgeCenter();
+    }
+
+    // Load continue reading data
+    loadContinueReading();
+  }
+
+  // Load continue reading data - last read topic
+  Future<void> loadContinueReading() async {
+    try {
+      print('🚀 KnowledgeCenter - Loading continue reading data');
+
+      final response = await _learnService.getContinueReading();
+
+      if (response.success &&
+          response.data != null &&
+          response.data!.isNotEmpty) {
+        continueReadingData.assignAll(response.data!);
+        print(
+            '✅ KnowledgeCenter - Continue reading data loaded: ${continueReadingData['topicName']}');
+        print('   - Topic ID: ${continueReadingData['topicId']}');
+        print('   - Progress: ${continueReadingData['progressPercentage']}%');
+        print(
+            '   - Read: ${continueReadingData['readEntries']}/${continueReadingData['totalEntries']}');
+      } else {
+        print('⚠️ KnowledgeCenter - No continue reading data available');
+        continueReadingData.clear();
+      }
+    } catch (e) {
+      print('❌ KnowledgeCenter - Continue reading error: $e');
+      continueReadingData.clear();
     }
   }
 
@@ -507,7 +565,7 @@ class KnowledgeCenterScreenController extends GetxController {
   // Clear search results
   void clearSearchResults() {
     searchResults.clear();
-    searchQuery.value = '';
+    currentSearchQuery.value = '';
   }
 
   // Navigate to content detail with full content loading
@@ -555,6 +613,84 @@ class KnowledgeCenterScreenController extends GetxController {
         'categoryName': categoryName,
       });
     }
+  }
+
+  // Navigate to continue reading - last read entry detail
+  void onContinueReadingTap() {
+    if (continueReadingData.isEmpty) {
+      Get.snackbar('Info', 'No previous topic to continue reading');
+      return;
+    }
+
+    final lastReadEntry = continueReadingData['lastReadEntry'];
+
+    print('🚀 KnowledgeCenter - Navigating to continue reading entry');
+    print('   - Last Read Entry: $lastReadEntry');
+
+    // Check if we have the last read entry data
+    if (lastReadEntry == null ||
+        (lastReadEntry is Map && lastReadEntry.isEmpty)) {
+      print(
+          '⚠️ KnowledgeCenter - No last read entry found, navigating to topic');
+      _navigateToTopic();
+      return;
+    }
+
+    final entryId = lastReadEntry['_id']?.toString();
+    final entryTitle = lastReadEntry['title']?.toString();
+
+    print('   - Entry ID: $entryId');
+    print('   - Entry Title: $entryTitle');
+
+    // Validate entry ID
+    if (entryId == null || entryId.isEmpty) {
+      print('⚠️ KnowledgeCenter - Entry ID is missing, navigating to topic');
+      _navigateToTopic();
+      return;
+    }
+
+    // Navigate directly to news detail screen with the last read entry
+    Get.to(
+      () => NewsDetailScreen(news: lastReadEntry),
+      transition: Transition.rightToLeft,
+      duration: Duration(milliseconds: 300),
+    );
+  }
+
+  // Fallback: Navigate to topic if entry data is not available
+  void _navigateToTopic() {
+    final topicId = continueReadingData['topicId']?.toString();
+    final topicName = continueReadingData['topicName']?.toString();
+    final subCategoryId = continueReadingData['subCategoryId']?.toString();
+    final mainCategoryId = continueReadingData['mainCategoryId']?.toString();
+
+    print('🚀 KnowledgeCenter - Fallback: Navigating to topic');
+    print('   - Topic ID: $topicId');
+    print('   - Topic Name: $topicName');
+
+    // Validate required parameters
+    if (topicId == null || topicId.isEmpty) {
+      Get.snackbar('Error', 'Topic ID is missing');
+      return;
+    }
+
+    if (subCategoryId == null || subCategoryId.isEmpty) {
+      Get.snackbar('Error', 'SubCategory ID is missing');
+      return;
+    }
+
+    if (mainCategoryId == null || mainCategoryId.isEmpty) {
+      Get.snackbar('Error', 'Category ID is missing');
+      return;
+    }
+
+    // Navigate to news screen with topic data
+    Get.toNamed(Routes.NEWS_SCREEN, arguments: {
+      'topicId': topicId,
+      'topicName': topicName ?? 'Topic',
+      'subCategoryId': subCategoryId,
+      'categoryId': mainCategoryId,
+    });
   }
 
 // Helper method to store complete data structure
@@ -653,5 +789,108 @@ class KnowledgeCenterScreenController extends GetxController {
       colorText: Colors.white,
       duration: Duration(seconds: 4),
     );
+  }
+
+  // Search topics by query using subcategory search
+  Future<void> searchTopics(String query) async {
+    try {
+      if (query.trim().isEmpty) {
+        // Clear search results if query is empty
+        searchResults.clear();
+        currentSearchQuery.value = '';
+        return;
+      }
+
+      isSearching.value = true;
+      currentSearchQuery.value = query;
+      print('🚀 KnowledgeCenter - Searching topics: $query');
+
+      if (categoryId == null) {
+        Get.snackbar('Error', 'No category ID available for search');
+        return;
+      }
+
+      // First, get all subcategories for the main category
+      final subCategoriesResponse =
+          await _learnService.getCompleteMainCategoryData(categoryId!);
+
+      if (!subCategoriesResponse.success ||
+          subCategoriesResponse.data == null) {
+        Get.snackbar('Error', 'Failed to load subcategories');
+        return;
+      }
+
+      final subCategories = subCategoriesResponse.data!['subCategories']
+          as List<Map<String, dynamic>>;
+      print(
+          '🔍 KnowledgeCenter - Found ${subCategories.length} subcategories to search');
+
+      // Search for topics within subcategories
+      List<Map<String, dynamic>> foundTopics = [];
+
+      for (var subCategory in subCategories) {
+        if (subCategory['topics'] != null) {
+          final topics = subCategory['topics'] as List<Map<String, dynamic>>;
+
+          for (var topic in topics) {
+            final topicName = topic['name']?.toString().toLowerCase() ?? '';
+            final searchQuery = query.toLowerCase();
+
+            // Check if topic name contains the search query
+            if (topicName.contains(searchQuery)) {
+              // Add subcategory info to the topic
+              topic['subCategory'] = {
+                '_id': subCategory['_id'],
+                'name': subCategory['name'],
+              };
+              topic['entriesCount'] = (topic['entries'] as List?)?.length ?? 0;
+              foundTopics.add(topic);
+            }
+          }
+        }
+      }
+
+      // Sort by relevance (exact matches first, then partial matches)
+      foundTopics.sort((a, b) {
+        final aName = a['name']?.toString().toLowerCase() ?? '';
+        final bName = b['name']?.toString().toLowerCase() ?? '';
+        final searchQuery = query.toLowerCase();
+
+        // Exact match gets highest priority
+        if (aName == searchQuery && bName != searchQuery) return -1;
+        if (bName == searchQuery && aName != searchQuery) return 1;
+
+        // Starts with query gets second priority
+        if (aName.startsWith(searchQuery) && !bName.startsWith(searchQuery))
+          return -1;
+        if (bName.startsWith(searchQuery) && !aName.startsWith(searchQuery))
+          return 1;
+
+        // Alphabetical order for other matches
+        return aName.compareTo(bName);
+      });
+
+      searchResults.assignAll(foundTopics);
+      print(
+          '✅ KnowledgeCenter - Found ${searchResults.length} topics matching "$query"');
+
+      if (foundTopics.isEmpty) {
+        Get.snackbar('Info', 'No topics found matching "$query"');
+      }
+    } catch (e) {
+      print('❌ KnowledgeCenter - Search error: $e');
+      Get.snackbar('Error', 'Search failed: ${e.toString()}');
+    } finally {
+      isSearching.value = false;
+    }
+  }
+
+  // Check if currently showing search results
+  bool get isShowingSearchResults => searchResults.isNotEmpty;
+
+  void clearSearch() {
+    searchResults.clear();
+    currentSearchQuery.value = '';
+    searchTextController.clear();
   }
 }

@@ -14,7 +14,7 @@ class DashboardView extends GetView<DashboardController> {
     return Scaffold(
       appBar: PreferredSize(
           preferredSize: Size.fromHeight(ScreenUtils.height * 0.15),
-          child: CustomTopNavBar()),
+          child: CustomTopNavBar(isMainScreen: true)),
       body: Padding(
         padding: const EdgeInsets.only(top: 20),
         child: Column(

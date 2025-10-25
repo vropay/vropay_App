@@ -39,7 +39,7 @@ class ProfileView extends StatelessWidget {
       backgroundColor: Color(0xFFF7F7F7),
       appBar: PreferredSize(
           preferredSize: Size.fromHeight(ScreenUtils.height * 0.15),
-          child: CustomTopNavBar(selectedIndex: null)),
+          child: CustomTopNavBar(selectedIndex: null, isMainScreen: true)),
       body: Obx(() {
         if (controller.isLoading.value ||
             controller.user.value == null ||
@@ -141,13 +141,6 @@ class _ProfileSection extends StatelessWidget {
           ),
         );
       }
-
-      print('🔍 ProfileView - Current user data: ${user.toJson()}');
-      print(
-          '🔍 ProfileView - FirstName: ${user.firstName}, LastName: ${user.lastName}');
-      print('🔍 ProfileView - Email: ${user.email}, Mobile: ${user.mobile}');
-      print(
-          '🔍 ProfileView - Gender: ${user.gender}, Profession: ${user.profession}');
 
       return Stack(
         clipBehavior: Clip.none,
@@ -326,11 +319,11 @@ class _ProfileSection extends StatelessWidget {
                 _buildInfoRow(
                   icon: Icons.email_outlined,
                   label: 'Email id',
-                  value: user.email ?? 'N/A',
+                  value: user.email,
                   controller: controller.emailController,
                   isEditMode: isEditMode,
                   hint: 'Enter email',
-                  width: 170,
+                  width: ScreenUtils.width * 0.35,
                 ),
                 SizedBox(
                     height: isEditMode
@@ -425,7 +418,8 @@ class _ProfileSection extends StatelessWidget {
                           color: Color(0xFF616161),
                           fontWeight: FontWeight.w600,
                         ),
-                        overflow: TextOverflow.ellipsis,
+                        overflow: TextOverflow.visible,
+                        maxLines: 1,
                       ),
                     ),
                   ),

@@ -15,7 +15,7 @@ class LearnScreenView extends GetView<LearnScreenController> {
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(150),
-        child: CustomTopNavBar(selectedIndex: null),
+        child: CustomTopNavBar(selectedIndex: null, isMainScreen: true),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -174,7 +174,7 @@ class LearnScreenView extends GetView<LearnScreenController> {
     VoidCallback onPressed,
   ) {
     return Container(
-      height: ScreenUtils.height * 0.35,
+      height: ScreenUtils.height * 0.36,
       width: double.infinity,
       padding: EdgeInsets.only(top: 20, bottom: 10, left: 20, right: 0),
       decoration: BoxDecoration(

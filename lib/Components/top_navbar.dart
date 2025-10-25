@@ -7,11 +7,13 @@ import 'back_icon.dart';
 class CustomTopNavBar extends StatelessWidget {
   final int? selectedIndex;
   final Function(int)? onItemTap;
+  final bool isMainScreen; // Add this parameter to identify main screens
 
   const CustomTopNavBar({
     super.key,
     this.selectedIndex,
     this.onItemTap,
+    this.isMainScreen = false, // Default to false for backward compatibility
   });
 
   @override
@@ -31,7 +33,17 @@ class CustomTopNavBar extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(left: 8.0),
             child: GestureDetector(
-              onTap: () => Get.back(),
+              onTap: () {
+                // If it's a main screen, don't allow back navigation
+                if (isMainScreen) {
+                  // Do nothing - stay on current screen
+                  return;
+                }
+                // Otherwise, go back if there's a previous route
+                if (Get.previousRoute.isNotEmpty && Get.previousRoute != '/') {
+                  Get.back();
+                }
+              },
               child: BackIcon(),
             ),
           ),

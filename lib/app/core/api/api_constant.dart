@@ -139,6 +139,9 @@ class ApiConstant {
           String topicId, String entryId) =>
       '$apiVersion/main-category/$mainCategoryId/sub-category/$subCategoryId/topic/$topicId/entry/$entryId/mark-read';
 
+  // Continue reading endpoint
+  static const String continueReading = '$apiVersion/continue-reading';
+
   // Community endpoints
   static String communityMainCategories = '$apiVersion/main-categories';
 
@@ -158,6 +161,14 @@ class ApiConstant {
   static String searchEntriesInTopic(
           String mainCategoryId, String subCategoryId, String topicId) =>
       '$apiVersion/main-category/$mainCategoryId/sub-category/$subCategoryId/topic/$topicId/search';
+
+  // New subcategory search endpoint
+  static String searchSubCategories(String mainCategoryId, String query) =>
+      '$baseUrl$apiVersion/search/subcategories?query=${Uri.encodeComponent(query)}&mainCategoryId=$mainCategoryId';
+
+  // New topic search endpoint
+  static String searchTopics(String mainCategoryId, String query) =>
+      '$baseUrl$apiVersion/search/topics?query=${Uri.encodeComponent(query)}&mainCategoryId=$mainCategoryId';
 
 // User Interest Endpoints (for checking user permissions)
   static String getUserInterests(String userId) =>
