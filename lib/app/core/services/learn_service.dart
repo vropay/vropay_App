@@ -393,8 +393,38 @@ class LearnService extends GetxService {
       final res = await _api.get(ApiConstant.learnEntryContent(entryId));
       print('✅ LearnService - Entry content response: ${res.data}');
 
-      final data = _unwrap(res.data);
-      return ApiResponse.success(data);
+      final unwrapped = _unwrap(res.data);
+
+      // If backend returned a non-JSON response (e.g., HTML 404 page), _unwrap
+      // will return a String. Guard against that and return a clean error so
+      // callers don't try to treat a String as a Map and crash.
+      if (unwrapped == null) {
+        print(
+            '⚠️ LearnService - Entry content unwrapped to null for entryId=$entryId');
+        return ApiResponse.error('Empty entry content',
+            statusCode: res.statusCode);
+      }
+
+      if (unwrapped is String) {
+        // Log raw body for debugging and return an error result preserving
+        // the raw response in the message so callers can log it if needed.
+        final raw = unwrapped;
+        print(
+            '⚠️ LearnService - Entry content is plain text/HTML instead of JSON for entryId=$entryId. Raw body:\n$raw');
+        return ApiResponse.error(
+            'Non-JSON response from server: ${res.statusCode}',
+            statusCode: res.statusCode);
+      }
+
+      if (unwrapped is Map<String, dynamic>) {
+        return ApiResponse.success(unwrapped);
+      }
+
+      // Unexpected type - be defensive
+      print(
+          '⚠️ LearnService - Entry content returned unexpected type (${unwrapped.runtimeType}) for entryId=$entryId');
+      return ApiResponse.error('Invalid entry content format',
+          statusCode: res.statusCode);
     } catch (e) {
       print('❌ LearnService - Entry content error: $e');
       throw _handle(e);
@@ -562,9 +592,56 @@ class LearnService extends GetxService {
         'limit': limit.toString(),
       });
 
-      print('✅ LearnService - Search response: ${res.data}');
+      // Extra debug information to help diagnose missing results
+      try {
+        print('✅ LearnService - Search response status: ${res.statusCode}');
+        print('🔗 LearnService - Full request URI: ${res.requestOptions.uri}');
+        print(
+            '📦 LearnService - Raw response data (type: ${res.data.runtimeType}): ${res.data}');
+      } catch (e) {
+        print('⚠️ LearnService - Failed to print detailed response info: $e');
+      }
 
       final data = _unwrap(res.data);
+
+      // If server reports the main category is not found, try a subcategory-level search
+      try {
+        final status = res.statusCode ?? 0;
+        final raw = res.data;
+        final serverMessage =
+            raw is Map ? (raw['message']?.toString() ?? '') : '';
+
+        if (status == 404 ||
+            serverMessage.toLowerCase().contains('main category not found')) {
+          print(
+              '🔁 LearnService - Topic search returned 404/Main category not found. Falling back to subcategory search for subCategoryId=$subCategoryId');
+          try {
+            final subResp =
+                await searchContentInSubCategory(subCategoryId, query);
+            if (subResp.success && subResp.data != null) {
+              final items =
+                  subResp.data!['items'] as List<Map<String, dynamic>>? ?? [];
+              // Build a response-shaped map similar to topic search
+              final shaped = {
+                'results': items,
+                'pagination': {},
+                'searchQuery': query,
+                'targetMainCategory': null,
+              };
+              print(
+                  '✅ LearnService - Subcategory fallback returned ${items.length} items');
+              return ApiResponse.success(shaped);
+            } else {
+              print('⚠️ LearnService - Subcategory fallback returned no data');
+            }
+          } catch (e) {
+            print('⚠️ LearnService - Subcategory fallback failed: $e');
+          }
+        }
+      } catch (e) {
+        print(
+            '⚠️ LearnService - Error while evaluating fallback condition: $e');
+      }
 
       // The backend returns the search results with pagination info
       if (data is Map<String, dynamic>) {
@@ -592,12 +669,130 @@ class LearnService extends GetxService {
           }
         }
 
+        // If results exist, return immediately
+        if (data['results'] is List && (data['results'] as List).isNotEmpty) {
+          return ApiResponse.success(data);
+        }
+
+        // Debug: no results found with 'query' parameter. Retry with 'q' to
+        // handle backends that expect that parameter name.
+        try {
+          print(
+              '🔁 LearnService - No results with "query" param; retrying using "q" param');
+          final res2 = await _api.get(url, queryParameters: {
+            'q': query,
+            'page': page.toString(),
+            'limit': limit.toString(),
+          });
+          print('✅ LearnService - Retry response status: ${res2.statusCode}');
+          print(
+              '🔗 LearnService - Retry request URI: ${res2.requestOptions.uri}');
+          print(
+              '📦 LearnService - Retry raw data (type: ${res2.data.runtimeType}): ${res2.data}');
+
+          final data2 = _unwrap(res2.data);
+          if (data2 is Map<String, dynamic> && data2['results'] is List) {
+            // Convert any HTML-marked highlights to plain text
+            for (var entry in data2['results']) {
+              if (entry is Map<String, dynamic>) {
+                if (entry['body'] != null &&
+                    entry['body'].toString().isNotEmpty) {
+                  entry['body'] = _convertHtmlToText(entry['body'].toString());
+                }
+                if (entry['title'] != null &&
+                    entry['title'].toString().isNotEmpty) {
+                  entry['title'] =
+                      _convertHtmlToText(entry['title'].toString());
+                }
+                if (entry['highlightedTitle'] != null &&
+                    entry['highlightedTitle'].toString().isNotEmpty) {
+                  entry['highlightedTitle'] =
+                      _convertHtmlToText(entry['highlightedTitle'].toString());
+                }
+              }
+            }
+
+            if ((data2['results'] as List).isNotEmpty) {
+              print(
+                  '✅ LearnService - Retry with "q" returned ${(data2['results'] as List).length} results');
+              return ApiResponse.success(data2);
+            } else {
+              print(
+                  '⚠️ LearnService - Retry with "q" also returned zero results');
+            }
+          }
+        } catch (e) {
+          print('⚠️ LearnService - Retry with "q" failed: $e');
+        }
+
+        // If still here, return original (empty) data to caller
         return ApiResponse.success(data);
       } else {
         return ApiResponse.error('Invalid search response format');
       }
     } catch (e) {
       print('❌ LearnService - Search entries in topic error: $e');
+      throw _handle(e);
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  // Cross-category search across main categories
+  Future<ApiResponse<Map<String, dynamic>>> searchCrossCategory(String query,
+      {String? targetMainCategoryId, int page = 1, int limit = 10}) async {
+    try {
+      isLoading.value = true;
+      print('🚀 LearnService - Cross-category search for: $query');
+
+      final url = ApiConstant.crossCategorySearch(query,
+          targetMainCategoryId: targetMainCategoryId, page: page, limit: limit);
+      print('🌐 LearnService - Cross-category API URL: $url');
+
+      final res = await _api.get(url);
+
+      // Extra debug logging for cross-category
+      try {
+        print(
+            '✅ LearnService - Cross-category response status: ${res.statusCode}');
+        print(
+            '🔗 LearnService - Cross-category full request URI: ${res.requestOptions.uri}');
+        print(
+            '📦 LearnService - Cross-category raw data (type: ${res.data.runtimeType}): ${res.data}');
+      } catch (e) {
+        print(
+            '⚠️ LearnService - Failed to print cross-category response info: $e');
+      }
+
+      final data = _unwrap(res.data);
+
+      if (data is Map<String, dynamic>) {
+        // Convert any HTML-marked highlights to plain text
+        if (data['results'] is List) {
+          for (var item in data['results']) {
+            if (item is Map<String, dynamic>) {
+              if (item['title'] != null &&
+                  item['title'].toString().isNotEmpty) {
+                item['title'] = _convertHtmlToText(item['title'].toString());
+              }
+              if (item['highlightedTitle'] != null &&
+                  item['highlightedTitle'].toString().isNotEmpty) {
+                item['highlightedTitle'] =
+                    _convertHtmlToText(item['highlightedTitle'].toString());
+              }
+              if (item['body'] != null && item['body'].toString().isNotEmpty) {
+                item['body'] = _convertHtmlToText(item['body'].toString());
+              }
+            }
+          }
+        }
+
+        return ApiResponse.success(data);
+      }
+
+      return ApiResponse.error('Invalid cross-category response');
+    } catch (e) {
+      print('❌ LearnService - Cross-category search error: $e');
       throw _handle(e);
     } finally {
       isLoading.value = false;

@@ -173,6 +173,13 @@ class ApiConstant {
   static String searchTopics(String mainCategoryId, String query) =>
       '$baseUrl$apiVersion/search/topics?query=${Uri.encodeComponent(query)}&mainCategoryId=$mainCategoryId';
 
+  // Cross-category search endpoint
+  static String crossCategorySearch(String query,
+          {String? targetMainCategoryId, int page = 1, int limit = 10}) =>
+      '$baseUrl$apiVersion/search/cross-category?query=${Uri.encodeComponent(query)}'
+      '${targetMainCategoryId != null ? '&targetMainCategoryId=$targetMainCategoryId' : ''}'
+      '&page=$page&limit=$limit';
+
 // User Interest Endpoints (for checking user permissions)
   static String getUserInterests(String userId) =>
       '$apiVersion/users/$userId/interests'; // GET /api/users/:userId/interests

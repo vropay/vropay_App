@@ -56,6 +56,10 @@ class MessageController extends GetxController {
   final RxBool isSearching = false.obs;
   final RxList<Map<String, dynamic>> searchResults =
       <Map<String, dynamic>>[].obs;
+  // Cross-category search results (news-like content across main categories)
+  final RxList<Map<String, dynamic>> crossCategoryResults =
+      <Map<String, dynamic>>[].obs;
+  final RxBool hasCrossCategoryResults = false.obs;
 
   // Search debouncing timer
   Timer? _searchTimer;
@@ -977,6 +981,14 @@ class MessageController extends GetxController {
             'footer': map['footer'] ?? '',
             'createdAt': map['createdAt'] ?? '',
             'updatedAt': map['updatedAt'] ?? '',
+            // Include parent/main/sub/topic IDs if provided by backend
+            'mainCategoryId': map['parentMainCategoryId'] ??
+                map['mainCategoryId'] ??
+                map['categoryId'] ??
+                null,
+            'subCategoryId':
+                map['parentSubCategoryId'] ?? map['subCategoryId'] ?? null,
+            'topicId': map['parentTopicId'] ?? map['topicId'] ?? null,
           };
         }).toList();
 
@@ -1116,6 +1128,29 @@ class MessageController extends GetxController {
       searchResults.value = results;
       print(
           '✅ [MESSAGE CONTROLLER] Search completed: ${results.length} results');
+
+      // Also perform cross-category search to detect news content across main categories
+      try {
+        final learnService = Get.find<LearnService>();
+        final crossResp =
+            await learnService.searchCrossCategory(query, page: 1, limit: 5);
+        if (crossResp.success && crossResp.data != null) {
+          final List resultsList = crossResp.data!['results'] ?? [];
+          final parsed = resultsList.cast<Map<String, dynamic>>();
+          crossCategoryResults.assignAll(parsed);
+          hasCrossCategoryResults.value = parsed.isNotEmpty;
+          print(
+              '✅ [MESSAGE CONTROLLER] Cross-category results: ${parsed.length}');
+        } else {
+          crossCategoryResults.clear();
+          hasCrossCategoryResults.value = false;
+          print('⚠️ [MESSAGE CONTROLLER] No cross-category results');
+        }
+      } catch (e) {
+        print('❌ [MESSAGE CONTROLLER] Cross-category search failed: $e');
+        crossCategoryResults.clear();
+        hasCrossCategoryResults.value = false;
+      }
 
       // Debug: Print first few results
       if (results.isNotEmpty) {

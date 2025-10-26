@@ -7,6 +7,8 @@ import 'package:vropay_final/Components/back_icon.dart';
 import 'package:vropay_final/Utilities/constants/KImages.dart';
 import 'package:vropay_final/Utilities/screen_utils.dart';
 import 'package:vropay_final/app/modules/Screens/message/controllers/message_controller.dart';
+import 'package:vropay_final/app/core/services/learn_service.dart';
+import 'package:vropay_final/app/modules/Screens/news/controllers/news_controller.dart';
 import 'dart:ui';
 
 class MessageScreen extends StatefulWidget {
@@ -137,6 +139,39 @@ class _MessageScreenState extends State<MessageScreen> {
                           ),
                           textAlign: TextAlign.center,
                         ),
+                        SizedBox(width: ScreenUtils.width * 0.02),
+                        // Show a small badge if cross-category (news) results exist
+                        Obx(() {
+                          if (controller.hasCrossCategoryResults.value) {
+                            return Container(
+                              margin: EdgeInsets.only(left: 6),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Color(0xFF714FC0),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons
+                                        .article, // represents news-like content
+                                    size: 12,
+                                    color: Colors.white,
+                                  ),
+                                  SizedBox(width: 6),
+                                  Text(
+                                    'News',
+                                    style: TextStyle(
+                                        color: Colors.white, fontSize: 12),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }
+
+                          return const SizedBox.shrink();
+                        }),
                       ],
                     ),
                     actions: [
@@ -2311,39 +2346,76 @@ class _MessageScreenState extends State<MessageScreen> {
       // Use real search results from controller
       final filteredResults = controller.searchResults;
 
-      if (filteredResults.isEmpty) {
+      // If no topic-scoped results, but cross-category results exist, show them
+      if (filteredResults.isEmpty && controller.hasCrossCategoryResults.value) {
+        final cross = controller.crossCategoryResults;
         return Container(
           margin: EdgeInsets.only(left: 25, right: 24),
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: const Color(0xFFF5F5F5),
+            color: const Color(0xFFFFFFFF),
             borderRadius: BorderRadius.only(
-              bottomLeft: Radius.circular(12),
-              bottomRight: Radius.circular(12),
+              bottomLeft: Radius.circular(5),
+              bottomRight: Radius.circular(5),
             ),
           ),
-          child: const Column(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(
-                Icons.search_off,
-                size: 48,
-                color: Color(0xFF797C7B),
-              ),
-              SizedBox(height: 12),
-              Text(
-                'No results found',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Color(0xFF797C7B),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Row(
+                  children: const [
+                    Icon(Icons.article, size: 16, color: Color(0xFF714FC0)),
+                    SizedBox(width: 8),
+                    Text('News',
+                        style: TextStyle(
+                            color: Color(0xFF714FC0),
+                            fontWeight: FontWeight.w600)),
+                  ],
                 ),
               ),
+              ...cross.map((result) {
+                return GestureDetector(
+                    onTap: () => _shareEntryContent(result),
+                    child: Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.only(
+                          left: 28, top: 5, bottom: 5, right: 28),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFFFFF),
+                        borderRadius: BorderRadius.only(
+                          bottomLeft: Radius.circular(12),
+                          bottomRight: Radius.circular(12),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: RichText(
+                              text: TextSpan(
+                                style: const TextStyle(
+                                  color: Color(0xFF797C7B),
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                children: _buildHighlightedText(
+                                  result['title'] ?? '',
+                                  searchQuery,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ));
+              }).toList(),
             ],
           ),
         );
       }
 
+      // Default: show topic-scoped results (and optionally cross-category below)
       return Container(
         margin: EdgeInsets.only(left: 25, right: 24),
         padding: const EdgeInsets.all(8),
@@ -2356,41 +2428,95 @@ class _MessageScreenState extends State<MessageScreen> {
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: filteredResults.map((result) {
-            return GestureDetector(
-                onTap: () => _shareEntryContent(result),
-                child: Container(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  padding: const EdgeInsets.only(
-                      left: 28, top: 5, bottom: 5, right: 28),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFFFFF),
-                    borderRadius: BorderRadius.only(
-                      bottomLeft: Radius.circular(12),
-                      bottomRight: Radius.circular(12),
+          children: [
+            ...filteredResults.map((result) {
+              return GestureDetector(
+                  onTap: () => _shareEntryContent(result),
+                  child: Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.only(
+                        left: 28, top: 5, bottom: 5, right: 28),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFFFFF),
+                      borderRadius: BorderRadius.only(
+                        bottomLeft: Radius.circular(12),
+                        bottomRight: Radius.circular(12),
+                      ),
                     ),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: RichText(
-                          text: TextSpan(
-                            style: const TextStyle(
-                              color: Color(0xFF797C7B),
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                            ),
-                            children: _buildHighlightedText(
-                              result['title'] ?? '',
-                              searchQuery,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: RichText(
+                            text: TextSpan(
+                              style: const TextStyle(
+                                color: Color(0xFF797C7B),
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              children: _buildHighlightedText(
+                                result['title'] ?? '',
+                                searchQuery,
+                              ),
                             ),
                           ),
                         ),
+                      ],
+                    ),
+                  ));
+            }).toList(),
+            if (controller.hasCrossCategoryResults.value) ...[
+              const SizedBox(height: 6),
+              const Divider(),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Row(
+                  children: const [
+                    Icon(Icons.article, size: 16, color: Color(0xFF714FC0)),
+                    SizedBox(width: 8),
+                    Text('News',
+                        style: TextStyle(
+                            color: Color(0xFF714FC0),
+                            fontWeight: FontWeight.w600)),
+                  ],
+                ),
+              ),
+              ...controller.crossCategoryResults.map((result) {
+                return GestureDetector(
+                    onTap: () => _shareEntryContent(result),
+                    child: Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.only(
+                          left: 28, top: 5, bottom: 5, right: 28),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFFFFF),
+                        borderRadius: BorderRadius.only(
+                          bottomLeft: Radius.circular(12),
+                          bottomRight: Radius.circular(12),
+                        ),
                       ),
-                    ],
-                  ),
-                ));
-          }).toList(),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: RichText(
+                              text: TextSpan(
+                                style: const TextStyle(
+                                  color: Color(0xFF797C7B),
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                children: _buildHighlightedText(
+                                  result['title'] ?? '',
+                                  searchQuery,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ));
+              }).toList(),
+            ]
+          ],
         ),
       );
     });
@@ -2442,7 +2568,7 @@ class _MessageScreenState extends State<MessageScreen> {
     return spans;
   }
 
-  void _shareEntryContent(Map<String, dynamic> entry) {
+  Future<void> _shareEntryContent(Map<String, dynamic> entry) async {
     final entryId = entry['_id'] ?? '';
     final title = entry['title'] ?? '';
 
@@ -2450,7 +2576,250 @@ class _MessageScreenState extends State<MessageScreen> {
     final message = 'Check this out: $title';
 
     // Share the entry
-    controller.shareEntry(
+    // Ensure controller has the correct category/subcategory/topic IDs
+    try {
+      String? mainId = entry['mainCategoryId'] ??
+          entry['parentMainCategoryId'] ??
+          entry['categoryId'];
+      String? subId = entry['subCategoryId'] ?? entry['parentSubCategoryId'];
+      String? topicId = entry['topicId'] ?? entry['parentTopicId'];
+
+      // If any of the required IDs are missing, try fetching entry content to retrieve parent IDs
+      if ((mainId == null || mainId.toString().isEmpty) ||
+          (subId == null || subId.toString().isEmpty) ||
+          (topicId == null || topicId.toString().isEmpty)) {
+        try {
+          print(
+              '🔎 [MESSAGE SCREEN] Missing parent IDs on selected entry, fetching full entry content for entryId=$entryId');
+          final learnService = Get.find<LearnService>();
+          final resp = await learnService.getEntryContent(entryId.toString());
+
+          if (resp.success && resp.data != null) {
+            final data = resp.data!;
+            // Try multiple possible field names the backend may provide
+            mainId = mainId ??
+                data['parentMainCategoryId'] ??
+                data['mainCategoryId'] ??
+                data['mainCategory']?['_id'];
+            subId = subId ??
+                data['parentSubCategoryId'] ??
+                data['subCategoryId'] ??
+                data['subCategory']?['_id'];
+            topicId = topicId ??
+                data['parentTopicId'] ??
+                data['topicId'] ??
+                data['topic']?['_id'];
+            print(
+                '🔎 [MESSAGE SCREEN] Fetched parent IDs: main=$mainId, sub=$subId, topic=$topicId');
+          } else {
+            print(
+                '⚠️ [MESSAGE SCREEN] getEntryContent returned no usable data for entryId=$entryId; message=${resp.message}');
+
+            // Additional fallback: try to locate entry in NewsController in-memory articles
+            try {
+              NewsController newsController;
+              try {
+                newsController = Get.find<NewsController>();
+                print(
+                    '🔎 [MESSAGE SCREEN] Found existing NewsController for fallback lookup');
+              } catch (_) {
+                print(
+                    '🔎 [MESSAGE SCREEN] Creating NewsController for fallback lookup');
+                newsController =
+                    Get.put(NewsController(), tag: 'share-fallback');
+              }
+
+              // Try to find by _id first
+              Map<String, dynamic> matched = {};
+              if (newsController.newsArticles.isNotEmpty) {
+                matched = newsController.newsArticles.firstWhere(
+                    (a) => (a['_id']?.toString() ?? '') == entryId.toString(),
+                    orElse: () => <String, dynamic>{});
+                if (matched.isEmpty) {
+                  // Try title match as a fallback (loose)
+                  final titleLower = title.toString().toLowerCase();
+                  matched = newsController.newsArticles.firstWhere(
+                      (a) => (a['title']?.toString().toLowerCase() ?? '')
+                          .contains(titleLower),
+                      orElse: () => <String, dynamic>{});
+                }
+              }
+
+              if (matched.isNotEmpty) {
+                print(
+                    '🔎 [MESSAGE SCREEN] Matched entry in NewsController fallback: ${matched['title']}');
+                mainId = mainId ??
+                    matched['parentMainCategoryId'] ??
+                    newsController.categoryId ??
+                    matched['categoryId'];
+                subId = subId ??
+                    matched['parentSubCategoryId'] ??
+                    newsController.subCategoryId ??
+                    matched['subCategoryId'];
+                topicId = topicId ??
+                    matched['parentTopicId'] ??
+                    newsController.topicId ??
+                    matched['topicId'];
+                print(
+                    '🔎 [MESSAGE SCREEN] Inferred parent IDs from NewsController: main=$mainId, sub=$subId, topic=$topicId');
+              } else {
+                print(
+                    '⚠️ [MESSAGE SCREEN] No matching entry found in NewsController for fallback');
+              }
+            } catch (e2) {
+              print('⚠️ [MESSAGE SCREEN] NewsController fallback failed: $e2');
+            }
+          }
+        } catch (e) {
+          print('⚠️ [MESSAGE SCREEN] Failed to fetch entry content: $e');
+
+          // Additional fallback: try to locate entry in NewsController in-memory articles
+          try {
+            NewsController newsController;
+            try {
+              newsController = Get.find<NewsController>();
+              print(
+                  '🔎 [MESSAGE SCREEN] Found existing NewsController for fallback lookup');
+            } catch (_) {
+              print(
+                  '🔎 [MESSAGE SCREEN] Creating NewsController for fallback lookup');
+              newsController = Get.put(NewsController(), tag: 'share-fallback');
+            }
+
+            // Try to find by _id first
+            Map<String, dynamic> matched = {};
+            if (newsController.newsArticles.isNotEmpty) {
+              matched = newsController.newsArticles.firstWhere(
+                  (a) => (a['_id']?.toString() ?? '') == entryId.toString(),
+                  orElse: () => <String, dynamic>{});
+              if (matched.isEmpty) {
+                // Try title match as a fallback (loose)
+                final titleLower = title.toString().toLowerCase();
+                matched = newsController.newsArticles.firstWhere(
+                    (a) => (a['title']?.toString().toLowerCase() ?? '')
+                        .contains(titleLower),
+                    orElse: () => <String, dynamic>{});
+              }
+            }
+
+            if (matched.isNotEmpty) {
+              print(
+                  '🔎 [MESSAGE SCREEN] Matched entry in NewsController fallback: ${matched['title']}');
+              mainId = mainId ??
+                  matched['parentMainCategoryId'] ??
+                  newsController.categoryId ??
+                  matched['categoryId'];
+              subId = subId ??
+                  matched['parentSubCategoryId'] ??
+                  newsController.subCategoryId ??
+                  matched['subCategoryId'];
+              topicId = topicId ??
+                  matched['parentTopicId'] ??
+                  newsController.topicId ??
+                  matched['topicId'];
+              print(
+                  '🔎 [MESSAGE SCREEN] Inferred parent IDs from NewsController: main=$mainId, sub=$subId, topic=$topicId');
+            } else {
+              print(
+                  '⚠️ [MESSAGE SCREEN] No matching entry found in NewsController for fallback');
+            }
+          } catch (e2) {
+            print('⚠️ [MESSAGE SCREEN] NewsController fallback failed: $e2');
+          }
+
+          // Additional fallback: try cross-category search by title to locate parent IDs
+          if ((mainId == null || mainId.toString().isEmpty) ||
+              (subId == null || subId.toString().isEmpty) ||
+              (topicId == null || topicId.toString().isEmpty)) {
+            try {
+              print(
+                  '🔎 [MESSAGE SCREEN] Trying cross-category search fallback with title query: "$title"');
+              final learnService2 = Get.find<LearnService>();
+              final crossResp =
+                  await learnService2.searchCrossCategory(title.toString());
+              if (crossResp.success && crossResp.data != null) {
+                final data = crossResp.data!;
+                final results = (data['results'] as List<dynamic>?)
+                        ?.cast<Map<String, dynamic>>() ??
+                    [];
+                print(
+                    '🔎 [MESSAGE SCREEN] Cross-category search returned ${results.length} items');
+                Map<String, dynamic> matchedCross = {};
+                if (results.isNotEmpty) {
+                  matchedCross = results.firstWhere(
+                      (r) =>
+                          (r['_id']?.toString() ?? '') == entryId.toString() ||
+                          (r['title']?.toString() ?? '').toLowerCase() ==
+                              title.toString().toLowerCase(),
+                      orElse: () => <String, dynamic>{});
+                }
+
+                if (matchedCross.isNotEmpty) {
+                  print(
+                      '🔎 [MESSAGE SCREEN] Matched entry in cross-category results: ${matchedCross['title']}');
+                  mainId = mainId ??
+                      matchedCross['parentMainCategoryId'] ??
+                      matchedCross['mainCategoryId'] ??
+                      matchedCross['categoryId'];
+                  subId = subId ??
+                      matchedCross['parentSubCategoryId'] ??
+                      matchedCross['subCategoryId'] ??
+                      matchedCross['subcategoryId'] ??
+                      matchedCross['subCategory']?['_id'];
+                  topicId = topicId ??
+                      matchedCross['parentTopicId'] ??
+                      matchedCross['topicId'] ??
+                      matchedCross['topic']?['_id'];
+                  print(
+                      '🔎 [MESSAGE SCREEN] Inferred parent IDs from cross-category: main=$mainId, sub=$subId, topic=$topicId');
+                } else {
+                  print(
+                      '⚠️ [MESSAGE SCREEN] No match found in cross-category results for entryId=$entryId');
+                }
+              } else {
+                print(
+                    '⚠️ [MESSAGE SCREEN] Cross-category search returned no data for query: "$title"');
+              }
+            } catch (e3) {
+              print('⚠️ [MESSAGE SCREEN] Cross-category fallback failed: $e3');
+            }
+          }
+        }
+      }
+
+      // If still missing required IDs, abort and inform user
+      if (mainId == null ||
+          mainId.toString().isEmpty ||
+          subId == null ||
+          subId.toString().isEmpty ||
+          topicId == null ||
+          topicId.toString().isEmpty) {
+        print(
+            '❌ [MESSAGE SCREEN] Cannot share entry: missing category/topic metadata after fallbacks');
+        Get.snackbar('Cannot share',
+            'This item cannot be shared because category metadata is missing.',
+            snackPosition: SnackPosition.TOP, backgroundColor: Colors.red);
+        return;
+      }
+
+      if (mainId.toString().isNotEmpty) {
+        controller.categoryId.value = mainId.toString();
+      }
+      if (subId.toString().isNotEmpty) {
+        controller.subCategoryId.value = subId.toString();
+      }
+      if (topicId.toString().isNotEmpty) {
+        controller.topicId.value = topicId.toString();
+      }
+
+      print(
+          '🔁 [MESSAGE SCREEN] Set controller IDs from selected entry: main=${controller.categoryId.value}, sub=${controller.subCategoryId.value}, topic=${controller.topicId.value}');
+    } catch (e) {
+      print('⚠️ [MESSAGE SCREEN] Failed to set controller IDs from entry: $e');
+    }
+
+    // Now call shareEntry (it will validate IDs and show a user-friendly error if missing)
+    await controller.shareEntry(
       message: message,
       entryId: entryId,
     );
