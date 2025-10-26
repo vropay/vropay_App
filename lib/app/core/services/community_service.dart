@@ -352,6 +352,52 @@ class CommunityService extends GetxService {
     }
   }
 
+  // Get continue-reading topics (recently-read topics for the user)
+  Future<ApiResponse<List<Map<String, dynamic>>>> getContinueReadingTopics(
+      {String? mainCategoryId, int page = 1, int limit = 10}) async {
+    try {
+      isLoading.value = true;
+      print('🚀 CommunityService - Getting continue-reading topics');
+
+      final query = <String, String>{
+        'page': page.toString(),
+        'limit': limit.toString(),
+      };
+      if (mainCategoryId != null && mainCategoryId.isNotEmpty) {
+        query['mainCategoryId'] = mainCategoryId;
+      }
+
+      // Build query string
+      final qs = query.entries
+          .map((e) => '${e.key}=${Uri.encodeComponent(e.value)}')
+          .join('&');
+
+      final url = '${ApiConstant.continueReadingTopics}?$qs';
+      final res = await _apiClient.get(url);
+      print('✅ CommunityService - Continue-reading response: ${res.data}');
+
+      final data = _unwrap(res.data);
+      if (data is Map<String, dynamic> && data['topics'] != null) {
+        final items =
+            (data['topics'] as List).whereType<Map<String, dynamic>>().toList();
+        return ApiResponse.success(items);
+      }
+
+      // If API returns list directly
+      if (data is List) {
+        final items = data.whereType<Map<String, dynamic>>().toList();
+        return ApiResponse.success(items);
+      }
+
+      return ApiResponse.success(<Map<String, dynamic>>[]);
+    } catch (e) {
+      print('❌ CommunityService - Continue-reading error: $e');
+      throw _handle(e);
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   // Clear cache method for memory management
   void clearCache() {
     _cache.clear();

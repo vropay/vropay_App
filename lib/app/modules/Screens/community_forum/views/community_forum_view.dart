@@ -16,6 +16,16 @@ class CommunityForumView extends GetView<CommunityForumController> {
   @override
   Widget build(BuildContext context) {
     ScreenUtils.setContext(context);
+    // Ensure we reload last-visited screen after each build/frame so the AI
+    // fallback reflects the most recent navigation (e.g., after returning
+    // from the News screen).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      try {
+        controller.loadLastVisitedScreen();
+      } catch (e) {
+        // ignore errors during UI lifecycle
+      }
+    });
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9),
       bottomNavigationBar: CustomBottomNavBar(),
@@ -35,27 +45,108 @@ class CommunityForumView extends GetView<CommunityForumController> {
                     SizedBox(height: ScreenUtils.height * 0.04),
                     Padding(
                       padding: const EdgeInsets.only(left: 20, right: 20),
-                      child: TextField(
-                        decoration: InputDecoration(
-                            hintText:
-                                'Try searching the community like “STOCKS”',
-                            hintStyle: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w400,
-                                color: Color(0xFF4A4A4A)),
-                            filled: true,
-                            fillColor: const Color(0xFFDBEFFF).withOpacity(0.5),
-                            prefixIcon: Image.asset(KImages.searchIcon),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide.none,
+                      child: Column(
+                        children: [
+                          TextField(
+                            controller: controller.searchController,
+                            textInputAction: TextInputAction.search,
+                            onChanged: controller.onSearchChanged,
+                            onSubmitted: (q) => controller.submitSearch(q),
+                            decoration: InputDecoration(
+                              hintText:
+                                  'Try searching the community like “STOCKS”',
+                              hintStyle: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w400,
+                                  color: Color(0xFF4A4A4A)),
+                              filled: true,
+                              fillColor:
+                                  const Color(0xFFDBEFFF).withOpacity(0.5),
+                              prefixIcon: Padding(
+                                padding: const EdgeInsets.all(10.0),
+                                child: Image.asset(KImages.searchIcon),
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide.none,
+                              ),
+                              suffixIcon: IconButton(
+                                icon: Icon(CupertinoIcons.clear,
+                                    color: Color(0xFF4A4A4A)),
+                                onPressed: controller.clearSearchResults,
+                              ),
                             ),
-                            suffixIcon: Container(
-                                height: ScreenUtils.height * 0.01,
-                                width: ScreenUtils.width * 0.01,
-                                color: Color(0xFFF2F7FB),
-                                child: Icon(CupertinoIcons.clear,
-                                    color: Color(0xFF4A4A4A)))),
+                          ),
+
+                          // Topic suggestions (shows when user types)
+                          Obx(() {
+                            if (controller.currentSearchQuery.value.isEmpty) {
+                              return SizedBox.shrink();
+                            }
+
+                            final suggestions = controller.searchResults;
+                            if (suggestions.isEmpty) {
+                              return SizedBox.shrink();
+                            }
+
+                            return Container(
+                              width: double.infinity,
+                              margin:
+                                  EdgeInsets.only(top: 8, left: 20, right: 20),
+                              padding: EdgeInsets.only(left: 10, right: 20),
+                              constraints: BoxConstraints(
+                                maxHeight: ScreenUtils.height * 0.3,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                border: Border.all(
+                                    color: Colors.black.withOpacity(0.1)),
+                                borderRadius: BorderRadius.only(
+                                    bottomLeft: Radius.circular(5),
+                                    bottomRight: Radius.circular(5)),
+                              ),
+                              child: ListView.builder(
+                                shrinkWrap: true,
+                                itemCount: suggestions.length,
+                                itemBuilder: (context, index) {
+                                  final topic = suggestions[index];
+                                  return ListTile(
+                                    leading: Container(
+                                      padding: EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color:
+                                            Color(0xFF4A4A4A).withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Icon(
+                                        Icons.topic,
+                                        color: Color(0xFF4A4A4A),
+                                        size: 16,
+                                      ),
+                                    ),
+                                    title: Text(
+                                      topic['name']?.toString() ?? '',
+                                      style:
+                                          TextStyle(color: Color(0xFF797C7B)),
+                                    ),
+                                    subtitle: topic['subCategory'] != null
+                                        ? Text(
+                                            'In: ${topic['subCategory']['name']}',
+                                            style: TextStyle(
+                                              color: Color(0xFF999999),
+                                              fontSize: 12,
+                                            ),
+                                          )
+                                        : null,
+                                    onTap: () {
+                                      controller.onTopicSearchResultTap(topic);
+                                    },
+                                  );
+                                },
+                              ),
+                            );
+                          }),
+                        ],
                       ),
                     ),
                     SizedBox(height: ScreenUtils.height * 0.02),
@@ -144,23 +235,104 @@ class CommunityForumView extends GetView<CommunityForumController> {
                       ),
                     ),
                     SizedBox(height: ScreenUtils.height * 0.02),
-                    Container(
-                      width: double.infinity,
-                      margin: EdgeInsets.only(left: 20, right: 20),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 25, vertical: 16),
-                      decoration: BoxDecoration(
-                        color: Color(0xFFDBEFFF).withOpacity(0.5),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Text(
-                        "AI",
-                        style: TextStyle(
-                            color: Color(0xFF4A4A4A),
-                            fontSize: 20,
-                            fontWeight: FontWeight.w400),
-                      ),
-                    ),
+                    // Continue reading card (shows last-read topic; tapping opens Message screen)
+                    Obx(() {
+                      final item = controller.continueReadingTarget;
+                      if (item.isEmpty) {
+                        // Fallback: show small AI label if no continue-reading data
+                        // Make it tappable to attempt to open recent message screen
+                        return GestureDetector(
+                          onTap: controller.onContinueReadingTap,
+                          child: Container(
+                            width: double.infinity,
+                            margin: EdgeInsets.only(left: 20, right: 20),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 25, vertical: 16),
+                            decoration: BoxDecoration(
+                              color: Color(0xFFDBEFFF).withOpacity(0.5),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Obx(() {
+                              final rawName =
+                                  controller.lastVisitedScreenName.value;
+                              // Remove prefixes like "Messages - ", "Message — ", case-insensitive
+                              final display = rawName.isNotEmpty
+                                  ? rawName
+                                      .replaceAll(
+                                        RegExp(r'messages?\s*[-–—:]\s*',
+                                            caseSensitive: false),
+                                        '',
+                                      )
+                                      .trim()
+                                  : '';
+                              // Debug log to help trace saved value and displayed value
+                              print(
+                                  '🔍 CommunityForum - lastVisitedScreen raw="$rawName" display="$display"');
+                              final show = display.isNotEmpty ? display : 'AI';
+                              return Text(
+                                show,
+                                style: TextStyle(
+                                    color: Color(0xFF4A4A4A),
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w400),
+                              );
+                            }),
+                          ),
+                        );
+                      }
+
+                      final topicName = item['name']?.toString() ?? 'Topic';
+                      final subName =
+                          item['subCategory']?['name']?.toString() ?? '';
+
+                      return GestureDetector(
+                        onTap: controller.onContinueReadingTap,
+                        child: Container(
+                          width: double.infinity,
+                          margin: EdgeInsets.only(left: 20, right: 20),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 16),
+                          decoration: BoxDecoration(
+                            color: Color(0xFFDBEFFF).withOpacity(0.5),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Continue reading',
+                                style: TextStyle(
+                                  color: Color(0xFF4A4A4A),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              SizedBox(height: 6),
+                              Text(
+                                topicName,
+                                style: TextStyle(
+                                  color: Color(0xFF172B75),
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              if (subName.isNotEmpty) ...[
+                                SizedBox(height: 6),
+                                Text(
+                                  'In: $subName',
+                                  style: TextStyle(
+                                    color: Color(0xFF999999),
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ]
+                            ],
+                          ),
+                        ),
+                      );
+                    }),
                     SizedBox(height: ScreenUtils.height * 0.02),
                     // Dynamic content - API integration with existing UI
                     Obx(() {

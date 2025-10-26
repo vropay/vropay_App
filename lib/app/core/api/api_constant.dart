@@ -141,6 +141,9 @@ class ApiConstant {
 
   // Continue reading endpoint
   static const String continueReading = '$apiVersion/continue-reading';
+  // New: Continue reading topics (returns topics the user recently read)
+  static const String continueReadingTopics =
+      '$apiVersion/continue-reading-topics';
 
   // Community endpoints
   static String communityMainCategories = '$apiVersion/main-categories';

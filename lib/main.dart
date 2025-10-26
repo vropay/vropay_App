@@ -16,6 +16,15 @@ import 'Themes/themes.dart';
 import 'app/modules/common/controller/bottom_navbar_controller.dart';
 import 'app/routes/app_pages.dart';
 
+// List of main screen routes that should not allow back navigation
+const List<String> MAIN_SCREEN_ROUTES = [
+  '/dashboard',
+  '/learn-screen',
+  '/profile',
+  '/notifications',
+  '/knowledge-center-screen',
+];
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   Get.config(enableLog: false);

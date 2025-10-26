@@ -35,86 +35,94 @@ class ProfileView extends StatelessWidget {
       }
     });
 
-    return Scaffold(
-      backgroundColor: Color(0xFFF7F7F7),
-      appBar: PreferredSize(
-          preferredSize: Size.fromHeight(ScreenUtils.height * 0.15),
-          child: CustomTopNavBar(selectedIndex: null, isMainScreen: true)),
-      body: Obx(() {
-        if (controller.isLoading.value ||
-            controller.user.value == null ||
-            authService.currentUser.value == null) {
-          return Center(
-            child: CircularProgressIndicator(),
-          );
-        }
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) {
+        // Prevent back button from closing main screen
+        if (didPop) return;
+        // Do nothing - stay on current screen
+      },
+      child: Scaffold(
+        backgroundColor: Color(0xFFF7F7F7),
+        appBar: PreferredSize(
+            preferredSize: Size.fromHeight(ScreenUtils.height * 0.15),
+            child: CustomTopNavBar(selectedIndex: null, isMainScreen: true)),
+        body: Obx(() {
+          if (controller.isLoading.value ||
+              controller.user.value == null ||
+              authService.currentUser.value == null) {
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          }
 
-        return RefreshIndicator(
-          onRefresh: () async {
-            print('🔄 ProfileView - Pull to refresh triggered');
-            await controller.loadUserData();
-          },
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 25.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Obx(() => _ProfileSection(
-                    isEditMode: controller.isGeneralEditMode.value)),
-                SizedBox(height: screenHeight * 0.032),
-                Obx(() => _PreferencesSection(
-                    isEditMode: controller.isPreferencesEditMode.value)),
-                SizedBox(height: screenHeight * 0.036),
-                _SubscriptionBanner(),
-                SizedBox(height: screenHeight * 0.030),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: Color(0xFF4D84F7),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10))),
-                        onPressed: () {
-                          Get.dialog(SignOutDialog());
-                        },
-                        child: Text(
-                          'SIGN OUT',
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w400),
+          return RefreshIndicator(
+            onRefresh: () async {
+              print('🔄 ProfileView - Pull to refresh triggered');
+              await controller.loadUserData();
+            },
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 25.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Obx(() => _ProfileSection(
+                      isEditMode: controller.isGeneralEditMode.value)),
+                  SizedBox(height: screenHeight * 0.032),
+                  Obx(() => _PreferencesSection(
+                      isEditMode: controller.isPreferencesEditMode.value)),
+                  SizedBox(height: screenHeight * 0.036),
+                  _SubscriptionBanner(),
+                  SizedBox(height: screenHeight * 0.030),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: Color(0xFF4D84F7),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10))),
+                          onPressed: () {
+                            Get.dialog(SignOutDialog());
+                          },
+                          child: Text(
+                            'SIGN OUT',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w400),
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: Color(0xFF4D84F7),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10))),
-                        onPressed: () {
-                          Get.toNamed(Routes.DEACTIVATE_SCREEN);
-                        },
-                        child: Text(
-                          'DEACTIVATE',
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w400),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: Color(0xFF4D84F7),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10))),
+                          onPressed: () {
+                            Get.toNamed(Routes.DEACTIVATE_SCREEN);
+                          },
+                          child: Text(
+                            'DEACTIVATE',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w400),
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: screenHeight * 0.04),
-              ],
+                    ],
+                  ),
+                  SizedBox(height: screenHeight * 0.04),
+                ],
+              ),
             ),
-          ),
-        );
-      }),
-      bottomNavigationBar: CustomBottomNavBar(),
+          );
+        }),
+        bottomNavigationBar: CustomBottomNavBar(),
+      ),
     );
   }
 }

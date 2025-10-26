@@ -15,7 +15,7 @@ class LearnScreenView extends GetView<LearnScreenController> {
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(150),
-        child: CustomTopNavBar(selectedIndex: null, isMainScreen: true),
+        child: CustomTopNavBar(selectedIndex: null, isMainScreen: false),
       ),
       body: SafeArea(
         child: SingleChildScrollView(

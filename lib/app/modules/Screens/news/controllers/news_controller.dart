@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vropay_final/app/core/services/learn_service.dart';
 import 'package:vropay_final/app/modules/Screens/news/views/news_detail_screen.dart';
+import 'package:vropay_final/app/routes/app_pages.dart';
 
 class NewsController extends GetxController {
   final LearnService _learnService = Get.find<LearnService>();
@@ -60,6 +62,26 @@ class NewsController extends GetxController {
       print(
           '⚠️ News - topicId: $topicId, subCategoryId: $subCategoryId, categoryId: $categoryId');
       loadStaticNews();
+    }
+
+    // Persist this screen as last visited so other parts of the app (Community Forum AI)
+    // can navigate back here when the user taps the AI fallback.
+    saveLastVisitedScreen();
+  }
+
+  // Save last visited screen name & route to SharedPreferences
+  Future<void> saveLastVisitedScreen() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final name = topicName != null && topicName!.isNotEmpty
+          ? 'News — ${topicName!}'
+          : 'News';
+      final route = Routes.NEWS_SCREEN;
+      await prefs.setString('last_visited_screen_name', name);
+      await prefs.setString('last_visited_screen_route', route);
+      print('💾 News - Saved last visited screen: $name -> $route');
+    } catch (e) {
+      print('⚠️ News - Failed to save last visited screen: $e');
     }
   }
 

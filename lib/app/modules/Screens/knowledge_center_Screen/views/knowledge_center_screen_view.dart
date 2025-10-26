@@ -14,365 +14,376 @@ class KnowledgeCenterScreenView
   @override
   Widget build(BuildContext context) {
     ScreenUtils.setContext(context);
-    return Scaffold(
-      backgroundColor: const Color(0xFFF9F9F9),
-      bottomNavigationBar: CustomBottomNavBar(),
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(150),
-        child: CustomTopNavBar(selectedIndex: null, isMainScreen: true),
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 8),
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) {
+        // Prevent back button from closing main screen
+        if (didPop) return;
+        // Do nothing - stay on current screen
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF9F9F9),
+        bottomNavigationBar: CustomBottomNavBar(),
+        appBar: PreferredSize(
+          preferredSize: Size.fromHeight(150),
+          child: CustomTopNavBar(selectedIndex: null, isMainScreen: true),
+        ),
+        body: SafeArea(
+          child: Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 8),
 
-                    // Search field with suggestions dropdown (like news screen)
-                    Column(
-                      children: [
-                        Container(
-                          height: ScreenUtils.height * 0.05,
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            color: Color(0xFFDBEFFF).withOpacity(0.5),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Obx(() => TextField(
-                                controller: controller.searchTextController,
-                                onChanged: (value) {
-                                  controller.searchTopicsDebounced(value);
-                                },
-                                decoration: InputDecoration(
-                                  hintText:
-                                      'Try searching the topic like "STOCKS"',
-                                  hintStyle: TextStyle(
-                                    color: Color(0xFF4A4A4A),
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w300,
-                                  ),
-                                  prefixIcon: Image.asset(
-                                    KImages.searchIcon,
-                                    color: Color(0xFF4a4a4a),
-                                  ),
-                                  suffixIcon: controller
-                                          .currentSearchQuery.value.isNotEmpty
-                                      ? IconButton(
-                                          icon: Icon(
-                                            Icons.clear,
-                                            color: Color(0xFF4a4a4a),
-                                          ),
-                                          onPressed: () =>
-                                              controller.clearSearch(),
-                                        )
-                                      : null,
-                                  border: InputBorder.none,
-                                  contentPadding: EdgeInsets.symmetric(
-                                      horizontal: 20, vertical: 15),
-                                ),
-                              )),
-                        ),
-
-                        // Show search suggestions below search bar (like news screen)
-                        Obx(() {
-                          if (controller.currentSearchQuery.value.isNotEmpty) {
-                            final suggestions =
-                                controller.searchResults.where((topic) {
-                              return topic['name']
-                                  .toString()
-                                  .toLowerCase()
-                                  .contains(controller.currentSearchQuery.value
-                                      .toLowerCase());
-                            }).toList();
-
-                            if (suggestions.isNotEmpty) {
-                              return Container(
-                                width: double.infinity,
-                                margin: EdgeInsets.only(
-                                    top: 8, left: 20, right: 20),
-                                padding: EdgeInsets.only(left: 10, right: 20),
-                                constraints: BoxConstraints(
-                                  maxHeight: ScreenUtils.height * 0.3,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  border: Border.all(
-                                      color: Colors.black.withOpacity(0.1)),
-                                  borderRadius: BorderRadius.only(
-                                      bottomLeft: Radius.circular(5),
-                                      bottomRight: Radius.circular(5)),
-                                ),
-                                child: ListView.builder(
-                                  shrinkWrap: true,
-                                  itemCount: suggestions.length,
-                                  itemBuilder: (context, index) {
-                                    final topic = suggestions[index];
-                                    return ListTile(
-                                      leading: Container(
-                                        padding: EdgeInsets.all(8),
-                                        decoration: BoxDecoration(
-                                          color: Color(0xFF4A4A4A)
-                                              .withOpacity(0.1),
-                                          borderRadius:
-                                              BorderRadius.circular(8),
-                                        ),
-                                        child: Icon(
-                                          Icons.topic,
-                                          color: Color(0xFF4A4A4A),
-                                          size: 16,
-                                        ),
-                                      ),
-                                      title: RichText(
-                                        text: TextSpan(
-                                            children: _highlightOccurrences(
-                                              topic['name'] ?? '',
-                                              controller
-                                                  .currentSearchQuery.value,
-                                            ),
-                                            style: TextStyle(
-                                                color: Color(0xFF797C7B))),
-                                      ),
-                                      subtitle: topic['subCategory'] != null
-                                          ? Text(
-                                              'In: ${topic['subCategory']['name']}',
-                                              style: TextStyle(
-                                                color: Color(0xFF999999),
-                                                fontSize: 12,
-                                              ),
-                                            )
-                                          : null,
-                                      onTap: () {
-                                        print(
-                                            '🔍 SearchSuggestion - Tapped suggestion: ${topic['name']}');
-                                        _onTopicSearchResultTap(topic);
-                                      },
-                                    );
+                      // Search field with suggestions dropdown (like news screen)
+                      Column(
+                        children: [
+                          Container(
+                            height: ScreenUtils.height * 0.05,
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              color: Color(0xFFDBEFFF).withOpacity(0.5),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Obx(() => TextField(
+                                  controller: controller.searchTextController,
+                                  onChanged: (value) {
+                                    controller.searchTopicsDebounced(value);
                                   },
-                                ),
-                              );
-                            }
-                          }
-                          return SizedBox.shrink();
-                        }),
-                      ],
-                    ),
-
-                    SizedBox(height: ScreenUtils.height * 0.02),
-
-                    // Your existing header section (unchanged)
-                    SizedBox(
-                      width: double.infinity,
-                      child: Stack(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(left: 10, top: 10),
-                            child: Column(
-                              children: [
-                                RichText(
-                                  text: TextSpan(
-                                    style: const TextStyle(
-                                      fontSize: 70,
-                                      color: Color(0xFFFA7244),
+                                  decoration: InputDecoration(
+                                    hintText:
+                                        'Try searching the topic like "STOCKS"',
+                                    hintStyle: TextStyle(
+                                      color: Color(0xFF4A4A4A),
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w300,
                                     ),
-                                    children: [
-                                      TextSpan(
-                                        text: "push\n",
-                                        style: TextStyle(
-                                          color: Color(0xFFFA7244),
-                                          fontWeight: FontWeight.w300,
-                                        ),
-                                      ),
-                                      TextSpan(
-                                        text: "Your\n",
-                                        style: TextStyle(
-                                          color: Color(0xFFFF4601),
-                                          fontWeight: FontWeight.w300,
-                                        ),
-                                      ),
-                                      TextSpan(
-                                        text: "Limits",
-                                        style: TextStyle(
-                                          color: Color(0xFFBD1C19),
-                                          fontSize: 70,
-                                          fontWeight: FontWeight.w300,
-                                        ),
-                                      ),
-                                    ],
+                                    prefixIcon: Image.asset(
+                                      KImages.searchIcon,
+                                      color: Color(0xFF4a4a4a),
+                                    ),
+                                    suffixIcon: controller
+                                            .currentSearchQuery.value.isNotEmpty
+                                        ? IconButton(
+                                            icon: Icon(
+                                              Icons.clear,
+                                              color: Color(0xFF4a4a4a),
+                                            ),
+                                            onPressed: () =>
+                                                controller.clearSearch(),
+                                          )
+                                        : null,
+                                    border: InputBorder.none,
+                                    contentPadding: EdgeInsets.symmetric(
+                                        horizontal: 20, vertical: 15),
                                   ),
-                                ),
-                              ],
-                            ),
+                                )),
                           ),
-                          Positioned(
-                            top: ScreenUtils.height * 0.06,
-                            right: ScreenUtils.width * 0.0,
-                            child: Image.asset(
-                              'assets/images/knowledgeCenter.png',
-                              height: ScreenUtils.height * 0.2,
-                              width: ScreenUtils.width * 0.4,
-                              fit: BoxFit.contain,
-                            ),
-                          ),
+
+                          // Show search suggestions below search bar (like news screen)
+                          Obx(() {
+                            if (controller
+                                .currentSearchQuery.value.isNotEmpty) {
+                              final suggestions =
+                                  controller.searchResults.where((topic) {
+                                return topic['name']
+                                    .toString()
+                                    .toLowerCase()
+                                    .contains(controller
+                                        .currentSearchQuery.value
+                                        .toLowerCase());
+                              }).toList();
+
+                              if (suggestions.isNotEmpty) {
+                                return Container(
+                                  width: double.infinity,
+                                  margin: EdgeInsets.only(
+                                      top: 8, left: 20, right: 20),
+                                  padding: EdgeInsets.only(left: 10, right: 20),
+                                  constraints: BoxConstraints(
+                                    maxHeight: ScreenUtils.height * 0.3,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    border: Border.all(
+                                        color: Colors.black.withOpacity(0.1)),
+                                    borderRadius: BorderRadius.only(
+                                        bottomLeft: Radius.circular(5),
+                                        bottomRight: Radius.circular(5)),
+                                  ),
+                                  child: ListView.builder(
+                                    shrinkWrap: true,
+                                    itemCount: suggestions.length,
+                                    itemBuilder: (context, index) {
+                                      final topic = suggestions[index];
+                                      return ListTile(
+                                        leading: Container(
+                                          padding: EdgeInsets.all(8),
+                                          decoration: BoxDecoration(
+                                            color: Color(0xFF4A4A4A)
+                                                .withOpacity(0.1),
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                          ),
+                                          child: Icon(
+                                            Icons.topic,
+                                            color: Color(0xFF4A4A4A),
+                                            size: 16,
+                                          ),
+                                        ),
+                                        title: RichText(
+                                          text: TextSpan(
+                                              children: _highlightOccurrences(
+                                                topic['name'] ?? '',
+                                                controller
+                                                    .currentSearchQuery.value,
+                                              ),
+                                              style: TextStyle(
+                                                  color: Color(0xFF797C7B))),
+                                        ),
+                                        subtitle: topic['subCategory'] != null
+                                            ? Text(
+                                                'In: ${topic['subCategory']['name']}',
+                                                style: TextStyle(
+                                                  color: Color(0xFF999999),
+                                                  fontSize: 12,
+                                                ),
+                                              )
+                                            : null,
+                                        onTap: () {
+                                          print(
+                                              '🔍 SearchSuggestion - Tapped suggestion: ${topic['name']}');
+                                          _onTopicSearchResultTap(topic);
+                                        },
+                                      );
+                                    },
+                                  ),
+                                );
+                              }
+                            }
+                            return SizedBox.shrink();
+                          }),
                         ],
                       ),
-                    ),
-                    SizedBox(height: ScreenUtils.height * 0.036),
 
-                    // Your existing "continue reading" section (unchanged)
-                    Padding(
-                      padding: const EdgeInsets.only(left: 25),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Text(
-                            "continue reading",
-                            style: TextStyle(
-                              fontWeight: FontWeight.w500,
-                              color: Color(0xFFE93A47),
-                              fontSize: 20,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 10),
-                            child: Image.asset(
-                              'assets/icons/knowledgeicon.png',
-                              width: 25,
-                              height: 25,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: ScreenUtils.height * 0.02),
+                      SizedBox(height: ScreenUtils.height * 0.02),
 
-                    // Dynamic content - API integration with your existing UI
-                    Obx(() {
-                      if (controller.isLoading.value) {
-                        return Center(
-                          child: Padding(
-                            padding: EdgeInsets.all(20),
-                            child: CircularProgressIndicator(
-                              color: Color(0xFFE93A47),
-                            ),
-                          ),
-                        );
-                      }
-
-                      // Show API data if available - SUBCATEGORIES first
-                      if (controller.subCategories.isNotEmpty) {
-                        return _buildApiContent();
-                      }
-
-                      // Fallback to your existing static content
-                      return _buildStaticContent();
-                    }),
-
-                    SizedBox(height: ScreenUtils.height * 0.050),
-                    Card(
-                      color: Color(0xFFF9E4D7),
-                      elevation: 2,
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                      // Your existing header section (unchanged)
+                      SizedBox(
+                        width: double.infinity,
+                        child: Stack(
                           children: [
-                            Row(
-                              children: [
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      "today's",
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w500,
-                                        color: Color(0xFFE93A47),
-                                        fontSize: 25,
+                            Padding(
+                              padding: const EdgeInsets.only(left: 10, top: 10),
+                              child: Column(
+                                children: [
+                                  RichText(
+                                    text: TextSpan(
+                                      style: const TextStyle(
+                                        fontSize: 70,
+                                        color: Color(0xFFFA7244),
                                       ),
+                                      children: [
+                                        TextSpan(
+                                          text: "push\n",
+                                          style: TextStyle(
+                                            color: Color(0xFFFA7244),
+                                            fontWeight: FontWeight.w300,
+                                          ),
+                                        ),
+                                        TextSpan(
+                                          text: "Your\n",
+                                          style: TextStyle(
+                                            color: Color(0xFFFF4601),
+                                            fontWeight: FontWeight.w300,
+                                          ),
+                                        ),
+                                        TextSpan(
+                                          text: "Limits",
+                                          style: TextStyle(
+                                            color: Color(0xFFBD1C19),
+                                            fontSize: 70,
+                                            fontWeight: FontWeight.w300,
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                    SizedBox(height: 4),
-                                    Container(
-                                      width: ScreenUtils.width * 0.4,
-                                      height: 1,
-                                      color: Color(0xFFE93A47),
-                                    ),
-                                    SizedBox(height: 4),
-                                    Text(
-                                      "readings",
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w500,
-                                        color: Color(0xFFE93A47),
-                                        fontSize: 25,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(
-                                  width: ScreenUtils.width * 0.1,
-                                ),
-                                Image.asset(
-                                  'assets/icons/communitybox.png',
-                                  height: 30,
-                                )
-                              ],
-                            ),
-                            SizedBox(height: ScreenUtils.height * 0.02),
-                            GridView.count(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              crossAxisCount: 2,
-                              crossAxisSpacing: 8,
-                              mainAxisSpacing: 29,
-                              padding: EdgeInsets.only(
-                                bottom: 37,
+                                  ),
+                                ],
                               ),
-                              children: const [
-                                _CommunityBox(
-                                  label: 'HEALTH',
-                                  color: Color(0xFFFF4F4E),
-                                  colorText: Color(0xFF8E2100),
-                                ),
-                                _CommunityBox(
-                                  label: 'ASTRO',
-                                  color: Color(0xFF8E2100),
-                                  colorText: Color(0xFFFF0017),
-                                ),
-                                _CommunityBox(
-                                  label: 'TRAVEL',
-                                  color: Color(0xFFFF692D),
-                                  colorText: Color(0xFFD80031),
-                                ),
-                                _CommunityBox(
-                                  label: 'BOOKS',
-                                  color: Color(0xFFFF0017),
-                                  colorText: Color(0xFF690005),
-                                ),
-                                _CommunityBox(
-                                  label: 'FINANCE',
-                                  color: Color(0xFFFE8081),
-                                  colorText: Color(0xFF8E2100),
-                                ),
-                                _CommunityBox(
-                                  label: 'MUSIC',
-                                  color: Color(0xFFA65854),
-                                  colorText: Color(0xFFFF692D),
-                                ),
-                              ],
+                            ),
+                            Positioned(
+                              top: ScreenUtils.height * 0.06,
+                              right: ScreenUtils.width * 0.0,
+                              child: Image.asset(
+                                'assets/images/knowledgeCenter.png',
+                                height: ScreenUtils.height * 0.2,
+                                width: ScreenUtils.width * 0.4,
+                                fit: BoxFit.contain,
+                              ),
                             ),
                           ],
                         ),
                       ),
-                    ),
-                    SizedBox(height: ScreenUtils.height * 0.050),
-                  ],
+                      SizedBox(height: ScreenUtils.height * 0.036),
+
+                      // Your existing "continue reading" section (unchanged)
+                      Padding(
+                        padding: const EdgeInsets.only(left: 25),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text(
+                              "continue reading",
+                              style: TextStyle(
+                                fontWeight: FontWeight.w500,
+                                color: Color(0xFFE93A47),
+                                fontSize: 20,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 10),
+                              child: Image.asset(
+                                'assets/icons/knowledgeicon.png',
+                                width: 25,
+                                height: 25,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: ScreenUtils.height * 0.02),
+
+                      // Dynamic content - API integration with your existing UI
+                      Obx(() {
+                        if (controller.isLoading.value) {
+                          return Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(20),
+                              child: CircularProgressIndicator(
+                                color: Color(0xFFE93A47),
+                              ),
+                            ),
+                          );
+                        }
+
+                        // Show API data if available - SUBCATEGORIES first
+                        if (controller.subCategories.isNotEmpty) {
+                          return _buildApiContent();
+                        }
+
+                        // Fallback to your existing static content
+                        return _buildStaticContent();
+                      }),
+
+                      SizedBox(height: ScreenUtils.height * 0.050),
+                      Card(
+                        color: Color(0xFFF9E4D7),
+                        elevation: 2,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "today's",
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w500,
+                                          color: Color(0xFFE93A47),
+                                          fontSize: 25,
+                                        ),
+                                      ),
+                                      SizedBox(height: 4),
+                                      Container(
+                                        width: ScreenUtils.width * 0.4,
+                                        height: 1,
+                                        color: Color(0xFFE93A47),
+                                      ),
+                                      SizedBox(height: 4),
+                                      Text(
+                                        "readings",
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w500,
+                                          color: Color(0xFFE93A47),
+                                          fontSize: 25,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(
+                                    width: ScreenUtils.width * 0.1,
+                                  ),
+                                  Image.asset(
+                                    'assets/icons/communitybox.png',
+                                    height: 30,
+                                  )
+                                ],
+                              ),
+                              SizedBox(height: ScreenUtils.height * 0.02),
+                              GridView.count(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                crossAxisCount: 2,
+                                crossAxisSpacing: 8,
+                                mainAxisSpacing: 29,
+                                padding: EdgeInsets.only(
+                                  bottom: 37,
+                                ),
+                                children: const [
+                                  _CommunityBox(
+                                    label: 'HEALTH',
+                                    color: Color(0xFFFF4F4E),
+                                    colorText: Color(0xFF8E2100),
+                                  ),
+                                  _CommunityBox(
+                                    label: 'ASTRO',
+                                    color: Color(0xFF8E2100),
+                                    colorText: Color(0xFFFF0017),
+                                  ),
+                                  _CommunityBox(
+                                    label: 'TRAVEL',
+                                    color: Color(0xFFFF692D),
+                                    colorText: Color(0xFFD80031),
+                                  ),
+                                  _CommunityBox(
+                                    label: 'BOOKS',
+                                    color: Color(0xFFFF0017),
+                                    colorText: Color(0xFF690005),
+                                  ),
+                                  _CommunityBox(
+                                    label: 'FINANCE',
+                                    color: Color(0xFFFE8081),
+                                    colorText: Color(0xFF8E2100),
+                                  ),
+                                  _CommunityBox(
+                                    label: 'MUSIC',
+                                    color: Color(0xFFA65854),
+                                    colorText: Color(0xFFFF692D),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: ScreenUtils.height * 0.050),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

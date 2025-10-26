@@ -7,6 +7,9 @@ import 'package:vropay_final/app/core/services/auth_service.dart';
 import 'package:vropay_final/app/core/services/socket_service.dart';
 import 'package:vropay_final/app/modules/Screens/news/controllers/news_controller.dart';
 import 'package:vropay_final/app/core/services/learn_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
+import 'package:vropay_final/app/routes/app_pages.dart';
 
 class MessageController extends GetxController {
   // Services
@@ -333,6 +336,9 @@ class MessageController extends GetxController {
       print(
           '✅ [MESSAGE CONTROLLER] Message screen initialization completed successfully!');
 
+      // Persist this screen as last visited (so Community Forum AI fallback can open it later)
+      await saveLastVisitedScreen();
+
       // Final auto-scroll to ensure we're at the bottom after everything is loaded
       if (messages.isNotEmpty) {
         Future.delayed(const Duration(milliseconds: 500), () {
@@ -347,6 +353,34 @@ class MessageController extends GetxController {
     } finally {
       // Keep loading untouched for send operation
       print('🏁 [MESSAGE CONTROLLER] Loading state set to false');
+    }
+  }
+
+  // Persist this Message screen as last visited so Community Forum AI fallback
+  // can restore it after app restarts. We store route + arguments (JSON).
+  Future<void> saveLastVisitedScreen() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final name = interestName.value.isNotEmpty
+          ? 'Messages — ${interestName.value}'
+          : 'Messages';
+      final route = Routes.MESSAGE_SCREEN;
+      final args = {
+        'interestId': interestId.value,
+        'interestName': interestName.value,
+        'categoryId': categoryId.value,
+        'subCategoryId': subCategoryId.value,
+        'topicId': topicId.value,
+      };
+
+      await prefs.setString('last_visited_screen_name', name);
+      await prefs.setString('last_visited_screen_route', route);
+      await prefs.setString('last_visited_screen_args', jsonEncode(args));
+
+      print(
+          '💾 [MESSAGE CONTROLLER] Saved last visited screen: $name -> $route with args: $args');
+    } catch (e) {
+      print('⚠️ [MESSAGE CONTROLLER] Failed to save last visited screen: $e');
     }
   }
 

@@ -11,26 +11,34 @@ class DashboardView extends GetView<DashboardController> {
   @override
   Widget build(BuildContext context) {
     ScreenUtils.setContext(context);
-    return Scaffold(
-      appBar: PreferredSize(
-          preferredSize: Size.fromHeight(ScreenUtils.height * 0.15),
-          child: CustomTopNavBar(isMainScreen: true)),
-      body: Padding(
-        padding: const EdgeInsets.only(top: 20),
-        child: Column(
-          children: [
-            Expanded(
-              child: Center(
-                child: Text(
-                  'DashboardView is working',
-                  style: TextStyle(fontSize: 20),
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) {
+        // Prevent back button from closing main screen
+        if (didPop) return;
+        // Do nothing - stay on current screen
+      },
+      child: Scaffold(
+        appBar: PreferredSize(
+            preferredSize: Size.fromHeight(ScreenUtils.height * 0.15),
+            child: CustomTopNavBar(isMainScreen: true)),
+        body: Padding(
+          padding: const EdgeInsets.only(top: 20),
+          child: Column(
+            children: [
+              Expanded(
+                child: Center(
+                  child: Text(
+                    'DashboardView is working',
+                    style: TextStyle(fontSize: 20),
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
+        bottomNavigationBar: const CustomBottomNavBar(),
       ),
-      bottomNavigationBar: const CustomBottomNavBar(),
     );
   }
 }

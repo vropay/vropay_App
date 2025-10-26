@@ -1,3 +1,7 @@
+import 'dart:async';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:vropay_final/app/core/services/community_service.dart';
@@ -31,6 +35,25 @@ class CommunityForumController extends GetxController {
   String? categoryName;
   Map<String, dynamic>? categoryData;
 
+  final TextEditingController searchController = TextEditingController();
+  final RxList<String> suggestions = <String>[].obs;
+  Timer? _debounce;
+
+  // Search results (topic objects) and current search query
+  final RxList<Map<String, dynamic>> searchResults =
+      <Map<String, dynamic>>[].obs;
+  final RxString currentSearchQuery = ''.obs;
+  final RxBool isSearching = false.obs;
+  Timer? _searchDebounce;
+  // Continue-reading topics (recently read topics for the user)
+  final RxList<Map<String, dynamic>> continueReadingTopics =
+      <Map<String, dynamic>>[].obs;
+  final RxMap<String, dynamic> continueReadingTarget = <String, dynamic>{}.obs;
+  // Last visited screen info (used as AI fallback when no recent topic)
+  final RxString lastVisitedScreenName = ''.obs;
+  final RxString lastVisitedScreenRoute = ''.obs;
+  final RxMap<String, dynamic> lastVisitedScreenArgs = <String, dynamic>{}.obs;
+
   @override
   void onInit() {
     super.onInit();
@@ -61,6 +84,293 @@ class CommunityForumController extends GetxController {
       // Load default community data if no specific category
       loadDefaultCommunityData();
     }
+
+    // Load continue-reading topics for this category (if categoryId present)
+    loadContinueReadingTopics();
+    // Load last visited screen from local storage (for AI fallback)
+    loadLastVisitedScreen();
+  }
+
+  // Load last visited screen name & route from SharedPreferences
+  Future<void> loadLastVisitedScreen() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final name = prefs.getString('last_visited_screen_name') ?? '';
+      final route = prefs.getString('last_visited_screen_route') ?? '';
+      final argsJson = prefs.getString('last_visited_screen_args') ?? '';
+      if (argsJson.isNotEmpty) {
+        try {
+          final decoded = jsonDecode(argsJson);
+          if (decoded is Map<String, dynamic>) {
+            lastVisitedScreenArgs.assignAll(decoded);
+          } else if (decoded is Map) {
+            // cast map dynamic
+            lastVisitedScreenArgs.assignAll(Map<String, dynamic>.from(decoded));
+          }
+        } catch (e) {
+          print('⚠️ CommunityForum - Failed to decode last visited args: $e');
+          lastVisitedScreenArgs.clear();
+        }
+      } else {
+        lastVisitedScreenArgs.clear();
+      }
+      lastVisitedScreenName.value = name;
+      lastVisitedScreenRoute.value = route;
+      print('📌 CommunityForum - Loaded last visited screen: $name -> $route');
+    } catch (e) {
+      print('⚠️ CommunityForum - Failed to load last visited screen: $e');
+      lastVisitedScreenName.value = '';
+      lastVisitedScreenRoute.value = '';
+      lastVisitedScreenArgs.clear();
+    }
+  }
+
+  // Load continue-reading topics and expose for UI
+  Future<void> loadContinueReadingTopics({int page = 1, int limit = 1}) async {
+    try {
+      isLoading.value = true;
+      print('🚀 CommunityForum - Loading continue-reading topics');
+
+      final response = await _communityService.getContinueReadingTopics(
+        mainCategoryId: categoryId,
+        page: page,
+        limit: limit,
+      );
+
+      if (response.success && response.data != null) {
+        // response.data is List<Map>
+        final items = response.data as List<Map<String, dynamic>>;
+        continueReadingTopics.assignAll(items);
+        if (items.isNotEmpty) {
+          // Keep first item as target for quick navigation
+          continueReadingTarget.assignAll(items.first);
+        }
+        print(
+            '✅ CommunityForum - Continue-reading topics loaded: ${items.length}');
+      } else {
+        print('⚠️ CommunityForum - No continue-reading topics found');
+        continueReadingTopics.clear();
+        continueReadingTarget.clear();
+      }
+    } catch (e) {
+      print('❌ CommunityForum - Continue-reading load error: $e');
+      continueReadingTopics.clear();
+      continueReadingTarget.clear();
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  // Called on each keystroke (debounced)
+  void onSearchChanged(String q) {
+    // Keep the original quick suggestions behaviour (strings) for backwards compatibility
+    _debounce?.cancel();
+    _debounce = Timer(Duration(milliseconds: 400), () async {
+      final query = q.trim();
+      if (query.isEmpty) {
+        suggestions.clear();
+        return;
+      }
+      // small placeholder suggestions (can be removed if using topic search)
+      suggestions.value = await _fakeSearchApi(query);
+    });
+
+    // Also run the richer topic search (debounced separately)
+    searchTopicsDebounced(q);
+  }
+
+  Future<List<String>> _fakeSearchApi(String q) async {
+    // Replace with real API call or reuse knowledge center search logic
+    await Future.delayed(Duration(milliseconds: 200));
+    return List.generate(5, (i) => '$q suggestion ${i + 1}');
+  }
+
+  // Debounced topic search (reuses CommunityService data similar to Knowledge Center)
+  void searchTopicsDebounced(String query) {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(Duration(milliseconds: 500), () {
+      searchTopics(query);
+    });
+  }
+
+  // Search topics across subcategories for the current main category
+  Future<void> searchTopics(String query) async {
+    try {
+      if (query.trim().isEmpty) {
+        // Clear search results if query is empty
+        searchResults.clear();
+        currentSearchQuery.value = '';
+        return;
+      }
+
+      isSearching.value = true;
+      currentSearchQuery.value = query;
+      print('🚀 CommunityForum - Searching topics: $query');
+
+      if (categoryId == null) {
+        Get.snackbar('Error', 'No category ID available for search');
+        return;
+      }
+
+      // Get full community data for this main category
+      final response =
+          await _communityService.fetchCommunityScreenData(categoryId!);
+      if (!response.success || response.data == null) {
+        Get.snackbar('Error', 'Failed to load topics for search');
+        return;
+      }
+
+      final subCategoriesData =
+          response.data!['subCategories'] as List<Map<String, dynamic>>;
+
+      List<Map<String, dynamic>> foundTopics = [];
+      final searchLower = query.toLowerCase();
+
+      for (var subCat in subCategoriesData) {
+        if (subCat['topics'] != null) {
+          final topics =
+              (subCat['topics'] as List).cast<Map<String, dynamic>>();
+          for (var topic in topics) {
+            final name = topic['name']?.toString().toLowerCase() ?? '';
+            if (name.contains(searchLower)) {
+              // attach subcategory info to topic for navigation
+              topic['subCategory'] = {
+                '_id': subCat['_id'],
+                'name': subCat['name']
+              };
+              topic['entriesCount'] = (topic['entries'] as List?)?.length ?? 0;
+              foundTopics.add(topic);
+            }
+          }
+        }
+      }
+
+      // Sort similar to Knowledge Center: exact matches first
+      foundTopics.sort((a, b) {
+        final aName = a['name']?.toString().toLowerCase() ?? '';
+        final bName = b['name']?.toString().toLowerCase() ?? '';
+        if (aName == searchLower && bName != searchLower) return -1;
+        if (bName == searchLower && aName != searchLower) return 1;
+        if (aName.startsWith(searchLower) && !bName.startsWith(searchLower))
+          return -1;
+        if (bName.startsWith(searchLower) && !aName.startsWith(searchLower))
+          return 1;
+        return aName.compareTo(bName);
+      });
+
+      searchResults.assignAll(foundTopics);
+      print('✅ CommunityForum - Topic search results: ${searchResults.length}');
+    } catch (e) {
+      print('❌ CommunityForum - Search error: $e');
+      Get.snackbar('Error', 'Search failed: ${e.toString()}');
+    } finally {
+      isSearching.value = false;
+    }
+  }
+
+  // Handle tapping a topic search result - navigate to message screen
+  void onTopicSearchResultTap(Map<String, dynamic> topic) async {
+    final topicId = topic['_id']?.toString();
+    final topicName = topic['name']?.toString();
+    final subCategoryId = topic['subCategory']?['_id']?.toString();
+    final subCategoryName = topic['subCategory']?['name']?.toString();
+
+    print(
+        '🔍 CommunityForum - Navigating to message screen from search result...');
+    print('   - topicName: $topicName');
+    print('   - topicId: $topicId');
+
+    if (topicId == null || topicId.isEmpty) {
+      Get.snackbar('Error', 'Topic ID missing');
+      return;
+    }
+
+    // Follow the same consent/visit logic as other topic navigations if needed
+    // For now navigate directly to message screen and pass topic info
+    Get.toNamed(Routes.MESSAGE_SCREEN, arguments: {
+      'interestId': topicId,
+      'interestName': topicName ?? '',
+      'subCategoryId': subCategoryId ?? '',
+      'subCategoryName': subCategoryName ?? '',
+      'categoryId': categoryId ?? '',
+      'categoryName': categoryName ?? '',
+      'topicId': topicId,
+    });
+  }
+
+  // Navigate to message screen using continueReadingTarget (first recent topic)
+  void onContinueReadingTap() {
+    if (continueReadingTarget.isEmpty) {
+      // If no continue-reading topic, fall back to last visited screen (if available)
+      if (lastVisitedScreenRoute.value.isNotEmpty) {
+        print(
+            '🔁 CommunityForum - No recent topic, navigating to last visited screen: ${lastVisitedScreenName.value}');
+        try {
+          if (lastVisitedScreenArgs.isNotEmpty) {
+            print(
+                '🔁 CommunityForum - Navigating with args: ${lastVisitedScreenArgs}');
+            Get.toNamed(lastVisitedScreenRoute.value,
+                arguments: lastVisitedScreenArgs);
+          } else {
+            Get.toNamed(lastVisitedScreenRoute.value);
+          }
+        } catch (e) {
+          print(
+              '❌ CommunityForum - Failed to navigate to last visited route: $e');
+          Get.snackbar('Info', 'No recent topic to continue');
+        }
+        return;
+      }
+
+      Get.snackbar('Info', 'No recent topic to continue');
+      return;
+    }
+
+    final topic = continueReadingTarget;
+    final topicId = topic['_id']?.toString();
+    final topicName = topic['name']?.toString();
+    final subCategoryId = topic['subCategory']?['_id']?.toString();
+    final subCategoryName = topic['subCategory']?['name']?.toString();
+
+    if (topicId == null || topicId.isEmpty) {
+      Get.snackbar('Error', 'Topic data is missing');
+      return;
+    }
+
+    // Navigate to message screen (open message view for this topic)
+    Get.toNamed(Routes.MESSAGE_SCREEN, arguments: {
+      'interestId': topicId,
+      'interestName': topicName ?? '',
+      'subCategoryId': subCategoryId ?? '',
+      'subCategoryName': subCategoryName ?? '',
+      'categoryId':
+          topic['mainCategory']?['_id']?.toString() ?? categoryId ?? '',
+      'categoryName':
+          topic['mainCategory']?['name']?.toString() ?? categoryName ?? '',
+      'topicId': topicId,
+    });
+  }
+
+  void clearSearchResults() {
+    searchResults.clear();
+    currentSearchQuery.value = '';
+    searchController.clear();
+  }
+
+  void onSuggestionTap(String text) {
+    // Navigate to Message screen with query or selected interest/topic
+    Get.toNamed(Routes.MESSAGE_SCREEN, arguments: {'query': text});
+  }
+
+  void submitSearch(String q) {
+    final query = q.trim();
+    if (query.isEmpty) return;
+    Get.toNamed(Routes.MESSAGE_SCREEN, arguments: {'query': query});
+  }
+
+  void clearSearch() {
+    searchController.clear();
+    suggestions.clear();
   }
 
   // Load community data from API (similar to knowledge center)
@@ -484,5 +794,12 @@ class CommunityForumController extends GetxController {
     } finally {
       isLoading.value = false;
     }
+  }
+
+  @override
+  void onClose() {
+    _debounce?.cancel();
+    searchController.dispose();
+    super.onClose();
   }
 }

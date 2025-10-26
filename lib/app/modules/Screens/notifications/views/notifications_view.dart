@@ -94,112 +94,121 @@ class _NotificationsViewState extends State<NotificationsView> {
   @override
   Widget build(BuildContext context) {
     ScreenUtils.setContext(context);
-    return Scaffold(
-      backgroundColor: Color(0xFFF7F7F7),
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(150),
-        child: CustomTopNavBar(selectedIndex: null, isMainScreen: true),
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            SizedBox(height: ScreenUtils.height * 0.02),
-            // Filter tabs
-            Container(
-              padding: const EdgeInsets.only(left: 50, right: 49),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: _buildFilterTab('all', _selectedFilter == 'all'),
-                  ),
-                  SizedBox(width: ScreenUtils.width * 0.01),
-                  Expanded(
-                    child:
-                        _buildFilterTab('unread', _selectedFilter == 'unread'),
-                  ),
-                  SizedBox(width: ScreenUtils.width * 0.01),
-                  Expanded(
-                    child: _buildFilterTab('today', _selectedFilter == 'today'),
-                  ),
-                  SizedBox(width: ScreenUtils.width * 0.01),
-                ],
-              ),
-            ),
-
-            SizedBox(height: ScreenUtils.height * 0.035),
-            Padding(
-              padding: const EdgeInsets.only(left: 36, right: 22),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  RichText(
-                    text: TextSpan(
-                      text: 'Single-tap',
-                      style: TextStyle(
-                        color: Color(0xFF00B8F0),
-                        fontSize: 10,
-                        fontWeight: FontWeight.w300,
-                      ),
-                      children: [
-                        TextSpan(
-                          text: ' will just mark it as read',
-                          style: TextStyle(
-                            color: Color(0xFF172B75),
-                            fontSize: 10,
-                            fontWeight: FontWeight.w300,
-                          ),
-                        ),
-                      ],
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) {
+        // Prevent back button from closing main screen
+        if (didPop) return;
+        // Do nothing - stay on current screen
+      },
+      child: Scaffold(
+        backgroundColor: Color(0xFFF7F7F7),
+        appBar: PreferredSize(
+          preferredSize: Size.fromHeight(150),
+          child: CustomTopNavBar(selectedIndex: null, isMainScreen: true),
+        ),
+        body: SafeArea(
+          child: Column(
+            children: [
+              SizedBox(height: ScreenUtils.height * 0.02),
+              // Filter tabs
+              Container(
+                padding: const EdgeInsets.only(left: 50, right: 49),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _buildFilterTab('all', _selectedFilter == 'all'),
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(right: 16.0),
-                    child: GestureDetector(
-                      onTap: _clearAll,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
+                    SizedBox(width: ScreenUtils.width * 0.01),
+                    Expanded(
+                      child: _buildFilterTab(
+                          'unread', _selectedFilter == 'unread'),
+                    ),
+                    SizedBox(width: ScreenUtils.width * 0.01),
+                    Expanded(
+                      child:
+                          _buildFilterTab('today', _selectedFilter == 'today'),
+                    ),
+                    SizedBox(width: ScreenUtils.width * 0.01),
+                  ],
+                ),
+              ),
+
+              SizedBox(height: ScreenUtils.height * 0.035),
+              Padding(
+                padding: const EdgeInsets.only(left: 36, right: 22),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    RichText(
+                      text: TextSpan(
+                        text: 'Single-tap',
+                        style: TextStyle(
+                          color: Color(0xFF00B8F0),
+                          fontSize: 10,
+                          fontWeight: FontWeight.w300,
+                        ),
                         children: [
-                          const Text(
-                            'Clear',
+                          TextSpan(
+                            text: ' will just mark it as read',
                             style: TextStyle(
-                              color: Color(0xFFEF2D56),
-                              fontSize: 14.28,
-                              fontWeight: FontWeight.w500,
+                              color: Color(0xFF172B75),
+                              fontSize: 10,
+                              fontWeight: FontWeight.w300,
                             ),
-                          ),
-                          const SizedBox(width: 4),
-                          const Icon(
-                            Iconsax.close_circle,
-                            color: Color(0xFFEF2D56),
-                            size: 12,
                           ),
                         ],
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            // Notifications list
-            Expanded(
-              child: _filteredNotifications.isEmpty
-                  ? SizedBox()
-                  : ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 21),
-                      itemCount: _filteredNotifications.length,
-                      itemBuilder: (context, index) {
-                        final notification = _filteredNotifications[index];
-                        return _buildNotificationItem(notification);
-                      },
+                    Padding(
+                      padding: const EdgeInsets.only(right: 16.0),
+                      child: GestureDetector(
+                        onTap: _clearAll,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text(
+                              'Clear',
+                              style: TextStyle(
+                                color: Color(0xFFEF2D56),
+                                fontSize: 14.28,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            const Icon(
+                              Iconsax.close_circle,
+                              color: Color(0xFFEF2D56),
+                              size: 12,
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-            ),
-          ],
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              // Notifications list
+              Expanded(
+                child: _filteredNotifications.isEmpty
+                    ? SizedBox()
+                    : ListView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 21),
+                        itemCount: _filteredNotifications.length,
+                        itemBuilder: (context, index) {
+                          final notification = _filteredNotifications[index];
+                          return _buildNotificationItem(notification);
+                        },
+                      ),
+              ),
+            ],
+          ),
         ),
+        bottomNavigationBar: const CustomBottomNavBar(),
       ),
-      bottomNavigationBar: const CustomBottomNavBar(),
     );
   }
 
