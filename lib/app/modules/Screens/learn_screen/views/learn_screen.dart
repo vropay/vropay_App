@@ -15,7 +15,7 @@ class LearnScreenView extends GetView<LearnScreenController> {
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(150),
-        child: CustomTopNavBar(selectedIndex: null, isMainScreen: false),
+        child: CustomTopNavBar(selectedIndex: null, isMainScreen: true),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -160,6 +160,7 @@ class LearnScreenView extends GetView<LearnScreenController> {
       ),
       bottomNavigationBar: CustomBottomNavBar(),
     );
+    // Note: NoBackScope wraps the Scaffold above and blocks system/back pops.
   }
 
   Widget _infoCard(

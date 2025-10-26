@@ -33,13 +33,13 @@ class CustomTopNavBar extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(left: 8.0),
             child: GestureDetector(
-              onTap: () {
-                // If it's a main screen, do nothing (disable back button).
-                if (isMainScreen) return;
-
-                // Otherwise, go back
-                Get.back();
-              },
+              onTap: isMainScreen
+                  ? () {
+                      Get.back();
+                    }
+                  : () {
+                      Get.back();
+                    },
               child: BackIcon(),
             ),
           ),

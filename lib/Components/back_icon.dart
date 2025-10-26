@@ -4,13 +4,15 @@ class BackIcon extends StatelessWidget {
   final Color color;
   final bool isInsideButton; // Add this parameter
   final VoidCallback? onTap;
+  final bool isMainScreen1;
 
   const BackIcon(
       {super.key,
       this.color = const Color(0xFFFFA000),
       this.isInsideButton =
           false, // Default to false for backward compatibility
-      this.onTap});
+      this.onTap,
+      this.isMainScreen1 = false});
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +29,7 @@ class BackIcon extends StatelessWidget {
 
     // Otherwise, wrap with GestureDetector for standalone use
     return GestureDetector(
-      onTap: onTap ?? () => Navigator.of(context).pop(),
+      onTap: onTap,
       child: icon,
     );
   }

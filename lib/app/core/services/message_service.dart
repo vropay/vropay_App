@@ -646,9 +646,9 @@ class MessageService extends GetxService {
   Future<Map<String, dynamic>> shareEntry({
     required String interestId,
     required String message,
-    required String mainCategoryId,
-    required String subCategoryId,
-    required String topicId,
+    String? mainCategoryId,
+    String? subCategoryId,
+    String? topicId,
     required String entryId,
   }) async {
     try {
@@ -658,16 +658,26 @@ class MessageService extends GetxService {
       print('📤 [MESSAGE SERVICE] API URL: ${ApiConstant.shareEntry}');
       print('📤 [MESSAGE SERVICE] Entry ID: $entryId');
 
+      final payload = <String, dynamic>{
+        'interestId': interestId,
+        'message': message,
+        'entryId': entryId,
+      };
+
+      // Only include parent IDs when they are provided (server may resolve them)
+      if (mainCategoryId != null && mainCategoryId.isNotEmpty) {
+        payload['mainCategoryId'] = mainCategoryId;
+      }
+      if (subCategoryId != null && subCategoryId.isNotEmpty) {
+        payload['subCategoryId'] = subCategoryId;
+      }
+      if (topicId != null && topicId.isNotEmpty) {
+        payload['topicId'] = topicId;
+      }
+
       final response = await _apiClient.post(
         ApiConstant.shareEntry,
-        data: {
-          'interestId': interestId,
-          'message': message,
-          'mainCategoryId': mainCategoryId,
-          'subCategoryId': subCategoryId,
-          'topicId': topicId,
-          'entryId': entryId,
-        },
+        data: payload,
       );
 
       print(

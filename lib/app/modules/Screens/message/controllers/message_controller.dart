@@ -856,21 +856,15 @@ class MessageController extends GetxController {
       print('📚 [MESSAGE CONTROLLER] SubCategoryId: ${subCategoryId.value}');
       print('📚 [MESSAGE CONTROLLER] TopicId: ${topicId.value}');
 
-      // Validate that we have the required IDs
-      if (categoryId.value.isEmpty ||
-          subCategoryId.value.isEmpty ||
-          topicId.value.isEmpty) {
-        throw Exception(
-            'Missing required IDs for sharing. Please ensure you navigated from a valid topic screen.');
-      }
-
-      // Share entry via dedicated API
+      // Share entry via dedicated API. Parent IDs are optional now — the server
+      // may resolve them from entryId. We still pass them when available.
       await _messageService.shareEntry(
         interestId: interestId.value,
         message: message.trim(),
-        mainCategoryId: categoryId.value,
-        subCategoryId: subCategoryId.value,
-        topicId: topicId.value,
+        mainCategoryId: categoryId.value.isNotEmpty ? categoryId.value : null,
+        subCategoryId:
+            subCategoryId.value.isNotEmpty ? subCategoryId.value : null,
+        topicId: topicId.value.isNotEmpty ? topicId.value : null,
         entryId: entryId,
       );
 
