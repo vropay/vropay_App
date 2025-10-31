@@ -431,7 +431,7 @@ class MessageController extends GetxController {
       print(
           '🔐 [PERMISSIONS] Checking permissions for user: ${currentUser.id}');
 
-      // Check if user has this interest (for display purposes only)
+      // Check if user has this interest (important for sharing functionality)
       print(
           '🔐 [PERMISSIONS] Checking if user has interest: ${interestId.value}');
       final hasInterest = await _interestService.checkUserHasInterest(
@@ -451,6 +451,11 @@ class MessageController extends GetxController {
       print(
           '🔐 [PERMISSIONS] Can send messages: ${canSendMessages.value} (All users allowed)');
       print('✅ [PERMISSIONS] Permission check completed successfully');
+      
+      // Show warning if user is not a member but can still view messages
+      if (!hasInterest) {
+        print('⚠️ [PERMISSIONS] User is not a member of this interest group but can view messages');
+      }
     } catch (e) {
       print('❌ [PERMISSIONS] Error checking user permissions: $e');
       print('❌ [PERMISSIONS] Stack trace: ${StackTrace.current}');
@@ -663,6 +668,19 @@ class MessageController extends GetxController {
       return;
     }
 
+    // Check if user is a member before sending messages
+    if (!hasUserInterest.value) {
+      Get.snackbar(
+        'Cannot Send Message',
+        'You must join this interest group to send messages. Tap the join button to become a member.',
+        backgroundColor: Colors.orange,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 4),
+        snackPosition: SnackPosition.TOP,
+      );
+      return;
+    }
+
     try {
       // Do not toggle global spinner for send; UI stays responsive
 
@@ -726,6 +744,19 @@ class MessageController extends GetxController {
       return;
     }
 
+    // Check if user is a member before sending important messages
+    if (!hasUserInterest.value) {
+      Get.snackbar(
+        'Cannot Send Important Message',
+        'You must join this interest group to send important messages. Tap the join button to become a member.',
+        backgroundColor: Colors.orange,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 4),
+        snackPosition: SnackPosition.TOP,
+      );
+      return;
+    }
+
     try {
       isLoading.value = true;
 
@@ -783,6 +814,19 @@ class MessageController extends GetxController {
     if (message.trim().isEmpty) return;
     if (!canSendMessages.value) {
       Get.snackbar('Access Denied', 'You cannot send messages to this group');
+      return;
+    }
+
+    // Check if user is a member before sending normal messages
+    if (!hasUserInterest.value) {
+      Get.snackbar(
+        'Cannot Send Message',
+        'You must join this interest group to send messages. Tap the join button to become a member.',
+        backgroundColor: Colors.orange,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 4),
+        snackPosition: SnackPosition.TOP,
+      );
       return;
     }
 
@@ -846,6 +890,19 @@ class MessageController extends GetxController {
       return;
     }
 
+    // Check if user is a member of this interest before attempting to share
+    if (!hasUserInterest.value) {
+      Get.snackbar(
+        'Cannot Share',
+        'You must join this interest group to share content. Tap the join button to become a member.',
+        backgroundColor: Colors.orange,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 4),
+        snackPosition: SnackPosition.TOP,
+      );
+      return;
+    }
+
     try {
       isLoading.value = true;
 
@@ -855,6 +912,7 @@ class MessageController extends GetxController {
       print('📚 [MESSAGE CONTROLLER] CategoryId: ${categoryId.value}');
       print('📚 [MESSAGE CONTROLLER] SubCategoryId: ${subCategoryId.value}');
       print('📚 [MESSAGE CONTROLLER] TopicId: ${topicId.value}');
+      print('📚 [MESSAGE CONTROLLER] User has interest: ${hasUserInterest.value}');
 
       // Share entry via dedicated API. Parent IDs are optional now — the server
       // may resolve them from entryId. We still pass them when available.
@@ -900,7 +958,7 @@ class MessageController extends GetxController {
       } else if (e.toString().contains('Connection timeout')) {
         errorMessage = 'Connection timeout. Please check your internet.';
       } else if (e.toString().contains('not a member')) {
-        errorMessage = 'You are not a member of this interest group';
+        errorMessage = 'You must join this interest group to share content. Please join the group first.';
       } else if (e.toString().contains('Interest not found')) {
         errorMessage = 'This interest group no longer exists';
       } else if (e.toString().contains('Entry not found')) {
@@ -916,7 +974,8 @@ class MessageController extends GetxController {
         errorMessage,
         backgroundColor: Colors.red,
         colorText: Colors.white,
-        duration: const Duration(seconds: 3),
+        duration: const Duration(seconds: 4),
+        snackPosition: SnackPosition.TOP,
       );
     } finally {
       isLoading.value = false;
@@ -1174,6 +1233,19 @@ class MessageController extends GetxController {
   Future<void> sendQuickReplyMessage(String message, Color color) async {
     if (!canSendMessages.value) {
       Get.snackbar('Access Denied', 'You cannot send messages to this group');
+      return;
+    }
+
+    // Check if user is a member before sending quick reply messages
+    if (!hasUserInterest.value) {
+      Get.snackbar(
+        'Cannot Send Quick Reply',
+        'You must join this interest group to send messages. Tap the join button to become a member.',
+        backgroundColor: Colors.orange,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 4),
+        snackPosition: SnackPosition.TOP,
+      );
       return;
     }
 

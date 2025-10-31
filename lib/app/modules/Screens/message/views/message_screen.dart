@@ -7,8 +7,6 @@ import 'package:vropay_final/Components/back_icon.dart';
 import 'package:vropay_final/Utilities/constants/KImages.dart';
 import 'package:vropay_final/Utilities/screen_utils.dart';
 import 'package:vropay_final/app/modules/Screens/message/controllers/message_controller.dart';
-import 'package:vropay_final/app/core/services/learn_service.dart';
-import 'package:vropay_final/app/modules/Screens/news/controllers/news_controller.dart';
 import 'dart:ui';
 
 class MessageScreen extends StatefulWidget {
@@ -141,37 +139,6 @@ class _MessageScreenState extends State<MessageScreen> {
                         ),
                         SizedBox(width: ScreenUtils.width * 0.02),
                         // Show a small badge if cross-category (news) results exist
-                        Obx(() {
-                          if (controller.hasCrossCategoryResults.value) {
-                            return Container(
-                              margin: EdgeInsets.only(left: 6),
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: Color(0xFF714FC0),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    Icons
-                                        .article, // represents news-like content
-                                    size: 12,
-                                    color: Colors.white,
-                                  ),
-                                  SizedBox(width: 6),
-                                  Text(
-                                    'News',
-                                    style: TextStyle(
-                                        color: Colors.white, fontSize: 12),
-                                  ),
-                                ],
-                              ),
-                            );
-                          }
-
-                          return const SizedBox.shrink();
-                        }),
                       ],
                     ),
                     actions: [
@@ -1698,7 +1665,7 @@ class _MessageScreenState extends State<MessageScreen> {
               if (body.isNotEmpty) ...[
                 const SizedBox(height: 8),
                 Text(
-                  body,
+                  _stripHtmlTags(body),
                   style: const TextStyle(
                     color: Color(0xFF4A4A4A),
                     fontSize: 12,
@@ -1875,7 +1842,7 @@ class _MessageScreenState extends State<MessageScreen> {
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                   ),
-                  textAlign: TextAlign.right,
+                  textAlign: TextAlign.center,
                   softWrap: true,
                   overflow: TextOverflow.visible,
                 ),
@@ -1883,14 +1850,14 @@ class _MessageScreenState extends State<MessageScreen> {
                   const SizedBox(height: 12),
                   // Summary/Content
                   Text(
-                    body,
+                    _stripHtmlTags(body),
                     style: const TextStyle(
                       color: Color(0xFF4A4A4A),
                       fontWeight: FontWeight.w400,
                       fontSize: 12,
-                      height: 1.4,
+                      height: 1,
                     ),
-                    textAlign: TextAlign.right,
+                    textAlign: TextAlign.center,
                     softWrap: true,
                     overflow: TextOverflow.visible,
                     maxLines: 5, // Limit to 5 lines to prevent excessive height
@@ -1933,7 +1900,7 @@ class _MessageScreenState extends State<MessageScreen> {
           if (body.isNotEmpty) ...[
             const SizedBox(height: 8),
             Text(
-              body,
+              _stripHtmlTags(body),
               style: const TextStyle(
                 color: Color(0xFF4A4A4A),
                 fontSize: 12,
@@ -2319,7 +2286,7 @@ class _MessageScreenState extends State<MessageScreen> {
                   const SizedBox(height: 12),
                   // Summary/Content
                   Text(
-                    body,
+                    _stripHtmlTags(body),
                     style: const TextStyle(
                       color: Color(0xFF4A4A4A),
                       fontWeight: FontWeight.w400,
@@ -2586,13 +2553,19 @@ class _MessageScreenState extends State<MessageScreen> {
 
       // Use existing controller IDs as fallback if entry doesn't have parent IDs
       if ((mainId == null || mainId.toString().isEmpty)) {
-        mainId = controller.categoryId.value.isNotEmpty ? controller.categoryId.value : null;
+        mainId = controller.categoryId.value.isNotEmpty
+            ? controller.categoryId.value
+            : null;
       }
       if ((subId == null || subId.toString().isEmpty)) {
-        subId = controller.subCategoryId.value.isNotEmpty ? controller.subCategoryId.value : null;
+        subId = controller.subCategoryId.value.isNotEmpty
+            ? controller.subCategoryId.value
+            : null;
       }
       if ((topicId == null || topicId.toString().isEmpty)) {
-        topicId = controller.topicId.value.isNotEmpty ? controller.topicId.value : null;
+        topicId = controller.topicId.value.isNotEmpty
+            ? controller.topicId.value
+            : null;
       }
 
       // If still missing required IDs, abort and inform user
@@ -2648,6 +2621,26 @@ class _MessageScreenState extends State<MessageScreen> {
   void _clearSearch() {
     _searchController.clear();
     controller.clearSearch();
+  }
+
+  // Helper method to strip HTML tags from text
+  String _stripHtmlTags(String htmlText) {
+    if (htmlText.isEmpty) return htmlText;
+
+    // Remove HTML tags using regex
+    final RegExp htmlTagRegex = RegExp(r'<[^>]*>');
+    String cleanText = htmlText.replaceAll(htmlTagRegex, '');
+
+    // Decode common HTML entities
+    cleanText = cleanText
+        .replaceAll('&amp;', '&')
+        .replaceAll('&lt;', '<')
+        .replaceAll('&gt;', '>')
+        .replaceAll('&quot;', '"')
+        .replaceAll('&#39;', "'")
+        .replaceAll('&nbsp;', ' ');
+
+    return cleanText.trim();
   }
 
   // Add this method to calculate dynamic height in steps
