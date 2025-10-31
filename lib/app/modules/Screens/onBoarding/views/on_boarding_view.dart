@@ -571,6 +571,7 @@ class OnBoardingView extends GetView<OnBoardingController> {
                 height: ScreenUtils.height * 0.06,
                 child: TextField(
                   controller: controller.phoneController,
+                  keyboardType: TextInputType.phone,
                   maxLength: 10,
                   decoration: InputDecoration(
                     prefixIcon: Padding(

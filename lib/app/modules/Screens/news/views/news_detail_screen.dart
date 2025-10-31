@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'dart:ui';
 import 'package:html/parser.dart' as html_parser;
+import 'package:share_plus/share_plus.dart';
 import 'package:vropay_final/Components/back_icon.dart';
 import 'package:vropay_final/Utilities/constants/KImages.dart';
 import 'package:vropay_final/Utilities/screen_utils.dart';
 import 'package:vropay_final/app/core/api/api_constant.dart';
+import 'package:vropay_final/app/modules/Screens/news/controllers/news_controller.dart';
 
 class NewsDetailScreen extends StatefulWidget {
   final Map<String, dynamic> news;
@@ -23,11 +25,19 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
   final GlobalKey _moreButtonKey = GlobalKey(); // Add key for positioning
   bool _showBlur = false; // Add blur state
   bool _showHighlightView = false; // Add highlight view state
+  late Map<String, dynamic> currentNews; // Current news item
+  NewsController? newsController; // News controller reference
 
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
+    currentNews = widget.news;
+    try {
+      newsController = Get.find<NewsController>();
+    } catch (e) {
+      print('NewsController not found: $e');
+    }
   }
 
   @override
@@ -91,11 +101,11 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
                         decoration: BoxDecoration(
                           color: Color(0xFFF5F5F5),
                         ),
-                        child: (widget.news['thumbnail'] != null &&
-                                widget.news['thumbnail'].toString().isNotEmpty)
+                        child: (currentNews['thumbnail'] != null &&
+                                currentNews['thumbnail'].toString().isNotEmpty)
                             ? ClipRRect(
                                 child: _buildNewsImage(
-                                  widget.news['thumbnail'].toString(),
+                                  currentNews['thumbnail'].toString(),
                                   fit: BoxFit.cover,
                                   height: ScreenUtils.height * 0.25,
                                   width: double.infinity,
@@ -120,7 +130,7 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 20.0),
                         child: Text(
-                          widget.news['title'] ?? 'No Title',
+                          currentNews['title'] ?? 'No Title',
                           style: TextStyle(
                             fontSize: 23,
                             fontWeight: FontWeight.w500,
@@ -164,13 +174,13 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
                                   SizedBox(width: ScreenUtils.width * 0.05),
                                   Expanded(
                                     child: GestureDetector(
-                                        onTap: () {},
+                                        onTap: _goToNextNews,
                                         child: Image.asset(KImages.nextIcon)),
                                   ),
                                   SizedBox(width: ScreenUtils.width * 0.05),
                                   Expanded(
                                     child: GestureDetector(
-                                        onTap: () {},
+                                        onTap: _shareNews,
                                         child: Image.asset(KImages.shareIcon)),
                                   ),
                                 ],
@@ -444,11 +454,11 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
     BoxFit? fit,
   }) {
     print('🖼️ NewsDetail - Building image with path: $imagePath');
-    
+
     // Use centralized URL builder
     String finalImageUrl = ApiConstant.getImageUrl(imagePath);
     print('🔗 NewsDetail - Final image URL: $finalImageUrl');
-    
+
     // Check if it's an asset path
     if (imagePath.startsWith('assets/')) {
       print('📁 NewsDetail - Loading asset image: $imagePath');
@@ -474,56 +484,56 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
         },
       );
     }
-    
+
     // For all other cases (network URLs and backend images), use Image.network
     print('🌐 NewsDetail - Loading network image: $finalImageUrl');
     return Image.network(
       finalImageUrl,
-        height: height,
-        width: width,
-        fit: fit ?? BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          return Container(
-            height: height,
-            width: width,
-            decoration: BoxDecoration(
-              color: Colors.grey[200],
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              Icons.image_not_supported,
+      height: height,
+      width: width,
+      fit: fit ?? BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) {
+        return Container(
+          height: height,
+          width: width,
+          decoration: BoxDecoration(
+            color: Colors.grey[200],
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            Icons.image_not_supported,
+            color: Colors.grey[400],
+            size: height != null ? height * 0.4 : 24,
+          ),
+        );
+      },
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) return child;
+        return Container(
+          height: height,
+          width: width,
+          decoration: BoxDecoration(
+            color: Colors.grey[200],
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Center(
+            child: CircularProgressIndicator(
+              value: loadingProgress.expectedTotalBytes != null
+                  ? loadingProgress.cumulativeBytesLoaded /
+                      loadingProgress.expectedTotalBytes!
+                  : null,
+              strokeWidth: 2,
               color: Colors.grey[400],
-              size: height != null ? height * 0.4 : 24,
             ),
-          );
-        },
-        loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) return child;
-          return Container(
-            height: height,
-            width: width,
-            decoration: BoxDecoration(
-              color: Colors.grey[200],
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Center(
-              child: CircularProgressIndicator(
-                value: loadingProgress.expectedTotalBytes != null
-                    ? loadingProgress.cumulativeBytesLoaded /
-                        loadingProgress.expectedTotalBytes!
-                    : null,
-                strokeWidth: 2,
-                color: Colors.grey[400],
-              ),
-            ),
-          );
-        },
-      );
+          ),
+        );
+      },
+    );
   }
 
   String _getNewsContent() {
     // Use actual body content from API if available, otherwise fallback to generated content
-    final body = widget.news['body']?.toString();
+    final body = currentNews['body']?.toString();
     print('🔍 NewsDetail - Raw body content: $body');
 
     if (body != null && body.isNotEmpty && body != 'null') {
@@ -534,7 +544,7 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
     }
 
     // Fallback to generated content based on title
-    return _getFullDescription(widget.news['title'] ?? '');
+    return _getFullDescription(currentNews['title'] ?? '');
   }
 
   // Helper method to convert HTML to pure text content (no tags)
@@ -760,6 +770,35 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
     return RichText(
       text: TextSpan(children: spans),
     );
+  }
+
+  void _goToNextNews() {
+    if (newsController == null) return;
+
+    final currentList = newsController!.filteredNews;
+    if (currentList.isEmpty) return;
+
+    // Find current news index
+    final currentIndex = currentList.indexWhere((news) =>
+        news['_id'] == currentNews['_id'] ||
+        news['entryId'] == currentNews['entryId'] ||
+        news['title'] == currentNews['title']);
+
+    // Navigate to next news (loop to beginning if at end)
+    final nextIndex = (currentIndex + 1) % currentList.length;
+    final nextNews = currentList[nextIndex];
+    setState(() {
+      currentNews = nextNews;
+    });
+  }
+
+  void _shareNews() {
+    final title = currentNews['title'] ?? 'News Article';
+    final content = _getNewsContent();
+    final shareText =
+        '$title\n\n${content.length > 200 ? content.substring(0, 200) + '...' : content}';
+
+    Share.share(shareText, subject: title);
   }
 }
 

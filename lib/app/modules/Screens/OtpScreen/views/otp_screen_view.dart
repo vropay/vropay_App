@@ -1,16 +1,45 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
+import 'package:sms_autofill/sms_autofill.dart';
 import 'package:vropay_final/Utilities/constants/Colors.dart';
 import '../../../../../Components/constant_buttons.dart';
 import '../../../../../Utilities/constants/KImages.dart';
 import '../../onBoarding/widgets/faq_help.dart';
 import '../controllers/otp_screen_controller.dart';
 
-class OtpScreenView extends StatelessWidget {
+class OtpScreenView extends StatefulWidget {
+  const OtpScreenView({super.key});
+
+  @override
+  State<OtpScreenView> createState() => _OtpScreenViewState();
+}
+
+class _OtpScreenViewState extends State<OtpScreenView> with CodeAutoFill {
   final OTPController _otpController = Get.find<OTPController>();
 
-  OtpScreenView({super.key});
+  @override
+  void initState() {
+    super.initState();
+
+    SmsAutoFill().getAppSignature.then((signature) {
+      debugPrint('App signature (include in SMS template): $signature');
+    });
+  }
+
+  @override
+  void codeUpdated() {
+    if (code != null) {
+      _otpController.otpFieldController.text = code!;
+      _otpController.updateOtp(code!);
+    }
+  }
+
+  @override
+  void dispose() {
+    cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,23 +70,27 @@ class OtpScreenView extends StatelessWidget {
 
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: PinCodeTextField(
-                    length: 5,
+                  child: PinFieldAutoFill(
+                    codeLength: 5,
                     controller: _otpController.otpFieldController,
-                    onChanged: (value) => _otpController.updateOtp(value),
-                    keyboardType: TextInputType.text,
-                    appContext: context,
-                    textStyle:
-                        TextStyle(fontSize: 18, color: Color(0xFF172B75)),
-                    pinTheme: PinTheme(
-                      shape: PinCodeFieldShape.box,
-                      borderRadius: BorderRadius.circular(6),
-                      fieldHeight: 59,
-                      fieldWidth: 49,
-                      activeColor: Color(0xFFCBDAFF),
-                      inactiveColor: Color(0xFFDFDFDF),
-                      selectedColor: Color(0xFFCBDAFF),
+                    decoration: UnderlineDecoration(
+                      textStyle:
+                          TextStyle(fontSize: 18, color: Color(0xFF172B75)),
+                      colorBuilder: FixedColorBuilder(Color(0xFFCBDAFF)),
                     ),
+                    onCodeChanged: (value) {
+                      if (value == null) return;
+                      _otpController.updateOtp(value);
+                      if (value.length == 5) {
+                        if (_otpController.isPhoneOtp.value) {
+                          _otpController.verifyPhoneOtp();
+                        } else {
+                          _otpController.verifyEmailOtp();
+                        }
+                      }
+                    },
+                    keyboardType: TextInputType.text,
+                    onCodeSubmitted: (value) {},
                   ),
                 ),
 

@@ -908,7 +908,7 @@ class MessageController extends GetxController {
       } else if (e.toString().contains('Topic not found')) {
         errorMessage = 'The selected topic no longer exists';
       } else if (e.toString().contains('Main category not found')) {
-        errorMessage = 'The selected category no longer exists';
+        errorMessage = 'Unable to share entry - category information missing';
       }
 
       Get.snackbar(
