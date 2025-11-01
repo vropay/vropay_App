@@ -53,7 +53,8 @@ class ApiConstant {
   static const String userProfile = '$apiVersion/profile';
   static const String userPreferences = '$apiVersion/preferences';
   static const String updateUser = '$apiVersion/profile';
-  static const String changeEmail = '$apiVersion/change-email';
+  static const String changeEmail = '$apiVersion/request-email-update';
+  static const String changePhone = '$apiVersion/request-phone-update';
   static const String difficulty = '$apiVersion/set-difficulty';
   static const String communityAccess = '$apiVersion/set-community';
   static const String setNotification = '$apiVersion/set-notifications';

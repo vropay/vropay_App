@@ -382,39 +382,27 @@ class ProfileController extends GetxController {
       final newEmail = emailController.text.trim();
       final currentEmail = user.value?.email ?? '';
 
+      // Check if mobile has changed
+      final newMobile = mobileController.text.trim();
+      final currentMobile = user.value?.mobile ?? '';
+
       if (newEmail != currentEmail && newEmail.isNotEmpty) {
         // Email changed - send OTP for verification
         print(
             '📧 Email changed from $currentEmail to $newEmail - sending OTP...');
 
         try {
-          // Try to send OTP to new email using signup endpoint
-          await _authService.signUpWithEmail(
-              email: newEmail,
-              name: '${firstNameController.text} ${lastNameController.text}');
+          // Send OTP to new email using dedicated email change method
+          final response =
+              await _authService.sendemailchangeotp(newEmail: newEmail);
 
-          // Navigate to OTP screen with email change context
-          Get.toNamed('/otp-screen', arguments: {
-            'email': newEmail,
-            'isEmailChange': true,
-            'profileData': {
-              'firstName': firstNameController.text.trim(),
-              'lastName': lastNameController.text.trim(),
-              'mobile': mobileController.text.trim(),
-              'profession': selectedCategory.value,
-              'gender': selectedGender.value,
-            }
-          });
-          return;
-        } catch (e) {
-          // If email already exists, still proceed to OTP (for email change)
-          if (e.toString().contains('already registered') ||
-              e.toString().contains('Email already')) {
-            Get.snackbar('Info', 'Sending OTP to verify email change...',
-                backgroundColor: Colors.blue.withOpacity(0.8),
+          // Check if the response indicates success
+          if (response.success) {
+            Get.snackbar('Success', 'OTP sent to new email address',
+                backgroundColor: Colors.green.withOpacity(0.8),
                 colorText: Colors.white);
 
-            // Navigate to OTP screen anyway for email change verification
+            // Navigate to OTP screen with email change context
             Get.toNamed('/otp-screen', arguments: {
               'email': newEmail,
               'isEmailChange': true,
@@ -427,8 +415,13 @@ class ProfileController extends GetxController {
               }
             });
             return;
+          } else {
+            Get.snackbar('Error', response.message ?? 'Email already exists',
+                backgroundColor: Colors.red.withOpacity(0.8),
+                colorText: Colors.white);
+            return;
           }
-
+        } catch (e) {
           Get.snackbar('Error', 'Failed to send OTP: ${e.toString()}',
               backgroundColor: Colors.red.withOpacity(0.8),
               colorText: Colors.white);
@@ -436,7 +429,52 @@ class ProfileController extends GetxController {
         }
       }
 
-      // No email change - proceed with normal profile update
+      if (newMobile != currentMobile && newMobile.isNotEmpty) {
+        // Mobile changed - send OTP for verification
+        print(
+            '📱 Mobile changed from $currentMobile to $newMobile - sending OTP...');
+
+        try {
+          // Send OTP to new mobile number using dedicated phone change method
+          final response =
+              await _authService.sendphonechangeotp(newPhone: newMobile);
+
+          // Check if the response indicates success
+          if (response.success) {
+            Get.snackbar('Success', 'OTP sent to new phone number',
+                backgroundColor: Colors.green.withOpacity(0.8),
+                colorText: Colors.white);
+
+            // Navigate to OTP screen with phone change context
+            Get.toNamed('/otp-screen', arguments: {
+              'phone': newMobile,
+              'isPhoneOtp': true,
+              'isPhoneChange': true,
+              'profileData': {
+                'firstName': firstNameController.text.trim(),
+                'lastName': lastNameController.text.trim(),
+                'mobile': newMobile,
+                'profession': selectedCategory.value,
+                'gender': selectedGender.value,
+              }
+            });
+            return;
+          } else {
+            Get.snackbar(
+                'Error', response.message ?? 'Phone number already exists',
+                backgroundColor: Colors.red.withOpacity(0.8),
+                colorText: Colors.white);
+            return;
+          }
+        } catch (e) {
+          Get.snackbar('Error', 'Failed to send OTP: ${e.toString()}',
+              backgroundColor: Colors.red.withOpacity(0.8),
+              colorText: Colors.white);
+          return;
+        }
+      }
+
+      // No email or mobile change - proceed with normal profile update
       await _updateProfileData();
     } catch (e) {
       print('❌ ProfileController - Error saving general profile: $e');
@@ -511,42 +549,44 @@ class ProfileController extends GetxController {
         gender: profileData['gender'],
       );
 
-      // Update local user data with new email
-      final currentUser = user.value;
-      if (currentUser != null) {
-        user.value = UserModel(
-          id: currentUser.id,
-          email: newEmail,
-          firstName: profileData['firstName'],
-          lastName: profileData['lastName'],
-          mobile: profileData['mobile'],
-          profession: profileData['profession'],
-          gender: profileData['gender'],
-          profileImage: currentUser.profileImage,
-          selectedTopics: currentUser.selectedTopics,
-          difficultyLevel: currentUser.difficultyLevel,
-          communityAccess: currentUser.communityAccess,
-          notificationsEnabled: currentUser.notificationsEnabled,
-          isOnboardingCompleted: currentUser.isOnboardingCompleted,
-          createdAt: currentUser.createdAt,
-          updatedAt: currentUser.updatedAt,
-        );
-        user.refresh();
-      }
-
-      // Update controllers
-      emailController.text = newEmail;
-      firstNameController.text = profileData['firstName'];
-      lastNameController.text = profileData['lastName'];
-      mobileController.text = profileData['mobile'];
-      selectedGender.value = profileData['gender'];
-      selectedCategory.value = profileData['profession'];
+      // Reload user data from server to get updated information
+      await loadUserData();
 
       Get.snackbar('Success', 'Email and profile updated successfully',
           backgroundColor: Colors.green.withOpacity(0.8),
           colorText: Colors.white);
     } catch (e) {
       Get.snackbar('Error', 'Failed to update email: ${e.toString()}',
+          backgroundColor: Colors.red.withOpacity(0.8),
+          colorText: Colors.white);
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  // Method to handle phone change after OTP verification
+  Future<void> updatePhoneAfterVerification(
+      String newPhone, Map<String, dynamic> profileData) async {
+    try {
+      isLoading.value = true;
+
+      // Update profile with new phone and other data
+      await _authService.updateUserProfile(
+        firstName: profileData['firstName'],
+        lastName: profileData['lastName'],
+        mobile: newPhone,
+        profession: profileData['profession'],
+        gender: profileData['gender'],
+      );
+
+      // Reload user data from server to get updated information
+      await loadUserData();
+
+      Get.snackbar('Success', 'Phone number and profile updated successfully',
+          backgroundColor: Colors.green.withOpacity(0.8),
+          colorText: Colors.white);
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to update phone: ${e.toString()}',
           backgroundColor: Colors.red.withOpacity(0.8),
           colorText: Colors.white);
     } finally {

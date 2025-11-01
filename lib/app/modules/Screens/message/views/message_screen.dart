@@ -79,6 +79,7 @@ class _MessageScreenState extends State<MessageScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFFFFFFF),
+      resizeToAvoidBottomInset: true,
       body: Stack(
         children: [
           CustomScrollView(
@@ -951,7 +952,9 @@ class _MessageScreenState extends State<MessageScreen> {
       ),
       // Add bottomNavigationBar with message input
       bottomNavigationBar: Obx(() => controller.canSendMessages.value
-          ? _buildMessageInputBottomBar()
+          ? SafeArea(
+              child: _buildMessageInputBottomBar(),
+            )
           : const SizedBox.shrink()),
     );
   }
@@ -1008,7 +1011,7 @@ class _MessageScreenState extends State<MessageScreen> {
     return Container(
       color: Colors.white,
       padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).padding.bottom,
+        bottom: MediaQuery.of(context).viewInsets.bottom,
         top: 8,
         left: 10,
         right: 10,

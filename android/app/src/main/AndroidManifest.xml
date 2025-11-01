@@ -3,10 +3,12 @@
     <uses-permission android:name="android.permission.READ_SMS" />
     
     <application
-        android:label="vropay_final"
+        android:label="VroPay"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
-        android:enableOnBackInvokedCallback="true">
+        android:enableOnBackInvokedCallback="true"
+        android:allowBackup="false"
+        android:requestLegacyExternalStorage="true">
         <activity
             android:name=".MainActivity"
             android:exported="true"

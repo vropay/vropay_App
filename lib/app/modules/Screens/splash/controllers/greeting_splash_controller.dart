@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:vropay_final/app/core/services/auth_service.dart';
 import 'package:vropay_final/app/routes/app_pages.dart';
 
@@ -29,11 +30,18 @@ class GreetingSplashController extends GetxController {
   }
 
   void _initializeSplash() async {
-    if (isAuthenticated.value) {
-      // User is logged in - show greeting splash
+    // Always check if this is first time launch
+    final storage = GetStorage();
+    final isFirstTime = storage.read('isFirstTime') ?? true;
+    
+    if (isFirstTime) {
+      // First time user - always show onboarding to choose signup/login
+      await _startSplashLogic();
+    } else if (isAuthenticated.value) {
+      // Returning authenticated user - show greeting splash
       await _showGreetingSplash();
     } else {
-      // User is not logged in - show regular splash
+      // Returning non-authenticated user - show onboarding
       await _startSplashLogic();
     }
   }
@@ -68,6 +76,10 @@ class GreetingSplashController extends GetxController {
     // Wait a bit more for smooth transition
     await Future.delayed(Duration(milliseconds: 20));
 
+    // Mark first time as false
+    final storage = GetStorage();
+    storage.write('isFirstTime', false);
+    
     // Navigate to onboarding for non-authenticated users
     Get.offAllNamed(Routes.ON_BOARDING);
   }

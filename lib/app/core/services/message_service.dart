@@ -7,7 +7,6 @@ import 'package:vropay_final/app/core/api/api_constant.dart';
 import 'package:vropay_final/app/core/models/api_response.dart';
 import 'package:vropay_final/app/core/network/api_client.dart';
 import 'package:vropay_final/app/core/network/api_exception.dart';
-import 'package:vropay_final/app/core/services/auth_service.dart';
 import 'package:vropay_final/app/core/services/socket_service.dart';
 import 'package:vropay_final/app/modules/Screens/message/controllers/message_controller.dart';
 
@@ -139,22 +138,12 @@ class MessageService extends GetxService {
         final userId = _getCurrentUserId();
 
         if (userId == null) {
-          // Try to get user data from AuthService
-          try {
-            final authService = Get.find<AuthService>();
-            final currentUser = authService.currentUser.value;
-            if (currentUser?.id != null) {
-              _storage.write('user_data', {
-                '_id': currentUser!.id,
-                'firstName': currentUser.firstName,
-                'name': currentUser.firstName,
-              });
-            } else {
-              throw Exception('User not authenticated');
-            }
-          } catch (e) {
-            throw Exception('User not authenticated - please log in again');
-          }
+          print('❌ [MESSAGE SERVICE] User ID not found in storage!');
+          print(
+              '❌ [MESSAGE SERVICE] Available storage keys: ${_storage.getKeys()}');
+          final userData = _storage.read('user_data');
+          print('❌ [MESSAGE SERVICE] User data: $userData');
+          throw Exception('User not authenticated - user ID not found');
         }
 
         print('✅ [MESSAGE SERVICE] User ID retrieved: $userId');
@@ -690,64 +679,53 @@ class MessageService extends GetxService {
     try {
       isLoading.value = true;
 
-      // Start with minimal required payload
+      print('📤 [MESSAGE SERVICE] Sharing entry via REST API');
+      print('📤 [MESSAGE SERVICE] API URL: ${ApiConstant.shareEntry}');
+      print('📤 [MESSAGE SERVICE] Entry ID: $entryId');
+
       final payload = <String, dynamic>{
         'interestId': interestId,
         'message': message,
         'entryId': entryId,
       };
 
-      print('📤 [MESSAGE SERVICE] Share entry minimal payload: $payload');
-      print(
-          '📤 [MESSAGE SERVICE] Available IDs: mainCategoryId=$mainCategoryId, subCategoryId=$subCategoryId, topicId=$topicId');
-
-      // Try with minimal payload first (let server resolve from entryId)
-      var response =
-          await _apiClient.post(ApiConstant.shareEntry, data: payload);
-
-      // If that fails with "Main category not found", try including the IDs
-      if (response.statusCode == 404 &&
-          response.data?['message']
-                  ?.toString()
-                  .contains('Main category not found') ==
-              true) {
-        print(
-            '⚠️ [MESSAGE SERVICE] Minimal payload failed, trying with category IDs');
-
-        // Add category IDs if available and valid
-        if (mainCategoryId != null &&
-            mainCategoryId.isNotEmpty &&
-            mainCategoryId.length > 10) {
-          payload['mainCategoryId'] = mainCategoryId;
-        }
-        if (subCategoryId != null &&
-            subCategoryId.isNotEmpty &&
-            subCategoryId.length > 10 &&
-            subCategoryId != topicId) {
-          payload['subCategoryId'] = subCategoryId;
-        }
-        if (topicId != null &&
-            topicId.isNotEmpty &&
-            topicId.length > 10 &&
-            topicId != subCategoryId) {
-          payload['topicId'] = topicId;
-        }
-
-        print('📤 [MESSAGE SERVICE] Retry with full payload: $payload');
-        response = await _apiClient.post(ApiConstant.shareEntry, data: payload);
+      // Only include parent IDs when they are provided (server may resolve them)
+      if (mainCategoryId != null && mainCategoryId.isNotEmpty) {
+        payload['mainCategoryId'] = mainCategoryId;
       }
+      if (subCategoryId != null && subCategoryId.isNotEmpty) {
+        payload['subCategoryId'] = subCategoryId;
+      }
+      if (topicId != null && topicId.isNotEmpty) {
+        payload['topicId'] = topicId;
+      }
+
+      final response = await _apiClient.post(
+        ApiConstant.shareEntry,
+        data: payload,
+      );
+
+      print(
+          '📤 [MESSAGE SERVICE] Share entry response status: ${response.statusCode}');
+      print('📤 [MESSAGE SERVICE] Share entry response data: ${response.data}');
 
       if (response.statusCode == 201) {
         final apiResponse = ApiResponse.fromJson(response.data, (data) => data);
         if (apiResponse.success) {
-          final transformedMessage = _transformMessage(apiResponse.data);
+          // Transform the shared entry message
+          final transformedMessage =
+              _transformSharedEntryMessage(apiResponse.data);
+
+          // Add to messages list (avoid duplicates)
           _addOrReplaceMessage(transformedMessage);
+
+          print('✅ [MESSAGE SERVICE] Entry shared successfully');
           return transformedMessage;
         } else {
           throw ApiException(apiResponse.message);
         }
       } else {
-        // Enhanced error handling
+        // Surface backend message if available
         try {
           final apiResponse =
               ApiResponse.fromJson(response.data, (data) => data);
@@ -760,8 +738,33 @@ class MessageService extends GetxService {
         }
       }
     } catch (e) {
-      print('❌ [MESSAGE SERVICE] Share entry error: $e');
-      throw ApiException('Failed to share entry: ${e.toString()}');
+      print('❌ [MESSAGE SERVICE] Error sharing entry: $e');
+
+      // Enhanced error handling for entry sharing
+      String errorMessage = 'Failed to share entry';
+
+      if (e is ApiException) {
+        errorMessage = e.message;
+      } else if (e.toString().contains('SocketException')) {
+        errorMessage =
+            'Network connection failed. Please check your internet connection.';
+      } else if (e.toString().contains('TimeoutException')) {
+        errorMessage = 'Request timed out. Please try again.';
+      } else if (e.toString().contains('User not authenticated')) {
+        errorMessage = 'Authentication failed. Please log in again.';
+      } else if (e.toString().contains('not a member')) {
+        errorMessage = 'You are not a member of this interest group.';
+      } else if (e.toString().contains('Interest not found')) {
+        errorMessage = 'This interest group no longer exists.';
+      } else if (e.toString().contains('Entry not found')) {
+        errorMessage = 'The selected entry no longer exists.';
+      } else if (e.toString().contains('Topic not found')) {
+        errorMessage = 'The selected topic no longer exists.';
+      } else if (e.toString().contains('Main category not found')) {
+        errorMessage = 'The selected category no longer exists.';
+      }
+
+      throw ApiException(errorMessage);
     } finally {
       isLoading.value = false;
     }

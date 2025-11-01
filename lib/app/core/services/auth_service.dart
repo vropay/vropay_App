@@ -357,6 +357,122 @@ class AuthService extends GetxService {
     }
   }
 
+  // Send OTP for email change (alternative method name)
+  Future<ApiResponse<Map<String, dynamic>>> sendemailchangeotp({
+    required String newEmail,
+  }) async {
+    return await sendEmailChangeOtp(newEmail: newEmail);
+  }
+
+  // Send OTP for phone change
+  Future<ApiResponse<Map<String, dynamic>>> sendphonechangeotp({
+    required String newPhone,
+  }) async {
+    try {
+      isLoading.value = true;
+      print('🚀 AuthService - Sending OTP for phone change to: $newPhone');
+
+      final response = await _apiClient.post(ApiConstant.changePhone, data: {
+        'phoneNumber': newPhone,
+        'newPhoneNumber': newPhone,
+        'phone': newPhone,
+      });
+
+      final responseData = response.data as Map<String, dynamic>;
+
+      // Check if the API returned an error
+      if (responseData['success'] == false) {
+        print(
+            '❌ AuthService - Phone change failed: ${responseData['message']}');
+        throw ApiException(
+            responseData['message'] ?? 'Failed to send phone OTP');
+      }
+
+      print('✅ AuthService - Phone change OTP sent successfully');
+      return ApiResponse.fromJson(
+        responseData,
+        (data) => data as Map<String, dynamic>,
+      );
+    } catch (e) {
+      print('❌ AuthService - Error sending phone change OTP: $e');
+      throw _handleAuthError(e);
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  // Verify phone update with OTP
+  Future<ApiResponse<Map<String, dynamic>>> verifyPhoneUpdate({
+    required String otp,
+  }) async {
+    try {
+      isLoading.value = true;
+      print('🚀 AuthService - Verifying phone update with OTP: $otp');
+
+      final response = await _apiClient
+          .post('${ApiConstant.apiVersion}/verify-phone-update', data: {
+        'otp': otp,
+      });
+
+      print('✅ AuthService - Phone verification response: ${response.data}');
+
+      // Update local user data after successful verification
+      if (response.data is Map<String, dynamic> &&
+          response.data['success'] == true) {
+        await getUserProfile();
+      }
+
+      return ApiResponse.fromJson(
+        response.data,
+        (data) => data as Map<String, dynamic>,
+      );
+    } catch (e) {
+      print('❌ AuthService - Error verifying phone update: $e');
+      throw _handleAuthError(e);
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  // Verify email update with OTP
+  Future<ApiResponse<Map<String, dynamic>>> verifyUpdateEmail({
+    required String otp,
+  }) async {
+    try {
+      isLoading.value = true;
+      print('🚀 AuthService - Verifying email update with OTP: $otp');
+
+      final response = await _apiClient
+          .post('${ApiConstant.apiVersion}/verify-email-update', data: {
+        'otp': otp,
+      });
+
+      print('✅ AuthService - Email verification response: ${response.data}');
+
+      // Handle HTML error responses
+      if (response.data is String &&
+          response.data.contains('<!DOCTYPE html>')) {
+        throw ApiException('Email verification endpoint not found');
+      }
+
+      // Update local user data after successful verification
+      if (response.data is Map<String, dynamic> &&
+          response.data['success'] == true) {
+        await getUserProfile();
+      }
+
+      return ApiResponse.fromJson(
+        response.data,
+        (data) => data as Map<String, dynamic>,
+      );
+    } catch (e) {
+      print('❌ AuthService - Error verifying email update: $e');
+      throw _handleAuthError(e);
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   // Request phone verification OTP
   Future<ApiResponse<Map<String, dynamic>>> requestPhoneVerification({
     required String phoneNumber,
@@ -429,6 +545,7 @@ class AuthService extends GetxService {
     required String lastName,
     required String gender,
     required String profession,
+    String? email,
     String? mobile,
     List<String>? selectedTopics,
     String? difficultyLevel,
@@ -446,8 +563,13 @@ class AuthService extends GetxService {
         'profession': profession,
       };
 
+      if (email != null && email.isNotEmpty) {
+        data['email'] = email;
+      }
+
       if (mobile != null && mobile.isNotEmpty) {
         data['mobile'] = mobile;
+        data['phoneNumber'] = mobile;
       }
       if (selectedTopics != null) {
         data['selectedTopics'] = selectedTopics;

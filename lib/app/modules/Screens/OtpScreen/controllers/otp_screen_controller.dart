@@ -2,9 +2,11 @@ import 'dart:async';
 
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:vropay_final/Utilities/constants/Colors.dart';
 import 'package:vropay_final/Utilities/snackbar_helper.dart';
 import 'package:vropay_final/app/core/models/api_response.dart';
+import 'package:vropay_final/app/core/models/user_model.dart';
 import 'package:vropay_final/app/core/services/auth_service.dart';
 import 'package:vropay_final/app/modules/Screens/onBoarding/controllers/on_boarding_controller.dart';
 import 'package:vropay_final/app/routes/app_pages.dart';
@@ -21,6 +23,7 @@ class OTPController extends GetxController {
   var isLoading = false.obs;
   var errorMessage = ''.obs;
   var isEmailChange = false.obs;
+  var isPhoneChange = false.obs;
   var profileData = <String, dynamic>{}.obs;
   var resendTimer = 0.obs;
   var canResendOtp = true.obs;
@@ -53,6 +56,12 @@ class OTPController extends GetxController {
     // Check if this is for email change
     if (args['isEmailChange'] == true) {
       isEmailChange.value = true;
+      profileData.value = args['profileData'] ?? {};
+    }
+
+    // Check if this is for phone change
+    if (args['isPhoneChange'] == true) {
+      isPhoneChange.value = true;
       profileData.value = args['profileData'] ?? {};
     }
 
@@ -133,16 +142,30 @@ class OTPController extends GetxController {
         userEmail.value = emailController.text;
         isPhoneOtp.value = false; // It's email OTP
 
-        // For email change, we simulate OTP sending
+        // For email change, use sendEmailChangeOtp API
+        print('🔍 Debug: isEmailChange.value = ${isEmailChange.value}');
         if (isEmailChange.value) {
-          setSnackBar("OTP Sent",
-              "OTP has been sent to ${userEmail.value} for verification.",
-              position: SnackPosition.BOTTOM,
-              backgroundColor: KConstColors.snackbarSecondary);
-          // Start timer for email change OTP
-          _initializeResendTimer();
+          print('📧 Calling sendEmailChangeOtp for: ${userEmail.value}');
+          final response = await _authService.sendEmailChangeOtp(
+            newEmail: userEmail.value,
+          );
+
+          if (response.success) {
+            setSnackBar("OTP Sent",
+                "OTP has been sent to ${userEmail.value} for verification.",
+                position: SnackPosition.BOTTOM,
+                backgroundColor: KConstColors.snackbarSecondary);
+            // Start timer for email change OTP
+            _initializeResendTimer();
+          } else {
+            setSnackBar("Error", response.message ?? "Failed to send OTP",
+                position: SnackPosition.BOTTOM,
+                backgroundColor: KConstColors.errorSnackbar);
+          }
           return;
         }
+
+        print('📧 Not email change flow, calling signup API');
 
         // Call API to send OTP for normal signup
         final response = await _authService.signUpWithEmail(
@@ -210,37 +233,66 @@ class OTPController extends GetxController {
 
       // Handle email change verification differently
       if (isEmailChange.value) {
-        // For email change, use simple verification (any 6-digit code)
-        if (otpCode.value.trim().length == 6) {
-          isEmailVerified.value = true;
-          otpFieldController.clear();
-          otpCode.value = '';
+        final otpValue = otpCode.value.trim();
+        final controllerValue = otpFieldController.text.trim();
+        final finalOtpValue = otpValue.isNotEmpty ? otpValue : controllerValue;
 
-          Get.snackbar(
-            "Success",
-            "Email verified successfully!",
-            snackPosition: SnackPosition.TOP,
-            backgroundColor: KConstColors.successSnackbar,
-            colorText: Colors.white,
-          );
-
-          // Update email in profile after verification
-          final profileController = Get.find<ProfileController>();
-          await profileController.updateEmailAfterVerification(
-              userEmail.value, profileData.value);
-
-          // Go back to profile screen
-          Get.back();
-          Get.back(); // Go back twice to return to profile
-        } else {
+        if (finalOtpValue.isEmpty || finalOtpValue.length != 5) {
           Get.snackbar(
             "Error",
-            "Please enter a valid 6-digit OTP",
+            "Please enter a valid 5-digit OTP",
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: KConstColors.errorSnackbar,
+            colorText: Colors.white,
+          );
+          return;
+        }
+
+        try {
+          // Use dedicated email verification API
+          final response =
+              await _authService.verifyUpdateEmail(otp: finalOtpValue);
+
+          if (response.success) {
+            Get.snackbar(
+              "Success",
+              "Email verified and updated successfully!",
+              snackPosition: SnackPosition.TOP,
+              backgroundColor: KConstColors.successSnackbar,
+              colorText: Colors.white,
+            );
+
+            // Update email in profile after verification
+            final profileController = Get.find<ProfileController>();
+            await profileController.updateEmailAfterVerification(
+                userEmail.value, profileData.value);
+
+            // Clear OTP only after successful verification
+            isEmailVerified.value = true;
+            otpFieldController.clear();
+            otpCode.value = '';
+
+            // Navigate back to profile screen
+            Get.offAllNamed('/profile');
+          } else {
+            Get.snackbar(
+              "Error",
+              response.message ?? "Failed to verify email",
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: KConstColors.errorSnackbar,
+              colorText: Colors.white,
+            );
+          }
+        } catch (e) {
+          Get.snackbar(
+            "Error",
+            "Failed to verify email: ${e.toString()}",
             snackPosition: SnackPosition.BOTTOM,
             backgroundColor: KConstColors.errorSnackbar,
             colorText: Colors.white,
           );
         }
+        return;
       } else {
         // Call API to verify OTP for normal signup
         final response = await _authService.verifyOtp(
@@ -303,6 +355,53 @@ class OTPController extends GetxController {
             snackPosition: SnackPosition.BOTTOM,
             backgroundColor: KConstColors.errorSnackbar,
             colorText: Colors.white);
+        return;
+      }
+
+      // Handle phone change verification
+      if (isPhoneChange.value) {
+        try {
+          // Use dedicated phone update verification API
+          final response = await _authService.verifyPhoneUpdate(otp: otp);
+
+          if (response.success) {
+            Get.snackbar(
+              "Success",
+              "Phone number verified and updated successfully!",
+              snackPosition: SnackPosition.TOP,
+              backgroundColor: KConstColors.successSnackbar,
+              colorText: Colors.white,
+            );
+
+            // Update phone in profile after verification
+            final profileController = Get.find<ProfileController>();
+            await profileController.updatePhoneAfterVerification(
+                userPhone.value, profileData.value);
+
+            // Clear OTP field
+            otpFieldController.clear();
+            otpCode.value = '';
+
+            // Navigate back to profile screen
+            Get.offAllNamed('/profile');
+          } else {
+            Get.snackbar(
+              "Error",
+              response.message ?? "Failed to verify phone number",
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: KConstColors.errorSnackbar,
+              colorText: Colors.white,
+            );
+          }
+        } catch (e) {
+          Get.snackbar(
+            "Error",
+            "Failed to verify phone number: ${e.toString()}",
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: KConstColors.errorSnackbar,
+            colorText: Colors.white,
+          );
+        }
         return;
       }
 

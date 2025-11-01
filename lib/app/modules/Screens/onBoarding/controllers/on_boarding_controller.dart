@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:vropay_final/app/core/models/api_response.dart';
@@ -254,6 +255,10 @@ class OnBoardingController extends GetxController {
             user.communityAccess != null &&
             user.communityAccess!.isNotEmpty;
 
+        // Mark first time as false since user is authenticated
+        final storage = GetStorage();
+        storage.write('isFirstTime', false);
+        
         if (!hasCompleteProfile) {
           Get.offAllNamed(Routes.HOME, arguments: {'showUserDetails': true});
         } else {
@@ -353,6 +358,10 @@ class OnBoardingController extends GetxController {
               user.communityAccess != null &&
               user.communityAccess!.isNotEmpty;
 
+          // Mark first time as false since user is authenticated
+          final storage = GetStorage();
+          storage.write('isFirstTime', false);
+          
           if (!hasCompleteProfile) {
             Get.offAllNamed(Routes.HOME, arguments: {'showUserDetails': true});
           } else {
@@ -427,6 +436,10 @@ class OnBoardingController extends GetxController {
 
           if (response.success) {
             Get.snackbar('Success', 'Phone number verified successfully');
+            // Mark first time as false since user is authenticated
+            final storage = GetStorage();
+            storage.write('isFirstTime', false);
+            
             // Navigate to learn screen to collect user data
             Get.offAllNamed(Routes.HOME, arguments: {'showUserDetails': true});
           } else {
@@ -921,6 +934,10 @@ class OnBoardingController extends GetxController {
         // await _authService.getUserProfile();
         _loadUserData();
 
+        // Mark first time as false since user is authenticated
+        final storage = GetStorage();
+        storage.write('isFirstTime', false);
+        
         Get.offAllNamed(Routes.HOME);
       } else {
         Get.snackbar('Error', response.message);

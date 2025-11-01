@@ -15,29 +15,11 @@ class OtpScreenView extends StatefulWidget {
   State<OtpScreenView> createState() => _OtpScreenViewState();
 }
 
-class _OtpScreenViewState extends State<OtpScreenView> with CodeAutoFill {
+class _OtpScreenViewState extends State<OtpScreenView> {
   final OTPController _otpController = Get.find<OTPController>();
 
   @override
-  void initState() {
-    super.initState();
-
-    SmsAutoFill().getAppSignature.then((signature) {
-      debugPrint('App signature (include in SMS template): $signature');
-    });
-  }
-
-  @override
-  void codeUpdated() {
-    if (code != null) {
-      _otpController.otpFieldController.text = code!;
-      _otpController.updateOtp(code!);
-    }
-  }
-
-  @override
   void dispose() {
-    cancel();
     super.dispose();
   }
 
@@ -70,27 +52,26 @@ class _OtpScreenViewState extends State<OtpScreenView> with CodeAutoFill {
 
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: PinFieldAutoFill(
-                    codeLength: 5,
-                    controller: _otpController.otpFieldController,
-                    decoration: UnderlineDecoration(
-                      textStyle:
-                          TextStyle(fontSize: 18, color: Color(0xFF172B75)),
-                      colorBuilder: FixedColorBuilder(Color(0xFFCBDAFF)),
-                    ),
-                    onCodeChanged: (value) {
-                      if (value == null) return;
+                  child: PinCodeTextField(
+                    length: 5,
+                    appContext: context,
+                    onChanged: (value) {
                       _otpController.updateOtp(value);
-                      if (value.length == 5) {
-                        if (_otpController.isPhoneOtp.value) {
-                          _otpController.verifyPhoneOtp();
-                        } else {
-                          _otpController.verifyEmailOtp();
-                        }
-                      }
                     },
-                    keyboardType: TextInputType.text,
-                    onCodeSubmitted: (value) {},
+                    keyboardType: TextInputType.number,
+                    textStyle:
+                        TextStyle(fontSize: 18, color: Color(0xFF172B75)),
+                    pinTheme: PinTheme(
+                      shape: PinCodeFieldShape.underline,
+                      fieldHeight: 50,
+                      fieldWidth: 40,
+                      activeColor: Color(0xFFCBDAFF),
+                      inactiveColor: Color(0xFFCBDAFF),
+                      selectedColor: Color(0xFF172B75),
+                    ),
+                    enableActiveFill: false,
+                    autoFocus: false,
+                    enablePinAutofill: false,
                   ),
                 ),
 
@@ -191,18 +172,22 @@ class _OtpScreenViewState extends State<OtpScreenView> with CodeAutoFill {
                 SizedBox(height: 20),
 
                 // Verify OTP Button
-                Obx(() => CommonButton(
-                      text: "Verify OTP",
-                      onPressed: _otpController.otpCode.value.length == 5
-                          ? () {
-                              if (_otpController.isPhoneOtp.value) {
-                                _otpController.verifyPhoneOtp();
-                              } else {
-                                _otpController.verifyEmailOtp();
+                Obx(() {
+                  const expectedLength = 5;
+                  return CommonButton(
+                    text: "Verify OTP",
+                    onPressed:
+                        _otpController.otpCode.value.length == expectedLength
+                            ? () {
+                                if (_otpController.isPhoneOtp.value) {
+                                  _otpController.verifyPhoneOtp();
+                                } else {
+                                  _otpController.verifyEmailOtp();
+                                }
                               }
-                            }
-                          : null, // Disabled if OTP is not filled
-                    )),
+                            : null, // Disabled if OTP is not filled
+                  );
+                }),
               ],
             ),
           ),
