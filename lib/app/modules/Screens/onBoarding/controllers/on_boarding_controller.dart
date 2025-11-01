@@ -258,7 +258,7 @@ class OnBoardingController extends GetxController {
         // Mark first time as false since user is authenticated
         final storage = GetStorage();
         storage.write('isFirstTime', false);
-        
+
         if (!hasCompleteProfile) {
           Get.offAllNamed(Routes.HOME, arguments: {'showUserDetails': true});
         } else {
@@ -361,7 +361,7 @@ class OnBoardingController extends GetxController {
           // Mark first time as false since user is authenticated
           final storage = GetStorage();
           storage.write('isFirstTime', false);
-          
+
           if (!hasCompleteProfile) {
             Get.offAllNamed(Routes.HOME, arguments: {'showUserDetails': true});
           } else {
@@ -379,7 +379,7 @@ class OnBoardingController extends GetxController {
     } catch (e) {
       print('❌ Google sign-in error: $e');
       errorMessage.value = e.toString();
-      Get.snackbar('Error', 'Google sign-in failed: ${e.toString()}');
+      Get.snackbar('Error', 'Google sign-in failed}');
     } finally {
       isLoading.value = false;
     }
@@ -439,7 +439,7 @@ class OnBoardingController extends GetxController {
             // Mark first time as false since user is authenticated
             final storage = GetStorage();
             storage.write('isFirstTime', false);
-            
+
             // Navigate to learn screen to collect user data
             Get.offAllNamed(Routes.HOME, arguments: {'showUserDetails': true});
           } else {
@@ -841,10 +841,13 @@ class OnBoardingController extends GetxController {
       final phone = phoneController.text.trim();
 
       if (phone.length == 10 && RegExp(r'^[0-9]+$').hasMatch(phone)) {
-        final formattedPhone = '+91$phone';
+        // Try both formats to match backend expectations
+        final formattedPhone = phone; // Try without +91 first
         userPhone.value = formattedPhone;
         isPhoneOtp.value = true;
         isSignInFlow.value = true;
+
+        print('🔍 Attempting sign-in with phone: $formattedPhone');
 
         final response = await _authService.signInWithPhone(
           phoneNumber: formattedPhone,
@@ -861,7 +864,7 @@ class OnBoardingController extends GetxController {
 
           // Start the resend Timer
           _initializeResendTimer();
-          // Navigate to OTP screen instead of calling goToNextPage()
+          // Navigate to OTP screen
           Get.toNamed(
             Routes.OTP_SCREEN,
             arguments: {
@@ -872,11 +875,16 @@ class OnBoardingController extends GetxController {
           );
         } else {
           String errorMsg = response.message ?? "Failed to send OTP";
-          if (errorMsg.contains("not found") ||
-              errorMsg.contains("not registered")) {
+          print('🔍 Sign-in error: $errorMsg');
+
+          // Check if it's a user not found error
+          if (errorMsg.toLowerCase().contains("not found") ||
+              errorMsg.toLowerCase().contains("not registered") ||
+              errorMsg.toLowerCase().contains("user not found") ||
+              errorMsg.toLowerCase().contains("does not exist")) {
             Get.snackbar(
-              "User Not Found",
-              "Please sign up first to create an account",
+              "Account Not Found",
+              "No account found with this phone number. Please sign up first.",
               snackPosition: SnackPosition.BOTTOM,
               backgroundColor: const Color(0xFFE74C3C),
               colorText: Colors.white,
@@ -894,13 +902,14 @@ class OnBoardingController extends GetxController {
       } else {
         Get.snackbar(
           "Error",
-          "Invalid phone number",
+          "Please enter a valid 10-digit phone number",
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: const Color(0xFFE74C3C),
           colorText: Colors.white,
         );
       }
     } catch (e) {
+      print('🔍 Sign-in exception: $e');
       Get.snackbar("Error", "Failed to send OTP: ${e.toString()}");
     } finally {
       isLoading.value = false;
@@ -937,7 +946,7 @@ class OnBoardingController extends GetxController {
         // Mark first time as false since user is authenticated
         final storage = GetStorage();
         storage.write('isFirstTime', false);
-        
+
         Get.offAllNamed(Routes.HOME);
       } else {
         Get.snackbar('Error', response.message);

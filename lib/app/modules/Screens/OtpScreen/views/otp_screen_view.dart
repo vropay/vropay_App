@@ -58,7 +58,7 @@ class _OtpScreenViewState extends State<OtpScreenView> {
                     onChanged: (value) {
                       _otpController.updateOtp(value);
                     },
-                    keyboardType: TextInputType.number,
+                    keyboardType: TextInputType.text,
                     textStyle:
                         TextStyle(fontSize: 18, color: Color(0xFF172B75)),
                     pinTheme: PinTheme(
@@ -70,7 +70,7 @@ class _OtpScreenViewState extends State<OtpScreenView> {
                       selectedColor: Color(0xFF172B75),
                     ),
                     enableActiveFill: false,
-                    autoFocus: false,
+                    autoFocus: true,
                     enablePinAutofill: false,
                   ),
                 ),

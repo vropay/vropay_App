@@ -51,7 +51,7 @@ class GreetingSplashController extends GetxController {
     await Future.delayed(Duration(seconds: 2));
 
     // Navigate to dashboard for authenticated users
-    Get.offAllNamed(Routes.LEARN_SCREEN);
+    Get.offAllNamed(Routes.DASHBOARD);
   }
 
   // REgular splash logic for non-authenticated users
@@ -87,7 +87,7 @@ class GreetingSplashController extends GetxController {
   // Method to skip splash
   void skipSplash() {
     if (isAuthenticated.value) {
-      Get.offAllNamed(Routes.LEARN_SCREEN);
+      Get.offAllNamed(Routes.DASHBOARD);
     } else {
       Get.offAllNamed(Routes.ON_BOARDING);
     }
