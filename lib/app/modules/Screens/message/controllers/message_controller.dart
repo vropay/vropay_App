@@ -37,6 +37,7 @@ class MessageController extends GetxController {
   // Typing timer
   Timer? _typingTimer;
   Timer? _stopTypingTimer;
+  Timer? _autoRefreshTimer;
 
   // Dynamic Data
   final RxString interestId = ''.obs;
@@ -88,6 +89,9 @@ class MessageController extends GetxController {
     _initializeSocketService();
     _initializeMessageScreen();
 
+    // Auto-refresh messages when screen becomes visible
+    _startAutoRefresh();
+
     // Listen for new messages and auto-scroll
     ever(messages, (List<Map<String, dynamic>> newMessages) {
       if (newMessages.isNotEmpty) {
@@ -117,6 +121,7 @@ class MessageController extends GetxController {
   void onClose() {
     _disposeTimers();
     _searchTimer?.cancel(); // Cancel search timer
+    _autoRefreshTimer?.cancel(); // Cancel auto-refresh timer
     _messageService.disableRealTimeMessaging();
     _disconnectFromSocket();
     messageController.dispose();
@@ -254,6 +259,75 @@ class MessageController extends GetxController {
   void _disposeTimers() {
     _typingTimer?.cancel();
     _stopTypingTimer?.cancel();
+    _autoRefreshTimer?.cancel();
+  }
+
+  /// Start auto-refresh timer to check for new messages silently
+  void _startAutoRefresh() {
+    _autoRefreshTimer = Timer.periodic(Duration(seconds: 3), (timer) async {
+      try {
+        await _silentRefreshMessages();
+      } catch (e) {
+        print('❌ [AUTO-REFRESH] Error refreshing messages: $e');
+      }
+    });
+    print('✅ [AUTO-REFRESH] Started silent auto-refresh every 3 seconds');
+  }
+
+  /// Silent refresh that only updates if new messages are found
+  Future<void> _silentRefreshMessages() async {
+    try {
+      final currentMessageCount = messages.length;
+      final currentTotalMessages = totalMessages.value;
+
+      // Store current loading state to restore it
+      final wasLoading = _messageService.isLoading.value;
+
+      // Temporarily disable loading indicator for silent refresh
+      _messageService.isLoading.value = false;
+
+      // Get latest messages silently
+      await _messageService.getInterestMessages(interestId: interestId.value);
+
+      // Restore loading state
+      _messageService.isLoading.value = wasLoading;
+
+      final newMessages = _messageService.messages;
+      final newTotalMessages = _messageService.totalMessages.value;
+
+      // Only update UI if there are actually new messages
+      if (newTotalMessages > currentTotalMessages ||
+          newMessages.length > currentMessageCount) {
+        print(
+            '🔄 [SILENT-REFRESH] New messages detected: ${newMessages.length} vs $currentMessageCount (total: $newTotalMessages vs $currentTotalMessages)');
+
+        // Update messages list
+        messages.value = newMessages;
+        totalMessages.value = newTotalMessages;
+
+        // Auto-scroll to new messages
+        Future.delayed(const Duration(milliseconds: 100), () {
+          _scrollToBottom();
+          print('📜 [SILENT-REFRESH] Auto-scrolled to new messages');
+        });
+      }
+    } catch (e) {
+      print('❌ [SILENT-REFRESH] Error during silent refresh: $e');
+      // Don't show error to user during silent refresh - just log it
+      // If it's a server error, disable auto-refresh temporarily
+      if (e.toString().contains('500') ||
+          e.toString().contains('Internal server error')) {
+        print(
+            '🔧 [SILENT-REFRESH] Server error - temporarily disabling auto-refresh');
+        _autoRefreshTimer?.cancel();
+        // Re-enable after 30 seconds
+        Timer(Duration(seconds: 30), () {
+          _startAutoRefresh();
+          print(
+              '🔄 [SILENT-REFRESH] Auto-refresh re-enabled after server error');
+        });
+      }
+    }
   }
 
   // Initialize message screen with dynamic data
@@ -451,10 +525,11 @@ class MessageController extends GetxController {
       print(
           '🔐 [PERMISSIONS] Can send messages: ${canSendMessages.value} (All users allowed)');
       print('✅ [PERMISSIONS] Permission check completed successfully');
-      
+
       // Show warning if user is not a member but can still view messages
       if (!hasInterest) {
-        print('⚠️ [PERMISSIONS] User is not a member of this interest group but can view messages');
+        print(
+            '⚠️ [PERMISSIONS] User is not a member of this interest group but can view messages');
       }
     } catch (e) {
       print('❌ [PERMISSIONS] Error checking user permissions: $e');
@@ -488,7 +563,24 @@ class MessageController extends GetxController {
     } catch (e) {
       print('❌ [MESSAGES] Error loading messages: $e');
       print('❌ [MESSAGES] Stack trace: ${StackTrace.current}');
-      Get.snackbar('Error', 'Failed to load messages');
+
+      // Handle server errors gracefully
+      if (e.toString().contains('500') ||
+          e.toString().contains('Internal server error')) {
+        print(
+            '🔧 [MESSAGES] Server error detected - setting empty messages list');
+        messages.value = [];
+        totalMessages.value = 0;
+        Get.snackbar(
+          'Server Issue',
+          'Messages temporarily unavailable. You can still send messages.',
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+          duration: Duration(seconds: 3),
+        );
+      } else {
+        Get.snackbar('Error', 'Failed to load messages');
+      }
     }
   }
 
@@ -912,7 +1004,8 @@ class MessageController extends GetxController {
       print('📚 [MESSAGE CONTROLLER] CategoryId: ${categoryId.value}');
       print('📚 [MESSAGE CONTROLLER] SubCategoryId: ${subCategoryId.value}');
       print('📚 [MESSAGE CONTROLLER] TopicId: ${topicId.value}');
-      print('📚 [MESSAGE CONTROLLER] User has interest: ${hasUserInterest.value}');
+      print(
+          '📚 [MESSAGE CONTROLLER] User has interest: ${hasUserInterest.value}');
 
       // Share entry via dedicated API. Parent IDs are optional now — the server
       // may resolve them from entryId. We still pass them when available.
@@ -958,7 +1051,8 @@ class MessageController extends GetxController {
       } else if (e.toString().contains('Connection timeout')) {
         errorMessage = 'Connection timeout. Please check your internet.';
       } else if (e.toString().contains('not a member')) {
-        errorMessage = 'You must join this interest group to share content. Please join the group first.';
+        errorMessage =
+            'You must join this interest group to share content. Please join the group first.';
       } else if (e.toString().contains('Interest not found')) {
         errorMessage = 'This interest group no longer exists';
       } else if (e.toString().contains('Entry not found')) {

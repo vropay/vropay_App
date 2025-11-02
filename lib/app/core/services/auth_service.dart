@@ -524,6 +524,7 @@ class AuthService extends GetxService {
       final response =
           await _apiClient.post(ApiConstant.signUpVerifyPhoneNumber, data: {
         'otp': otp,
+        'enablePhoneLogin': true, // Request to enable phone login
       });
 
       print('✅ Phone number verified successfully');

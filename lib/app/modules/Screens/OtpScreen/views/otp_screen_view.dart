@@ -62,16 +62,17 @@ class _OtpScreenViewState extends State<OtpScreenView> {
                     textStyle:
                         TextStyle(fontSize: 18, color: Color(0xFF172B75)),
                     pinTheme: PinTheme(
-                      shape: PinCodeFieldShape.underline,
-                      fieldHeight: 50,
-                      fieldWidth: 40,
+                      shape: PinCodeFieldShape.box,
+                      borderRadius: BorderRadius.circular(10),
+                      fieldHeight: 59,
+                      fieldWidth: 49,
                       activeColor: Color(0xFFCBDAFF),
-                      inactiveColor: Color(0xFFCBDAFF),
-                      selectedColor: Color(0xFF172B75),
+                      inactiveColor: Color(0xFFDFDFDF),
+                      selectedColor: Color(0xFFCBDAFF),
                     ),
                     enableActiveFill: false,
                     autoFocus: true,
-                    enablePinAutofill: false,
+                    enablePinAutofill: true,
                   ),
                 ),
 

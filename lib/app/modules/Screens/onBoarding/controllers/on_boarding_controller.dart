@@ -841,19 +841,42 @@ class OnBoardingController extends GetxController {
       final phone = phoneController.text.trim();
 
       if (phone.length == 10 && RegExp(r'^[0-9]+$').hasMatch(phone)) {
-        // Try both formats to match backend expectations
-        final formattedPhone = phone; // Try without +91 first
-        userPhone.value = formattedPhone;
+        // Try multiple phone formats
+        final phoneFormats = ['+91$phone', phone, '91$phone'];
         isPhoneOtp.value = true;
         isSignInFlow.value = true;
 
-        print('🔍 Attempting sign-in with phone: $formattedPhone');
+        // Debug: Check current user's phone number if logged in
+        final currentUser = _authService.currentUser.value;
+        if (currentUser != null) {
+          print('🔍 Current user phone in storage: ${currentUser.mobile}');
+          print('🔍 All user data: ${currentUser.toJson()}');
+        } else {
+          print('🔍 No current user found in storage');
+        }
 
-        final response = await _authService.signInWithPhone(
-          phoneNumber: formattedPhone,
-        );
+        ApiResponse<Map<String, dynamic>>? response;
+        String? workingFormat;
 
-        if (response.success) {
+        for (String format in phoneFormats) {
+          print('🔍 Attempting sign-in with phone: $format');
+          try {
+            response = await _authService.signInWithPhone(phoneNumber: format);
+            if (response.success) {
+              workingFormat = format;
+              userPhone.value = format;
+              break;
+            }
+          } catch (e) {
+            continue;
+          }
+        }
+
+        response ??=
+            await _authService.signInWithPhone(phoneNumber: phoneFormats.first);
+
+        if (response != null && response.success) {
+          print('✅ Sign-in successful with format: $workingFormat');
           Get.snackbar(
             "OTP Sent",
             "Verification code sent to your phone number",
@@ -868,7 +891,7 @@ class OnBoardingController extends GetxController {
           Get.toNamed(
             Routes.OTP_SCREEN,
             arguments: {
-              'phone': formattedPhone,
+              'phone': userPhone.value,
               'isPhoneOtp': true,
               'isSignInFlow': true,
             },
@@ -883,11 +906,12 @@ class OnBoardingController extends GetxController {
               errorMsg.toLowerCase().contains("user not found") ||
               errorMsg.toLowerCase().contains("does not exist")) {
             Get.snackbar(
-              "Account Not Found",
-              "No account found with this phone number. Please sign up first.",
+              "Phone Login Not Available",
+              "This phone number was added to a Google/Email account. Please sign in with Google or Email instead.",
               snackPosition: SnackPosition.BOTTOM,
               backgroundColor: const Color(0xFFE74C3C),
               colorText: Colors.white,
+              duration: Duration(seconds: 4),
             );
           } else {
             Get.snackbar(
