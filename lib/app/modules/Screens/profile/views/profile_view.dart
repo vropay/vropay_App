@@ -771,11 +771,11 @@ class _PreferencesSection extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Icon(
-                Icons.interests,
+                Icons.menu,
                 size: 18,
                 color: Color(0xFF4D84F7),
               ),
-              const SizedBox(width: 11.5),
+              SizedBox(width: ScreenUtils.width * 0.024),
               Expanded(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -793,7 +793,7 @@ class _PreferencesSection extends StatelessWidget {
                     ),
                     Spacer(),
                     Flexible(
-                      flex: 2,
+                      flex: 3,
                       child: Obx(() => Center(
                             child: Text(
                               controller.selectedTopics.value.isEmpty

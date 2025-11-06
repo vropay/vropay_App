@@ -147,7 +147,7 @@ class CategoryPreferenceWidget extends StatelessWidget {
                     height: 21,
                     color: Color(0xFF4D84F7),
                   ),
-                  SizedBox(width: ScreenUtils.width * 0.028),
+                  SizedBox(width: ScreenUtils.width * 0.024),
                   Text(
                     'category',
                     style: TextStyle(
@@ -1011,17 +1011,17 @@ class CategoryInfoRow extends StatelessWidget {
         children: [
           Image.asset(
             'assets/icons/category.png',
-            width: 21,
-            height: 21,
+            width: 17,
+            height: 17,
           ),
-          const SizedBox(width: 9),
+          SizedBox(width: ScreenUtils.width * 0.024),
           Expanded(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Flexible(
-                  flex: 2,
+                  flex: 3,
                   child: Text('Category',
                       style: const TextStyle(
                           fontWeight: FontWeight.w600,
@@ -1029,18 +1029,21 @@ class CategoryInfoRow extends StatelessWidget {
                           fontSize: 12)),
                 ),
                 Spacer(),
-                Center(
-                  child: SizedBox(
-                    width: 140,
-                    child: Text(
-                      value,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                          color: Color(0xFF616161),
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 2,
+                Expanded(
+                  flex: 3,
+                  child: Center(
+                    child: SizedBox(
+                      width: 140,
+                      child: Text(
+                        value,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                            color: Color(0xFF616161),
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 2,
+                      ),
                     ),
                   ),
                 ),
@@ -1200,10 +1203,10 @@ class DifficultyInfoRow extends StatelessWidget {
         children: [
           Image.asset(
             'assets/icons/difficulty.png',
-            width: 21,
-            height: 21,
+            width: 17,
+            height: 16,
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: ScreenUtils.width * 0.024),
           Expanded(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1218,18 +1221,21 @@ class DifficultyInfoRow extends StatelessWidget {
                           fontSize: 12)),
                 ),
                 Spacer(),
-                Obx(() => Center(
-                      child: SizedBox(
-                        width: 100,
-                        child: Text(
-                          controller.user.value?.difficultyLevel ?? 'N/A',
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                              color: Color(0xFF616161),
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14),
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 2,
+                Obx(() => Expanded(
+                      flex: 3,
+                      child: Center(
+                        child: SizedBox(
+                          width: 140,
+                          child: Text(
+                            controller.user.value?.difficultyLevel ?? 'N/A',
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                                color: Color(0xFF616161),
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 2,
+                          ),
                         ),
                       ),
                     )),
@@ -1261,10 +1267,10 @@ class CommunityInfoRow extends StatelessWidget {
         children: [
           Image.asset(
             'assets/icons/community.png',
-            width: 19,
+            width: 17,
             height: 16,
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: ScreenUtils.width * 0.025),
           Expanded(
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1278,18 +1284,21 @@ class CommunityInfoRow extends StatelessWidget {
                           fontSize: 12)),
                 ),
                 Spacer(),
-                Obx(() => Center(
-                      child: SizedBox(
-                        width: 100,
-                        child: Text(
-                          controller.user.value?.communityAccess ?? 'N/A',
-                          textAlign: TextAlign.right,
-                          style: const TextStyle(
-                              color: Color(0xFF616161),
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14),
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 2,
+                Obx(() => Flexible(
+                      flex: 1,
+                      child: Center(
+                        child: SizedBox(
+                          width: 20,
+                          child: Text(
+                            controller.user.value?.communityAccess ?? 'N/A',
+                            textAlign: TextAlign.right,
+                            style: const TextStyle(
+                                color: Color(0xFF616161),
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 2,
+                          ),
                         ),
                       ),
                     )),
@@ -1324,7 +1333,7 @@ class NotificationsInfoRow extends StatelessWidget {
             width: 12,
             height: 19,
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: ScreenUtils.width * 0.036),
           Expanded(
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1338,20 +1347,23 @@ class NotificationsInfoRow extends StatelessWidget {
                           fontSize: 12)),
                 ),
                 Spacer(),
-                Obx(() => Center(
-                      child: SizedBox(
-                        width: 120,
-                        child: Text(
-                          controller.user.value?.notificationsEnabled == true
-                              ? 'Allowed'
-                              : 'Blocked',
-                          textAlign: TextAlign.right,
-                          style: const TextStyle(
-                              color: Color(0xFF616161),
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14),
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 2,
+                Obx(() => Expanded(
+                      flex: 1,
+                      child: Center(
+                        child: SizedBox(
+                          width: 120,
+                          child: Text(
+                            controller.user.value?.notificationsEnabled == true
+                                ? 'Allowed'
+                                : 'Blocked',
+                            textAlign: TextAlign.right,
+                            style: const TextStyle(
+                                color: Color(0xFF616161),
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 2,
+                          ),
                         ),
                       ),
                     )),
