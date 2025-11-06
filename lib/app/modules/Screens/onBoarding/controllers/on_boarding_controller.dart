@@ -284,7 +284,7 @@ class OnBoardingController extends GetxController {
       print('🚀 Starting Google sign-in...');
 
       final GoogleSignIn googleSignIn = GoogleSignIn(
-        scopes: ['email', 'profile', 'openid'],
+        scopes: ['email', 'profile'],
         serverClientId:
             '785813482327-37jbltj9j5ejaflul09gdg9hr3pn2iv9.apps.googleusercontent.com',
       );
@@ -379,7 +379,7 @@ class OnBoardingController extends GetxController {
     } catch (e) {
       print('❌ Google sign-in error: $e');
       errorMessage.value = e.toString();
-      Get.snackbar('Error', 'Google sign-in failed}');
+      Get.snackbar('Error', 'Google sign-in failed: $e}');
     } finally {
       isLoading.value = false;
     }
