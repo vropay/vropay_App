@@ -49,26 +49,62 @@ class MessageService extends GetxService {
   void _addOrReplaceMessage(Map<String, dynamic> transformedMessage) {
     try {
       final id = transformedMessage['id']?.toString() ?? '';
-      if (id.isEmpty) {
-        // No id - fallback to adding and keep counts consistent
-        messages.add(transformedMessage);
-        totalMessages.value = messages.length;
-        return;
+      final messageText = transformedMessage['message']?.toString() ?? '';
+      final timestamp = transformedMessage['timestamp']?.toString() ?? '';
+      final isOwnMessage = transformedMessage['isOwnMessage'] == true;
+      
+      // Check for duplicates by ID first
+      if (id.isNotEmpty) {
+        final existingIndex = messages.indexWhere((m) => m['id'] == id);
+        if (existingIndex != -1) {
+          // Update existing message, preserving quickReplyColor if present
+          final existing = messages[existingIndex];
+          final updatedMessage = Map<String, dynamic>.from(transformedMessage);
+          if (existing['quickReplyColor'] != null && transformedMessage['quickReplyColor'] == null) {
+            updatedMessage['quickReplyColor'] = existing['quickReplyColor'];
+          }
+          messages[existingIndex] = updatedMessage;
+          return;
+        }
       }
-
-      final existingIndex = messages.indexWhere((m) => m['id'] == id);
-      if (existingIndex == -1) {
-        messages.add(transformedMessage);
-        totalMessages.value = messages.length;
-      } else {
-        messages[existingIndex] = transformedMessage;
+      
+      // Check for duplicates by content and timestamp for own messages
+      if (isOwnMessage && messageText.isNotEmpty) {
+        final duplicateIndex = messages.indexWhere((m) => 
+          m['isOwnMessage'] == true && 
+          m['message'] == messageText &&
+          (timestamp.isEmpty || m['timestamp'] == timestamp ||
+           (DateTime.tryParse(m['timestamp'] ?? '') != null && 
+            DateTime.tryParse(timestamp) != null &&
+            DateTime.parse(m['timestamp']).difference(DateTime.parse(timestamp)).abs().inSeconds < 5))
+        );
+        
+        if (duplicateIndex != -1) {
+          // Update existing message, preserving quickReplyColor
+          final existing = messages[duplicateIndex];
+          final updatedMessage = Map<String, dynamic>.from(transformedMessage);
+          if (existing['quickReplyColor'] != null) {
+            updatedMessage['quickReplyColor'] = existing['quickReplyColor'];
+          }
+          messages[duplicateIndex] = updatedMessage;
+          return;
+        }
       }
+      
+      // No duplicate found, add new message
+      messages.add(transformedMessage);
+      totalMessages.value = messages.length;
     } catch (e) {
       print('⚠️ [MESSAGE SERVICE] _addOrReplaceMessage failed: $e');
-      try {
+      // Fallback: only add if no obvious duplicate exists
+      final messageText = transformedMessage['message']?.toString() ?? '';
+      final isOwnMessage = transformedMessage['isOwnMessage'] == true;
+      
+      if (!isOwnMessage || !messages.any((m) => 
+          m['isOwnMessage'] == true && m['message'] == messageText)) {
         messages.add(transformedMessage);
         totalMessages.value = messages.length;
-      } catch (_) {}
+      }
     }
   }
 
@@ -88,6 +124,7 @@ class MessageService extends GetxService {
     String? replyToMessageId,
     List<String>? taggedUsers,
     bool isQuickReply = false,
+    Color? quickReplyColor,
   }) async {
     return await sendMessage(
       interestId: interestId,
@@ -96,6 +133,7 @@ class MessageService extends GetxService {
       taggedUsers: taggedUsers,
       forceRestApi: true,
       isQuickReply: isQuickReply,
+      quickReplyColor: quickReplyColor,
     );
   }
 
@@ -126,6 +164,7 @@ class MessageService extends GetxService {
     List<String>? taggedUsers,
     bool forceRestApi = false, // Add option to force REST API
     bool isQuickReply = false, // Add option to identify quick replies
+    Color? quickReplyColor, // Add color parameter for quick replies
   }) async {
     try {
       isLoading.value = true;
@@ -236,13 +275,11 @@ class MessageService extends GetxService {
       if (response.statusCode == 201) {
         final apiResponse = ApiResponse.fromJson(response.data, (data) => data);
         if (apiResponse.success) {
-          // Transform the message but don't add to list if it's a quick reply
-          final transformedMessage = _transformMessage(apiResponse.data);
+          // Transform the message and add color if it's a quick reply
+          final transformedMessage = _transformMessage(apiResponse.data, quickReplyColor: quickReplyColor);
 
-          // Only add to messages list if it's not a quick reply
-          if (!isQuickReply) {
-            _addOrReplaceMessage(transformedMessage);
-          }
+          // Add to messages list
+          _addOrReplaceMessage(transformedMessage);
 
           return transformedMessage;
         } else {
@@ -461,7 +498,7 @@ class MessageService extends GetxService {
   }
 
   // Transform message from API to UI format
-  Map<String, dynamic> _transformMessage(Map<String, dynamic> apiMessage) {
+  Map<String, dynamic> _transformMessage(Map<String, dynamic> apiMessage, {Color? quickReplyColor}) {
     try {
       final user = apiMessage['userId'] ?? {};
       final interest = apiMessage['interestId'] ?? {};
@@ -484,6 +521,7 @@ class MessageService extends GetxService {
         'isHighlightedContent': apiMessage['sharedEntry'] !=
             null, // Also mark as highlighted content if it's a shared entry
         'sharedEntry': apiMessage['sharedEntry'], // Include shared entry data
+        if (quickReplyColor != null) 'quickReplyColor': quickReplyColor, // Add color for quick replies
       };
     } catch (e) {
       print('❌ [MESSAGE SERVICE] Error transforming message: $e');

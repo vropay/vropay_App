@@ -1344,40 +1344,17 @@ class MessageController extends GetxController {
     }
 
     try {
-      isLoading.value = true;
-
-      // Create a temporary message with the quick reply color for instant UI feedback
-      final tempMessage = {
-        'message': message,
-        'sender': _authService.currentUser.value?.firstName ?? 'You',
-        'timestamp': DateTime.now().toIso8601String(),
-        'isOwnMessage': true,
-        'quickReplyColor': color,
-        'isQuickReply': true,
-      };
-
-      // Add the message to the local list immediately for instant UI feedback
-      messages.add(tempMessage);
-      totalMessages.value = messages.length;
-
-      // Send the message via service (mark as quick reply to prevent duplicates)
+      // Send the message via service with color information
       await _messageService.sendMessage(
         interestId: interestId.value,
         message: message,
-        isQuickReply: true,
+        quickReplyColor: color, // Pass the color to the service
+        forceRestApi: true,
       );
 
-      // Don't update messages from server - just mark the temporary message as permanent
-      final tempIndex = messages.indexWhere(
-          (msg) => msg['isQuickReply'] == true && msg['message'] == message);
-
-      if (tempIndex != -1) {
-        // Mark the temporary message as permanent (no longer temporary)
-        messages[tempIndex]['isQuickReply'] = false;
-        // Keep the color and all other properties
-      }
-
-      // Don't update totalMessages since we're not adding new messages
+      // Update local messages
+      messages.value = _messageService.messages;
+      totalMessages.value = _messageService.totalMessages.value;
 
       // Auto-scroll to new message
       Future.delayed(const Duration(milliseconds: 100), () {
@@ -1386,14 +1363,6 @@ class MessageController extends GetxController {
     } catch (e) {
       print('Error sending quick reply: $e');
       Get.snackbar('Error', 'Failed to send quick reply');
-
-      // Remove the temporary message if sending failed
-      if (messages.isNotEmpty && messages.last['isQuickReply'] == true) {
-        messages.removeLast();
-        totalMessages.value = messages.length;
-      }
-    } finally {
-      isLoading.value = false;
     }
   }
 
