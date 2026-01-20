@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
-import 'package:sms_autofill/sms_autofill.dart';
 import 'package:vropay_final/Utilities/constants/Colors.dart';
 import '../../../../../Components/constant_buttons.dart';
 import '../../../../../Utilities/constants/KImages.dart';

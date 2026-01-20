@@ -197,7 +197,8 @@ class OnBoardingController extends GetxController {
         Get.snackbar('Error', response.message ?? 'Failed to send OTP');
       }
     } catch (e) {
-      Get.snackbar('Error', 'Failed to send OTP: ${e.toString()}');
+      Get.snackbar(
+          'Error', 'Your Email is already exists try to login with number');
     } finally {
       isLoading.value = false;
     }

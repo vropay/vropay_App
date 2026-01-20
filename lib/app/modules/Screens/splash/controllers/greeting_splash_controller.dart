@@ -30,10 +30,13 @@ class GreetingSplashController extends GetxController {
   }
 
   void _initializeSplash() async {
+    // Wait for AuthService to initialize
+    await _authService.waitForInitialization();
+
     // Always check if this is first time launch
     final storage = GetStorage();
     final isFirstTime = storage.read('isFirstTime') ?? true;
-    
+
     if (isFirstTime) {
       // First time user - always show onboarding to choose signup/login
       await _startSplashLogic();
@@ -79,7 +82,7 @@ class GreetingSplashController extends GetxController {
     // Mark first time as false
     final storage = GetStorage();
     storage.write('isFirstTime', false);
-    
+
     // Navigate to onboarding for non-authenticated users
     Get.offAllNamed(Routes.ON_BOARDING);
   }

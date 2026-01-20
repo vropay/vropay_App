@@ -16,6 +16,7 @@ class AuthService extends GetxService {
   final Rx<UserModel?> currentUser = Rx<UserModel?>(null);
   final RxString authToken = ''.obs;
   final RxBool isLoading = false.obs;
+  final RxBool isInitialized = false.obs;
 
   @override
   void onInit() {
@@ -24,9 +25,22 @@ class AuthService extends GetxService {
     // initialize api client
     final apiClient = ApiClient();
     apiClient.init();
+    _initializeAuth();
 
     _loadAuthData();
     _checkAuthStatus();
+  }
+
+  Future<void> _initializeAuth() async {
+    _loadAuthData();
+    await _checkAuthStatus();
+    isInitialized.value = true;
+  }
+
+  Future<void> waitForInitialization() async {
+    while (!isInitialized.value) {
+      await Future.delayed(Duration(milliseconds: 100));
+    }
   }
 
   // Check if user is already authenticated
