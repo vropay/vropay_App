@@ -1,5 +1,6 @@
 class ApiConstant {
-  // Base URLs
+  // Base URLs   https://vropay-de7yg.ondigitalocean.app
+  // static const String baseUrl = 'http://10.0.2.2:3000';
   static const String baseUrl = 'https://vropay-de7yg.ondigitalocean.app';
   static const String apiVersion = '/api';
 

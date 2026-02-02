@@ -147,18 +147,19 @@ class ConsentScreen extends GetView<ConsentController> {
                 ),
                 Center(
                   child: Container(
-                    height: ScreenUtils.height * 0.19,
+                    height: ScreenUtils.height * 0.20,
                     width: ScreenUtils.width * 0.8,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(10),
                       color: Color(0xFFFFC746),
                     ),
-                    padding: EdgeInsets.symmetric(horizontal: 20),
+                    padding: EdgeInsets.symmetric(
+                        horizontal: ScreenUtils.width * 0.06),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         SizedBox(
-                          height: ScreenUtils.height * 0.016,
+                          height: ScreenUtils.height * 0.017,
                         ),
                         Text(
                           "You can tap & hold on any message or user \nto report !\n     But hey you can be reported too.\nRepeated reports = chat disabled.\nYou’ll still be able to scroll and read.",

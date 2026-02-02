@@ -194,11 +194,17 @@ class OnBoardingController extends GetxController {
         Get.snackbar('Success', 'OTP sent to your email');
         goToNextPage(); // Go to email OTP screen
       } else {
-        Get.snackbar('Error', response.message ?? 'Failed to send OTP');
+        // Handle "already registered" error
+        if (response.message?.toLowerCase().contains('already registered') ==
+            true) {
+          Get.snackbar('Email Already Exists',
+              'This email is already registered. Please use Google sign-in or try phone sign-in.');
+        } else {
+          Get.snackbar('Error', response.message ?? 'Failed to send OTP');
+        }
       }
     } catch (e) {
-      Get.snackbar(
-          'Error', 'Your Email is already exists try to login with number');
+      Get.snackbar('Error', 'Sign up failed. Please try again.');
     } finally {
       isLoading.value = false;
     }
@@ -263,7 +269,7 @@ class OnBoardingController extends GetxController {
         if (!hasCompleteProfile) {
           Get.offAllNamed(Routes.HOME, arguments: {'showUserDetails': true});
         } else {
-          Get.offAllNamed(Routes.HOME);
+          Get.offAllNamed(Routes.DASHBOARD);
         }
       } else {
         errorMessage.value = response.message ?? 'Apple sign-in failed';
@@ -281,7 +287,6 @@ class OnBoardingController extends GetxController {
   Future<void> signUpWithGoogle() async {
     try {
       isLoading.value = true;
-      errorMessage.value = '';
       print('🚀 Starting Google sign-in...');
 
       final GoogleSignIn googleSignIn = GoogleSignIn(
@@ -289,30 +294,53 @@ class OnBoardingController extends GetxController {
         serverClientId:
             '785813482327-37jbltj9j5ejaflul09gdg9hr3pn2iv9.apps.googleusercontent.com',
       );
+      print('🔍 Step 1: Created GoogleSignIn instance');
 
-      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
-      print('📱 Google user: ${googleUser?.email}');
+      print('🔍 Step 2.5: About to call signIn()...');
+      final GoogleSignInAccount? googleUser =
+          await googleSignIn.signIn().timeout(
+        Duration(seconds: 10),
+        onTimeout: () {
+          print('❌ Google sign-in timed out');
+          return null;
+        },
+      );
+
+      print('🔍 Step 3: signIn() completed');
 
       if (googleUser == null) {
-        print('❌ User cancelled Google sign-in');
+        print('❌ Google sign-in failed or cancelled');
+        Get.snackbar('Error', 'Google sign-in failed');
         return;
       }
 
-      // Get the authentication details
+      print('✅ Got user: ${googleUser.email}');
+
+      // Get authentication
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
-      print('📱 Got ID token: ${googleAuth.idToken != null}');
+      final idToken = googleAuth.idToken;
+      final accessToken = googleAuth.accessToken;
 
-      // Check if we have the required token
-      if (googleAuth.idToken == null) {
-        throw Exception('Failed to get Google ID token');
+      print(
+        '🔍 Google tokens: idToken=${idToken?.substring(0, 10)}..., accessToken=${accessToken?.substring(0, 10)}...',
+      );
+
+      if (idToken == null || idToken.isEmpty) {
+        Get.snackbar(
+          'Error',
+          'Google sign-in did not return an ID token. Check serverClientId / OAuth setup.',
+        );
+        return;
       }
 
+      // Call your API
       final response = await _authService.googleAuth(
         email: googleUser.email,
         name: googleUser.displayName ?? '',
-        idToken: googleAuth.idToken!,
+        idToken: idToken,
       );
+      print('🔍 Step 7: Backend response success: ${response.success}');
 
       if (response.success) {
         print('✅ Google auth successful');
@@ -323,51 +351,26 @@ class OnBoardingController extends GetxController {
           '🔍 Token after Google auth: ${savedToken.isNotEmpty ? 'EXISTS' : 'MISSING'}',
         );
 
-        final responseData = response.data;
-        final isNewUser = responseData?['isNewUser'] ?? false;
+        final storage = GetStorage();
+        storage.write('isFirstTime', false);
 
-        // Get user profile to check if phone number exists
-        await _authService.getUserProfile();
+        try {
+          await _authService.getUserProfile();
+        } catch (_) {}
+
         final user = _authService.currentUser.value;
+        final hasPhone = (user?.mobile ?? '').isNotEmpty;
 
-        if (isNewUser || user?.mobile == null || user!.mobile!.isEmpty) {
-          // New user - redirect to phone verification (skip email verification)
+        if (!hasPhone) {
           showPhoneVerification.value = true;
-          currentPage.value = 1; // Go to phone verification screen
+          currentPage.value = 1;
           pageController.animateToPage(
             1,
             duration: Duration(milliseconds: 300),
             curve: Curves.easeInOut,
           );
         } else {
-          // Existing user - check profile completion
-          await _authService.getUserProfile();
-          final user = _authService.currentUser.value;
-
-          bool hasCompleteProfile = user != null &&
-              user.firstName != null &&
-              user.firstName!.isNotEmpty &&
-              user.lastName != null &&
-              user.lastName!.isNotEmpty &&
-              // Gender is optional (user can prefer not to disclose)
-              user.profession != null &&
-              user.profession!.isNotEmpty &&
-              user.selectedTopics != null &&
-              user.selectedTopics!.isNotEmpty &&
-              user.difficultyLevel != null &&
-              user.difficultyLevel!.isNotEmpty &&
-              user.communityAccess != null &&
-              user.communityAccess!.isNotEmpty;
-
-          // Mark first time as false since user is authenticated
-          final storage = GetStorage();
-          storage.write('isFirstTime', false);
-
-          if (!hasCompleteProfile) {
-            Get.offAllNamed(Routes.HOME, arguments: {'showUserDetails': true});
-          } else {
-            Get.offAllNamed(Routes.HOME);
-          }
+          Get.offAllNamed(Routes.DASHBOARD);
         }
       } else {
         String errorMsg = response.message ?? 'Google sign-in failed';
@@ -379,8 +382,8 @@ class OnBoardingController extends GetxController {
       }
     } catch (e) {
       print('❌ Google sign-in error: $e');
-      errorMessage.value = e.toString();
-      Get.snackbar('Error', 'Google sign-in failed: $e}');
+      print('❌ Error type: ${e.runtimeType}');
+      Get.snackbar('Error', 'Google sign-in failed}');
     } finally {
       isLoading.value = false;
     }
@@ -898,31 +901,8 @@ class OnBoardingController extends GetxController {
             },
           );
         } else {
-          String errorMsg = response.message ?? "Failed to send OTP";
-          print('🔍 Sign-in error: $errorMsg');
-
-          // Check if it's a user not found error
-          if (errorMsg.toLowerCase().contains("not found") ||
-              errorMsg.toLowerCase().contains("not registered") ||
-              errorMsg.toLowerCase().contains("user not found") ||
-              errorMsg.toLowerCase().contains("does not exist")) {
-            Get.snackbar(
-              "Phone Login Not Available",
-              "This phone number was added to a Google/Email account. Please sign in with Google or Email instead.",
-              snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: const Color(0xFFE74C3C),
-              colorText: Colors.white,
-              duration: Duration(seconds: 4),
-            );
-          } else {
-            Get.snackbar(
-              "Error",
-              errorMsg,
-              snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: const Color(0xFFE74C3C),
-              colorText: Colors.white,
-            );
-          }
+          Get.snackbar("Account Not Found",
+              "This phone number is not registered. Please sign up first or use Google sign-in.");
         }
       } else {
         Get.snackbar(
@@ -972,7 +952,7 @@ class OnBoardingController extends GetxController {
         final storage = GetStorage();
         storage.write('isFirstTime', false);
 
-        Get.offAllNamed(Routes.HOME);
+        Get.offAllNamed(Routes.LEARN_SCREEN);
       } else {
         Get.snackbar('Error', response.message);
       }

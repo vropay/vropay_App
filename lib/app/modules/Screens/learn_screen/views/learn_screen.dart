@@ -20,17 +20,20 @@ class LearnScreenView extends GetView<LearnScreenController> {
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+            padding: EdgeInsets.symmetric(
+                horizontal: ScreenUtils.width * 0.05,
+                vertical: ScreenUtils.height * 0.02),
             child: Column(
               children: [
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 40),
+                  padding: EdgeInsets.only(bottom: ScreenUtils.height * 0.04),
                   child: Stack(
                     clipBehavior: Clip.none,
                     children: [
                       Container(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 20, vertical: 30),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: ScreenUtils.width * 0.05,
+                            vertical: ScreenUtils.height * 0.03),
                         width: ScreenUtils.width * 0.8,
                         height: ScreenUtils.height * 0.38,
                         decoration: BoxDecoration(
@@ -55,7 +58,7 @@ class LearnScreenView extends GetView<LearnScreenController> {
                                 Text(
                                   "stay",
                                   style: TextStyle(
-                                    fontSize: 40,
+                                    fontSize: 38,
                                     fontWeight: FontWeight.w400,
                                     color: Color(0xFF616161),
                                   ),
@@ -63,14 +66,14 @@ class LearnScreenView extends GetView<LearnScreenController> {
                                 Text(
                                   "consistent ,",
                                   style: TextStyle(
-                                    fontSize: 40,
+                                    fontSize: 38,
                                     fontWeight: FontWeight.w400,
                                     color: Color(0xFF006DF4),
                                   ),
                                 ),
                               ],
                             ),
-                            SizedBox(height: 30),
+                            SizedBox(height: ScreenUtils.height * 0.02),
                             Column(
                               children: [
                                 Text(
@@ -172,102 +175,111 @@ class LearnScreenView extends GetView<LearnScreenController> {
     double imageHeight,
     double imageWidth,
     double imageSpaceWidth,
+    VoidCallback onPressed1,
     VoidCallback onPressed,
   ) {
-    return Container(
-      height: ScreenUtils.height * 0.36,
-      width: double.infinity,
-      padding: EdgeInsets.only(top: 20, bottom: 10, left: 20, right: 0),
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              // Left Text Section
-              Flexible(
-                flex: 2,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                        fontSize: 30,
-                        fontWeight: FontWeight.w300,
-                        color: Color(0xFFD9D9D9),
+    return GestureDetector(
+      onTap: onPressed1,
+      child: Container(
+        height: ScreenUtils.height * 0.40,
+        width: double.infinity,
+        padding: EdgeInsets.only(
+            top: ScreenUtils.height * 0.015,
+            bottom: ScreenUtils.height * 0.01,
+            left: ScreenUtils.width * 0.05,
+            right: ScreenUtils.width * 0.02),
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Column(
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                // Left Text Section
+                Flexible(
+                  flex: 2,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        title,
+                        style: TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.w300,
+                          color: Color(0xFFD9D9D9),
+                        ),
+                        textAlign: TextAlign.center,
                       ),
-                      textAlign: TextAlign.center,
-                    ),
-                    SizedBox(height: ScreenUtils.height * 0.04),
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        fontSize: 15,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w300,
-                      ),
-                      overflow: TextOverflow.visible,
-                      softWrap: true,
-                    ),
-                  ],
-                ),
-              ),
-
-              SizedBox(width: ScreenUtils.width * 0.08),
-              Flexible(
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 18.0),
-                  child: Image.asset(
-                    imagePath,
-                    height: imageHeight,
-                    width: imageWidth,
-                    fit: BoxFit.contain,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: ScreenUtils.height * 0.055),
-          Align(
-            alignment: Alignment.center,
-            child: SizedBox(
-              width: ScreenUtils.width * 0.5,
-              height: ScreenUtils.height * 0.035,
-              child: ElevatedButton(
-                onPressed: onPressed,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: color,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
-                  textStyle: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  mainAxisSize: MainAxisSize.max,
-                  children: [
-                    Text(
-                      actionText,
-                      style: TextStyle(
+                      SizedBox(height: ScreenUtils.height * 0.04),
+                      Text(
+                        subtitle,
+                        style: TextStyle(
                           fontSize: 15,
-                          color: Colors.black,
-                          fontWeight: FontWeight.w400),
+                          color: Colors.white,
+                          fontWeight: FontWeight.w300,
+                        ),
+                        overflow: TextOverflow.visible,
+                        softWrap: true,
+                      ),
+                    ],
+                  ),
+                ),
+
+                SizedBox(width: ScreenUtils.width * 0.08),
+                Flexible(
+                  child: Padding(
+                    padding: EdgeInsets.only(right: ScreenUtils.width * 0.04),
+                    child: Image.asset(
+                      imagePath,
+                      height: imageHeight,
+                      width: imageWidth,
+                      fit: BoxFit.contain,
                     ),
-                    SizedBox(width: ScreenUtils.width * 0.05),
-                    const Icon(Icons.arrow_forward, size: 24),
-                  ],
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: ScreenUtils.height * 0.055),
+            Align(
+              alignment: Alignment.center,
+              child: SizedBox(
+                width: ScreenUtils.width * 0.5,
+                height: ScreenUtils.height * 0.045,
+                child: ElevatedButton(
+                  onPressed: onPressed,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: color,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    padding: EdgeInsets.symmetric(
+                        horizontal: ScreenUtils.width * 0.05,
+                        vertical: ScreenUtils.height * 0.01),
+                    textStyle: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      Text(
+                        actionText,
+                        style: TextStyle(
+                            fontSize: 15,
+                            color: Colors.black,
+                            fontWeight: FontWeight.w400),
+                      ),
+                      SizedBox(width: ScreenUtils.width * 0.05),
+                      const Icon(Icons.arrow_forward, size: 24),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -297,6 +309,7 @@ class LearnScreenView extends GetView<LearnScreenController> {
       ScreenUtils.height * 0.128,
       ScreenUtils.width * 0.2,
       ScreenUtils.width * 0.08,
+      () => _onCategoryTap(category),
       () => _onCategoryTap(category),
     );
   }

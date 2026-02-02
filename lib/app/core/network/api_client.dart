@@ -2,9 +2,11 @@ import 'dart:async';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
+import 'package:get/get.dart' as GetX;
 import 'package:get_storage/get_storage.dart';
 import 'package:vropay_final/app/core/api/api_constant.dart';
 import 'package:vropay_final/app/core/network/api_exception.dart';
+import 'package:vropay_final/Utilities/constants/Colors.dart';
 
 class ApiClient {
   static final ApiClient _instance = ApiClient._internal();
@@ -255,12 +257,35 @@ class _RetryInterceptor extends Interceptor {
 class _ErrorInterceptor extends Interceptor {
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
-    if (err.response?.statusCode == 401) {
-      // Handle unauthorized access
+    // Show connection error for network issues, don't clear auth
+    if (_isNetworkError(err)) {
+      _showConnectionAlert();
+      handler.next(err);
+      return;
+    }
+
+    // Only clear auth for genuine 401 errors with server response
+    if (err.response?.statusCode == 401 && err.response?.data != null) {
       GetStorage().remove('auth_token');
       GetStorage().remove('user_data');
-      // Navigate to login screen
     }
     handler.next(err);
+  }
+
+  bool _isNetworkError(DioException err) {
+    return err.type == DioExceptionType.connectionTimeout ||
+        err.type == DioExceptionType.sendTimeout ||
+        err.type == DioExceptionType.receiveTimeout ||
+        err.type == DioExceptionType.connectionError;
+  }
+
+  void _showConnectionAlert() {
+    GetX.Get.snackbar(
+      "Connection Error",
+      "Please check your internet connection and try again",
+      snackPosition: GetX.SnackPosition.TOP,
+      backgroundColor: KConstColors.errorSnackbar,
+      duration: Duration(seconds: 3),
+    );
   }
 }

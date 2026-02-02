@@ -64,8 +64,8 @@ class CustomTopNavBar extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Container(
-                          width: 40,
-                          height: 40,
+                          width: ScreenUtils.width * 0.10,
+                          height: ScreenUtils.height * 0.04,
                           padding: const EdgeInsets.all(2),
                           decoration: BoxDecoration(
                             color: isSelected

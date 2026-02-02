@@ -149,6 +149,7 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
                             horizontal: 20.0,
                           ),
                           child: Container(
+                            margin: EdgeInsets.only(right: 30),
                             width: double.infinity,
                             height: ScreenUtils.height * 0.08,
                             decoration: BoxDecoration(
@@ -211,21 +212,24 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 40.0),
                     child: Text(
-                      "Congress leaders urge the Prime Minister to  restore J&K statehood, citing constitutional rights and promises  made by the Government.",
+                      _getNewsSummary(),
                       style: TextStyle(
                           fontSize: ScreenUtils.x(3),
                           fontWeight: FontWeight.w300,
                           color: Color(0xFF6253DB)),
                     ),
-                  )
+                  ),
+                  SizedBox(height: 100),
                 ],
               ),
             ),
 
             // Fixed Action Buttons on the right side (outside scrollable area)
             Positioned(
-              right: 20,
-              top: 400, // Adjust this value to position below the header
+              right: ScreenUtils.width * 0.05,
+              top: ScreenUtils.height *
+                  0.4, // Adjust this value to position below the header
+
               child: SizedBox(
                 width: 50,
                 child: Column(
@@ -348,6 +352,7 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
                                               selectedFilter.value ==
                                                   "beginner", () {
                                             selectedFilter.value = "beginner";
+                                            setState(() {});
                                             Navigator.of(context).pop();
                                           }),
                                           _buildFilterChip(
@@ -356,12 +361,15 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
                                               selectedFilter.value ==
                                                   "moderate", () {
                                             selectedFilter.value = "moderate";
+                                            setState(() {});
                                             Navigator.of(context).pop();
                                           }),
                                           _buildFilterChip(context, "advance",
                                               selectedFilter.value == "advance",
                                               () {
                                             selectedFilter.value = "advance";
+                                            setState(() {});
+
                                             Navigator.of(context).pop();
                                           }),
                                         ],
@@ -532,19 +540,60 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
   }
 
   String _getNewsContent() {
-    // Use actual body content from API if available, otherwise fallback to generated content
-    final body = currentNews['body']?.toString();
-    print('🔍 NewsDetail - Raw body content: $body');
-
-    if (body != null && body.isNotEmpty && body != 'null') {
-      // Convert HTML to text if it contains HTML tags
-      final convertedText = _convertHtmlToText(body);
-      print('🔍 NewsDetail - Converted text: $convertedText');
-      return convertedText;
+    // Get difficulty-specific content first
+    final difficultyContent = _getDifficultyBasedContent();
+    if (difficultyContent.isNotEmpty) {
+      return difficultyContent;
     }
 
-    // Fallback to generated content based on title
-    return _getFullDescription(currentNews['title'] ?? '');
+    // Fallback to API content
+    final body = currentNews['body']?.toString();
+    if (body != null && body.isNotEmpty && body != 'null') {
+      return _convertHtmlToText(body);
+    }
+
+    // Other API fields...
+    final content = currentNews['content']?.toString();
+    if (content != null && content.isNotEmpty && content != 'null') {
+      return _convertHtmlToText(content);
+    }
+
+    // Static fallback
+    final title = currentNews['title'] ?? 'News Article';
+    return 'This news article titled "$title" is currently being processed.';
+  }
+
+// New method to get difficulty-based content
+  String _getDifficultyBasedContent() {
+    final difficulty = selectedFilter.value;
+
+    // Only return difficulty-specific content if a specific difficulty is selected
+    if (difficulty == 'All' || difficulty.isEmpty) {
+      return ''; // Return empty to use normal API content
+    }
+
+    // Debug: Print all available fields in currentNews
+    print('🔍 DEBUG: Available API fields: ${currentNews.keys.toList()}');
+    print('🔍 DEBUG: Looking for difficulty: $difficulty');
+
+    // Try multiple API field variations for difficulty-specific content
+    final apiContent = currentNews['${difficulty}Content'] ??
+        currentNews['${difficulty}_content'] ??
+        currentNews['content_$difficulty'] ??
+        currentNews['${difficulty}Body'] ??
+        currentNews['${difficulty}_body'];
+
+    if (apiContent != null &&
+        apiContent.toString().isNotEmpty &&
+        apiContent.toString() != 'null') {
+      print('✅ Using API content for difficulty: $difficulty');
+      return _convertHtmlToText(apiContent.toString());
+    }
+
+    // If no API content for this difficulty, return empty to use normal content
+    print(
+        '⚠️ No API content found for difficulty: $difficulty, using normal content');
+    return '';
   }
 
   // Helper method to convert HTML to pure text content (no tags)
@@ -602,34 +651,69 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
     );
   }
 
-  String _getFullDescription(String title) {
-    // Generate a detailed description based on the title
-    switch (title) {
-      case 'Trump greenlights "massive" arms deal for Ukraine':
-        return 'Former President Donald Trump has approved a significant arms deal for Ukraine, marking a major development in the ongoing conflict. The deal includes advanced military equipment and weapons systems that will bolster Ukraine\'s defense capabilities. This decision comes amid escalating tensions in the region and represents a substantial commitment to supporting Ukraine\'s sovereignty and territorial integrity. The arms package is expected to include missile systems, armored vehicles, and other critical military supplies that will enhance Ukraine\'s ability to defend itself against external threats.';
+  String _getNewsSummary() {
+    final difficulty = selectedFilter.value;
 
-      case 'Tesla launches first Mumbai showroom (BKC)':
-        return 'Tesla has officially opened its first showroom in Mumbai\'s Bandra Kurla Complex (BKC), marking the electric vehicle giant\'s entry into the Indian market. The state-of-the-art showroom showcases Tesla\'s latest models including the Model 3, Model Y, and Model S. This strategic move represents Tesla\'s commitment to expanding its global presence and tapping into India\'s growing electric vehicle market. The showroom features interactive displays, charging stations, and expert staff to help customers understand Tesla\'s innovative technology and sustainable transportation solutions.';
+    // Try difficulty-specific footer from API first
+    if (difficulty != 'All' && difficulty.isNotEmpty) {
+      final difficultyFooter = currentNews['${difficulty}Footer'] ??
+          currentNews['${difficulty}_footer'] ??
+          currentNews['footer_$difficulty'];
 
-      case 'SBI cuts lending rates':
-        return 'The State Bank of India (SBI) has announced a reduction in its lending rates across various loan products, providing relief to borrowers. This move is expected to boost credit growth and stimulate economic activity in the country. The rate cut applies to home loans, personal loans, and business loans, making borrowing more affordable for consumers and businesses alike. This decision reflects the bank\'s commitment to supporting economic recovery and making financial services more accessible to a broader segment of the population.';
-
-      case 'India\'s inflation hits 6-year low':
-        return 'India\'s inflation rate has reached its lowest level in six years, indicating positive economic indicators and improved price stability. This development suggests that the Reserve Bank of India\'s monetary policies have been effective in controlling price rises. The lower inflation rate is expected to provide relief to consumers and create a more favorable environment for economic growth. This milestone reflects the country\'s improving economic fundamentals and could lead to more favorable monetary policy decisions in the future.';
-
-      case 'Astronaut splashdown success':
-        return 'A team of astronauts has successfully completed their mission with a safe splashdown landing, marking another milestone in space exploration. The crew returned to Earth after completing various scientific experiments and research activities aboard the International Space Station. The successful landing demonstrates the reliability of modern space technology and the expertise of mission control teams. This achievement contributes valuable data to ongoing space research and paves the way for future missions.';
-
-      case 'Congress demands full J&K statehood':
-        return 'Senior Congress leaders Mallikarjun Kharge and Rahul Gandhi on Wednesday (July 16, 2025) wrote a joint letter to Prime Minister Narendra Modi pressing for restoration of Statehood to Jammu and Kashmir.\n\n"For the past five years, the people of J&K have consistently called for the restoration of full statehood. This demand is both legitimate and firmly grounded in their constitutional and democratic rights," the joint letter by the Leaders of the Opposition in the Lok Sabha and Rajya Sabha read. The demand came days ahead of the Monsoon Session of the Parliament.\n\nWhile there were instances of Union Territories being granted Statehood in the past, "the case of J&K is without precedent in Independent India", the letter pointed out.\n\nThe letter also referred to Mr. Modi\'s promises made on May 19 and September 19, 2024 on the issue. "You reaffirmed: \'We have said in Parliament that we will restore the region\'s statehood\'," it said.\n\nThe letter also referred to the Supreme Court\'s assertion that Statehood should be restored to J&K "at the earliest and as soon as possible".\n\nMeanwhile, the Group of Concerned Citizens (GCC) Jammu & Kashmir, a civil society group comprising senior retired officials, said many recent developments in J&K "yet again bring forth the imperative of restoring statehood without further delay". It said restoring Statehood was "essential for larger national interest".\n\nThis would be a significant step towards addressing the cultural, developmental, and political aspirations of the people of Ladakh, while safeguarding their rights, land, and identity," the letter added.';
-
-      case 'China & EU move to normalize diplomatic ties':
-        return 'China and the European Union have taken significant steps toward normalizing their diplomatic relations, marking a potential shift in international geopolitics. This development could lead to increased trade cooperation, cultural exchanges, and joint initiatives on global challenges. The normalization process involves addressing various bilateral issues and establishing frameworks for future collaboration. This diplomatic breakthrough has implications for global trade, climate change initiatives, and international security cooperation.';
-
-      default:
-        return 'This is a comprehensive news article covering important developments and their implications. The story provides detailed analysis and context to help readers understand the significance of these events. Stay informed about the latest developments and their impact on various sectors and communities.';
+      if (difficultyFooter != null &&
+          difficultyFooter.toString().isNotEmpty &&
+          difficultyFooter.toString() != 'null') {
+        print('✅ Using API difficulty footer for: $difficulty');
+        return difficultyFooter.toString();
+      }
     }
+
+    // Try to get summary from API
+    final summary = currentNews['footer']?.toString();
+    if (summary != null && summary.isNotEmpty && summary != 'null') {
+      print('✅ Using API summary');
+      return summary;
+    }
+
+    final excerpt = currentNews['eccerpt']?.toString();
+    if (excerpt != null && excerpt.isNotEmpty && excerpt != 'null') {
+      print('✅ Using API excerpt');
+      return excerpt;
+    }
+
+    // Static fallback
+    final title = currentNews['title'] ?? 'News Article';
+    return 'Key highlights and important updates from "$title" - Stay informed with the latest developments.';
   }
+
+  // String _getFullDescription(String title) {
+  //   // Generate a detailed description based on the title
+  //   switch (title) {
+  //     case 'Trump greenlights "massive" arms deal for Ukraine':
+  //       return 'Former President Donald Trump has approved a significant arms deal for Ukraine, marking a major development in the ongoing conflict. The deal includes advanced military equipment and weapons systems that will bolster Ukraine\'s defense capabilities. This decision comes amid escalating tensions in the region and represents a substantial commitment to supporting Ukraine\'s sovereignty and territorial integrity. The arms package is expected to include missile systems, armored vehicles, and other critical military supplies that will enhance Ukraine\'s ability to defend itself against external threats.';
+
+  //     case 'Tesla launches first Mumbai showroom (BKC)':
+  //       return 'Tesla has officially opened its first showroom in Mumbai\'s Bandra Kurla Complex (BKC), marking the electric vehicle giant\'s entry into the Indian market. The state-of-the-art showroom showcases Tesla\'s latest models including the Model 3, Model Y, and Model S. This strategic move represents Tesla\'s commitment to expanding its global presence and tapping into India\'s growing electric vehicle market. The showroom features interactive displays, charging stations, and expert staff to help customers understand Tesla\'s innovative technology and sustainable transportation solutions.';
+
+  //     case 'SBI cuts lending rates':
+  //       return 'The State Bank of India (SBI) has announced a reduction in its lending rates across various loan products, providing relief to borrowers. This move is expected to boost credit growth and stimulate economic activity in the country. The rate cut applies to home loans, personal loans, and business loans, making borrowing more affordable for consumers and businesses alike. This decision reflects the bank\'s commitment to supporting economic recovery and making financial services more accessible to a broader segment of the population.';
+
+  //     case 'India\'s inflation hits 6-year low':
+  //       return 'India\'s inflation rate has reached its lowest level in six years, indicating positive economic indicators and improved price stability. This development suggests that the Reserve Bank of India\'s monetary policies have been effective in controlling price rises. The lower inflation rate is expected to provide relief to consumers and create a more favorable environment for economic growth. This milestone reflects the country\'s improving economic fundamentals and could lead to more favorable monetary policy decisions in the future.';
+
+  //     case 'Astronaut splashdown success':
+  //       return 'A team of astronauts has successfully completed their mission with a safe splashdown landing, marking another milestone in space exploration. The crew returned to Earth after completing various scientific experiments and research activities aboard the International Space Station. The successful landing demonstrates the reliability of modern space technology and the expertise of mission control teams. This achievement contributes valuable data to ongoing space research and paves the way for future missions.';
+
+  //     case 'Congress demands full J&K statehood':
+  //       return 'Senior Congress leaders Mallikarjun Kharge and Rahul Gandhi on Wednesday (July 16, 2025) wrote a joint letter to Prime Minister Narendra Modi pressing for restoration of Statehood to Jammu and Kashmir.\n\n"For the past five years, the people of J&K have consistently called for the restoration of full statehood. This demand is both legitimate and firmly grounded in their constitutional and democratic rights," the joint letter by the Leaders of the Opposition in the Lok Sabha and Rajya Sabha read. The demand came days ahead of the Monsoon Session of the Parliament.\n\nWhile there were instances of Union Territories being granted Statehood in the past, "the case of J&K is without precedent in Independent India", the letter pointed out.\n\nThe letter also referred to Mr. Modi\'s promises made on May 19 and September 19, 2024 on the issue. "You reaffirmed: \'We have said in Parliament that we will restore the region\'s statehood\'," it said.\n\nThe letter also referred to the Supreme Court\'s assertion that Statehood should be restored to J&K "at the earliest and as soon as possible".\n\nMeanwhile, the Group of Concerned Citizens (GCC) Jammu & Kashmir, a civil society group comprising senior retired officials, said many recent developments in J&K "yet again bring forth the imperative of restoring statehood without further delay". It said restoring Statehood was "essential for larger national interest".\n\nThis would be a significant step towards addressing the cultural, developmental, and political aspirations of the people of Ladakh, while safeguarding their rights, land, and identity," the letter added.';
+
+  //     case 'China & EU move to normalize diplomatic ties':
+  //       return 'China and the European Union have taken significant steps toward normalizing their diplomatic relations, marking a potential shift in international geopolitics. This development could lead to increased trade cooperation, cultural exchanges, and joint initiatives on global challenges. The normalization process involves addressing various bilateral issues and establishing frameworks for future collaboration. This diplomatic breakthrough has implications for global trade, climate change initiatives, and international security cooperation.';
+
+  //     default:
+  //       return 'This is a comprehensive news article covering important developments and their implications. The story provides detailed analysis and context to help readers understand the significance of these events. Stay informed about the latest developments and their impact on various sectors and communities.';
+  //   }
+  // }
 
   Widget _buildFilterChip(
       BuildContext context, String label, bool isSelected, VoidCallback onTap) {
@@ -650,34 +734,47 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
   }
 
   Widget _buildHighlightedText() {
-    final String fullText = _getNewsContent();
+    // Get RAW HTML content for highlighting (not converted to plain text)
+    final String htmlContent = _getRawNewsContent();
 
-    // Always use plain text with highlighting (HTML has been converted to text)
-    return _buildDynamicHighlightedText(fullText);
+    // Convert HTML to text but keep it for highlighting
+    final String plainText = _convertHtmlToText(htmlContent);
+
+    return _buildDynamicHighlightedText(plainText);
+  }
+
+  String _getRawNewsContent() {
+    // Get raw HTML content without converting to plain text
+    final body = currentNews['body']?.toString();
+    if (body != null && body.isNotEmpty && body != 'null') {
+      print('✅ Using raw HTML content for highlighting');
+      return body; // Return HTML as-is
+    }
+
+    final content = currentNews['content']?.toString();
+    if (content != null && content.isNotEmpty && content != 'null') {
+      return content;
+    }
+
+    final description = currentNews['description']?.toString();
+    if (description != null &&
+        description.isNotEmpty &&
+        description != 'null') {
+      return description;
+    }
+
+    // Fallback
+    final title = currentNews['title'] ?? 'News Article';
+    return 'This news article titled "$title" is currently being processed.';
   }
 
   Widget _buildDynamicHighlightedText(String text) {
     // Define keywords to highlight with their colors
-    final Map<String, Color> highlightKeywords = {
-      'Mallikarjun Kharge': Color(0xFFEF2D56),
-      'Rahul Gandhi': Color(0xFFEF2D56),
-      'Narendra Modi': Color(0xFFEF2D56),
-      'Jammu and Kashmir': Color(0xFFEF2D56),
-      'J&K': Color(0xFFEF2D56),
-      'Congress': Color(0xFFEF2D56),
-      'Parliament': Color(0xFFEF2D56),
-      'Supreme Court': Color(0xFFEF2D56),
-      'Statehood': Color(0xFFEF2D56),
-      'constitutional': Color(0xFFEF2D56),
-      'democratic': Color(0xFFEF2D56),
-      'legitimate': Color(0xFFEF2D56),
-      'rights': Color(0xFFEF2D56),
-      'Ladakh': Color(0xFFEF2D56),
-      'Union Territories': Color(0xFFEF2D56),
-      'Independent India': Color(0xFFEF2D56),
-      'GCC': Color(0xFFEF2D56),
-      'Group of Concerned Citizens': Color(0xFFEF2D56),
-    };
+    final Map<String, Color> highlightKeywords = _getHighlightKeywords();
+
+    // Dynamic highlight color based on current state
+    final Color highlightColor =
+        _showHighlightView ? Color(0xFF00B8F0) : Color(0xFFEF2D56);
 
     // Create a list of TextSpan widgets
     List<TextSpan> spans = [];
@@ -692,13 +789,13 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
 
       for (String keyword in sortedKeywords) {
         if (remainingText.toLowerCase().startsWith(keyword.toLowerCase())) {
-          // Add highlighted keyword
+          // Add highlighted keyword with dynamic color
           spans.add(TextSpan(
             text: remainingText.substring(0, keyword.length),
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w300,
-              color: highlightKeywords[keyword]!,
+              color: highlightColor,
               height: 1,
             ),
           ));
@@ -736,14 +833,14 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
             ),
           ));
 
-          // Add highlighted keyword
+          // Add highlighted keyword with dynamic color
           spans.add(TextSpan(
             text: remainingText.substring(
                 nextMatchIndex, nextMatchIndex + nextKeyword.length),
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w300,
-              color: highlightKeywords[nextKeyword]!,
+              color: highlightColor,
               height: 1,
             ),
           ));
@@ -770,6 +867,54 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
     return RichText(
       text: TextSpan(children: spans),
     );
+  }
+
+  Map<String, Color> _getHighlightKeywords() {
+    // Try to get keywords from API first
+    final apiKeywords =
+        currentNews['keywords'] ?? currentNews['highlightKeywords'];
+
+    if (apiKeywords != null && apiKeywords is List && apiKeywords.isNotEmpty) {
+      print('✅ Using API keywords: $apiKeywords');
+      Map<String, Color> keywordMap = {};
+      for (String keyword in apiKeywords) {
+        keywordMap[keyword] =
+            _showHighlightView ? Color(0xFF00B8F0) : Color(0xFFEF2D56);
+      }
+      return keywordMap;
+    }
+
+    // Extract keywords from HTML <b> tags
+    print('🔍 Extracting keywords from HTML <b> tags');
+    return _extractKeywordsFromBoldTags();
+  }
+
+  // Extract keywords from <b> tags in HTML content
+  Map<String, Color> _extractKeywordsFromBoldTags() {
+    final htmlContent = _getRawNewsContent();
+    Map<String, Color> boldKeywords = {};
+
+    // Find all text inside <b> tags
+    RegExp boldTagRegex = RegExp(r'<b[^>]*>(.*?)</b>', caseSensitive: false);
+    Iterable<RegExpMatch> matches = boldTagRegex.allMatches(htmlContent);
+
+    for (RegExpMatch match in matches) {
+      String boldText = match.group(1)?.trim() ?? '';
+      if (boldText.isNotEmpty) {
+        boldKeywords[boldText] =
+            Color(0xFFEF2D56); // Default color, will be overridden
+        print('🔍 Found bold keyword: $boldText');
+      }
+    }
+
+    print('✅ Extracted ${boldKeywords.length} keywords from <b> tags');
+
+    if (boldKeywords.isEmpty) {
+      print('⚠️ No <b> tags found, no highlighting will be applied');
+      return {};
+    }
+
+    return boldKeywords;
   }
 
   void _goToNextNews() {

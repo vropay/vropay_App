@@ -33,11 +33,11 @@ class KnowledgeCenterScreenView
             children: [
               Expanded(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  padding: EdgeInsets.symmetric(horizontal: 16.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SizedBox(height: 8),
+                      SizedBox(height: ScreenUtils.height * 0.02),
 
                       // Search field with suggestions dropdown (like news screen)
                       Column(
@@ -79,7 +79,8 @@ class KnowledgeCenterScreenView
                                         : null,
                                     border: InputBorder.none,
                                     contentPadding: EdgeInsets.symmetric(
-                                        horizontal: 20, vertical: 15),
+                                        horizontal: ScreenUtils.width * 0.05,
+                                        vertical: ScreenUtils.height * 0.02),
                                   ),
                                 )),
                           ),
@@ -102,8 +103,13 @@ class KnowledgeCenterScreenView
                                 return Container(
                                   width: double.infinity,
                                   margin: EdgeInsets.only(
-                                      top: 8, left: 20, right: 20),
-                                  padding: EdgeInsets.only(left: 10, right: 20),
+                                      top: ScreenUtils.height * 0.01,
+                                      bottom: ScreenUtils.height * 0.08,
+                                      left: ScreenUtils.width * 0.05,
+                                      right: ScreenUtils.width * 0.05),
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: ScreenUtils.width * 0.05,
+                                      vertical: ScreenUtils.height * 0.02),
                                   constraints: BoxConstraints(
                                     maxHeight: ScreenUtils.height * 0.3,
                                   ),
@@ -245,7 +251,7 @@ class KnowledgeCenterScreenView
                                 fontSize: 20,
                               ),
                             ),
-                            const SizedBox(width: 8),
+                            SizedBox(width: ScreenUtils.width * 0.02),
                             Padding(
                               padding: const EdgeInsets.only(left: 10),
                               child: Image.asset(
@@ -412,8 +418,12 @@ class KnowledgeCenterScreenView
             onTap: hasData ? () => controller.onContinueReadingTap() : null,
             child: Container(
               width: double.infinity,
-              margin: EdgeInsets.only(left: 5, right: 6),
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              margin: EdgeInsets.only(
+                  left: ScreenUtils.width * 0.025,
+                  right: ScreenUtils.width * 0.025),
+              padding: EdgeInsets.symmetric(
+                  horizontal: ScreenUtils.width * 0.05,
+                  vertical: ScreenUtils.height * 0.02),
               decoration: BoxDecoration(
                 color: Color(0xFFDBEFFF).withOpacity(0.5),
                 borderRadius: BorderRadius.circular(12),
@@ -880,8 +890,8 @@ class KnowledgeCenterScreenView
           height: ScreenUtils.height * 0.4,
           padding: EdgeInsets.only(
             top: topHeight,
-            left: 22,
-            right: 22,
+            left: ScreenUtils.width * 0.05,
+            right: ScreenUtils.width * 0.05,
             bottom: bottomHeight,
           ),
           decoration: BoxDecoration(
@@ -892,7 +902,11 @@ class KnowledgeCenterScreenView
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Padding(
-                padding: const EdgeInsets.only(top: 16.5, left: 32, right: 32),
+                padding: EdgeInsets.only(
+                  top: ScreenUtils.height * 0.00,
+                  left: ScreenUtils.width * 0.05,
+                  right: ScreenUtils.width * 0.05,
+                ),
                 child: Text(
                   text,
                   textAlign: TextAlign.center,
@@ -900,7 +914,7 @@ class KnowledgeCenterScreenView
                 ),
               ),
               Spacer(),
-              const Row(
+              Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   Text(
@@ -912,7 +926,7 @@ class KnowledgeCenterScreenView
                       fontSize: 20,
                     ),
                   ),
-                  SizedBox(width: 10),
+                  SizedBox(width: ScreenUtils.width * 0.02),
                   Icon(Icons.arrow_forward, color: Colors.white),
                 ],
               ),
@@ -929,7 +943,10 @@ class KnowledgeCenterScreenView
       children: [
         // Search results header (like news screen)
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          padding: EdgeInsets.symmetric(
+            horizontal: ScreenUtils.width * 0.05,
+            vertical: ScreenUtils.height * 0.01,
+          ),
           child: Row(
             children: [
               Text(
@@ -940,7 +957,7 @@ class KnowledgeCenterScreenView
                   color: Color(0xFF172B75),
                 ),
               ),
-              SizedBox(width: 8),
+              SizedBox(width: ScreenUtils.width * 0.02),
               Obx(() => Text(
                     '(${controller.searchResults.length} found)',
                     style: TextStyle(

@@ -693,7 +693,10 @@ class CommunityForumView extends GetView<CommunityForumController> {
           width: ScreenUtils.width * 0.73,
           height: ScreenUtils.height * 0.4,
           padding: EdgeInsets.only(
-              top: topHeight, left: 55, right: 55, bottom: bottomHeight),
+              top: topHeight,
+              left: ScreenUtils.width * 0.05,
+              right: ScreenUtils.width * 0.05,
+              bottom: bottomHeight),
           decoration: BoxDecoration(
             color: Color(0xFF3E9292),
             borderRadius: BorderRadius.circular(20),
